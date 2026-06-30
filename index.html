@@ -1,0 +1,1575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabaco City Disaster Risk Reduction & Management Office</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color:#1980d9; /* Deep institutional blue */
+            --secondary-color: #e65100; /* Emergency warning orange */
+            --dark-color: #212121;
+            --light-color: #f8f9fa;
+            --success-color: #2e7d32;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            color: var(--dark-color);
+            background-color: #ffffff;
+        }
+
+        /* --- Emergency Alert Banner --- */
+        .alert-banner {
+            background-color: var(--secondary-color);
+            color: white;
+            text-align: center;
+            padding: 10px 20px;
+            font-weight: bold;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+
+        /* --- Navigation --- */
+        header {
+            background: linear-gradient(to right, #000000, var(--primary-color));
+            color: white;
+            padding: 15px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-container-custom {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .logo-subtitle-custom {
+            font-family: 'TW Cen MT', sans-serif;
+            font-size: 10px;
+            color: #B4ED7B;
+            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .logo-img-frame {
+            width: 64px;
+            height: 64px;
+            object-fit: contain;
+            border-radius: 4px;
+            background-color: transparent;
+        }
+
+        .brand-name h1 {
+            margin: 0;
+            font-size: 44px;
+            letter-spacing: 2px;
+            line-height: 1;
+			font-family: 'Syncopate', sans-serif;
+       		font-weight: 700;
+       		text-transform: uppercase;
+       		letter-spacing: 4px; 
+        }
+
+        .brand-name p {
+            margin: 5px 0 0 0;
+            font-size: 18px;
+			font-family: 'Syncopate', sans-serif;
+       		font-weight: 300;
+            opacity: 0.8;
+            text-transform: uppercase;
+        }
+
+        /* --- Dropdown Menu System --- */
+        .menu-container {
+            position: relative;
+        }
+
+        .menu-toggle {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 18px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+
+        .menu-toggle:hover {
+            background-color: rgba(255, 255, 255, 0.25);
+        }
+
+        .nav-links {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            background-color: #111111;
+            border: 1px solid #333;
+            border-radius: 6px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            min-width: 180px;
+            padding: 8px 0;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+        }
+
+        .nav-links.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .nav-links a {
+            color: #e0e0e0;
+            padding: 12px 20px;
+            margin-left: 0;
+            text-decoration: none;
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .nav-links a:hover {
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+        }
+
+        /* --- Featured Media Layout Adjustments --- */
+        .bulletin-section {
+            background-color: #ffffff;
+            padding: 30px 5%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        /* Standard Slideshow Container */
+        .slideshow-container {
+            position: relative;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            height: 380px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            width: 100%;
+        }
+
+        /* Horizontal Scroll Container for Hazard Preparedness */
+        .hazard-scroll-container {
+            position: relative;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            height: 450px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .hazard-scroll-wrapper {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            height: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            scrollbar-width: none; /* Hide scrollbar for Firefox */
+        }
+
+        .hazard-scroll-wrapper::-webkit-scrollbar {
+            display: none; /* Hide scrollbar for Chrome/Safari */
+        }
+
+        /* Dynamic Peeking Slides Layout */
+        .prepSlides {
+            flex: 0 0 85%; /* Shows first slide fully on the left, next slide peeks out 15% on the right */
+            height: 100%;
+            position: relative;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .prepSlides img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Keeps text layout safely unclipped */
+            background-color: #f8f9fa; /* Clean light frame match instead of heavy black bars */
+        }
+
+        /* Bulletin Section Heights Uniformity */
+        .bulletin-section .hazard-scroll-container,
+        .bulletin-section .dashboard-frame {
+            height: 450px; 
+        }
+
+        .mySlides {
+            display: none;
+            height: 100%;
+            position: relative;
+        }
+
+        .mySlides img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .slide-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.85));
+            color: white;
+            padding: 20px;
+            font-size: 14px;
+        }
+        .slide-caption h4 {
+            margin: 0 0 5px 0;
+            font-size: 18px;
+            color: #fff;
+        }
+        .prev-slide, .next-slide {
+            cursor: pointer;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: auto;
+            padding: 16px;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            transition: 0.3s ease;
+            border-radius: 0 3px 3px 0;
+            user-select: none;
+            background-color: rgba(0,0,0,0.4);
+            border: none;
+            z-index: 10;
+        }
+        .next-slide {
+            right: 0;
+            border-radius: 3px 0 0 3px;
+        }
+        .prev-slide:hover, .next-slide:hover {
+            background-color: rgba(0,0,0,0.8);
+        }
+
+        /* --- Three Column Layout Extension --- */
+        .monitoring-section {
+            background-color: #ffffff;
+            padding: 30px 5% 0 5%;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+
+        .windy-container {
+            width: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border: 1px solid #e0e0e0;
+            background-color: #1c1a19;
+            height: 380px; 
+        }
+
+        .windy-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Tabbed Information Panel */
+        .board-container {
+            background: #fafafa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            height: 380px;
+            box-sizing: border-box;
+        }
+        .board-tabs {
+            display: flex;
+            background: #f1f5f9;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 12px 6px;
+            background: none;
+            border: none;
+            font-weight: 600;
+            font-size: 12px;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s;
+            outline: none;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .tab-btn:hover {
+            background: rgba(0,0,0,0.02);
+            color: var(--primary-color);
+        }
+        .tab-btn.active {
+            background: #ffffff;
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+        }
+        .board-content {
+            padding: 15px;
+            flex: 1;
+            overflow-y: auto;
+            display: none;
+        }
+        .board-content.active {
+            display: block;
+        }
+        .news-item {
+            border-bottom: 1px solid #edf2f7;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+        }
+        .news-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+            margin-bottom: 0;
+        }
+        .news-date {
+            font-size: 11px;
+            font-weight: bold;
+            color: var(--secondary-color);
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .news-title {
+            margin: 0 0 5px 0;
+            font-size: 14px;
+            color: var(--dark-color);
+            font-weight: 600;
+        }
+        .news-desc {
+            margin: 0;
+            font-size: 12px;
+            color: #555;
+            line-height: 1.4;
+        }
+
+        /* --- Hero Section --- */
+        .hero {
+            background: linear-gradient(rgba(15, 76, 129, 0.75), rgba(0, 0, 0, 0.65)), 
+                        url('https://images.fineartamerica.com/images/artworkimages/mediumlarge/3/a-beautiful-sunset-at-the-mayon-volcano-william-e-rogers.jpg') no-repeat center center/cover;
+            color: white;
+            text-align: center;
+            padding: 100px 20px;
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.5);
+            margin-top: 40px;
+        }
+
+        .hero h2 {
+            font-size: 42px;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+        }
+
+        .hero p {
+            font-size: 20px;
+            max-width: 750px;
+            margin: 0 auto;
+            opacity: 0.95;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+        }
+
+        /* --- Layout Structures --- */
+        section {
+            padding: 60px 10%;
+        }
+
+        .section-title {
+            text-align: center;
+            color: var(--primary-color);
+            font-size: 28px;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 50px;
+            height: 3px;
+            background-color: var(--secondary-color);
+            margin: 10px auto 0 auto;
+        }
+
+        /* --- Cards Layout --- */
+        .grid-4, .org-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 25px;
+        }
+
+        .card {
+            background: var(--light-color);
+            padding: 25px;
+            border-radius: 6px;
+            border-top: 4px solid var(--primary-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+
+        .card h3 {
+            margin-top: 15px;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+            font-size: 18px;
+        }
+
+        .card p {
+            font-size: 14px;
+            color: #444;
+            margin: 0;
+            text-align: left;
+        }
+
+        .pillar-icon-wrapper {
+            width: 60px;
+            height: 60px;
+            background-color: rgba(25, 128, 217, 0.1);
+            color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px auto;
+            font-size: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover .pillar-icon-wrapper {
+            background-color: var(--primary-color);
+            color: #ffffff;
+            transform: scale(1.05);
+        }
+
+        /* --- Organizational Chart --- */
+        .org-container {
+            text-align: center;
+        }
+        .org-card {
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        .org-card:hover {
+            transform: translateY(-5px);
+        }
+        .org-img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background-color: #ddd;
+            margin: 0 auto 15px auto;
+            object-fit: cover;
+            border: 3px solid var(--primary-color);
+        }
+        .org-name {
+            font-weight: bold;
+            font-size: 18px;
+            margin: 5px 0;
+            color: var(--dark-color);
+        }
+        .org-role {
+            font-size: 13px;
+            color: #666;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        /* --- Gallery Section --- */
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .action-card {
+            background: white;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+        }
+        .action-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background-color: #ccc;
+            display: block;
+        }
+        .action-info {
+            padding: 15px;
+        }
+        .action-info h4 {
+            margin: 0 0 5px 0;
+            color: var(--primary-color);
+        }
+        .action-info p {
+            margin: 0;
+            font-size: 13px;
+            color: #666;
+        }
+
+        /* --- Crew portal Modal/Overlay Override System --- */
+        .crew-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.6);
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .portal-box {
+            background: #ffffff;
+            width: 100%;
+            max-width: 500px;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 25px rgba(0,0,0,0.2);
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #666;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .btn-portal {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 15px;
+            margin-top: 10px;
+        }
+        .btn-portal:hover { opacity: 0.9; }
+        .btn-logout { background-color: #c62828; margin-top: 15px; }
+        
+        .hidden { display: none !important; }
+        
+        .profile-preview-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            background-color: #eee;
+            margin-bottom: 10px;
+            border: 2px solid #ccc;
+        }
+
+        /* --- Hotlines --- */
+        .hotline-section {
+            background-color: var(--light-color);
+            text-align: center;
+        }
+
+        .hotline-box {
+            background: white;
+            border: 2px dashed var(--secondary-color);
+            padding: 30px;
+            max-width: 600px;
+            margin: 0 auto;
+            border-radius: 8px;
+        }
+
+        .hotline-number {
+            font-size: 32px;
+            color: var(--secondary-color);
+            font-weight: bold;
+            margin: 15px 0;
+        }
+
+        /* --- Chatbot Layout System --- */
+        .chat-widget {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            z-index: 2000;
+            font-family: inherit;
+        }
+        .chat-button {
+            width: 60px;
+            height: 60px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            font-size: 24px;
+            transition: transform 0.2s;
+        }
+        .chat-button:hover {
+            transform: scale(1.05);
+        }
+        .chat-window {
+            position: absolute;
+            bottom: 75px;
+            right: 0;
+            width: 340px;
+            height: 460px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .chat-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-header span { font-size: 15px; }
+        .chat-close { cursor: pointer; font-size: 18px; opacity: 0.8; }
+        .chat-close:hover { opacity: 1; }
+        
+        .chat-body {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background-color: #f7f9fa;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .msg {
+            max-width: 80%;
+            padding: 10px 14px;
+            border-radius: 15px;
+            font-size: 13.5px;
+            line-height: 1.4;
+        }
+        .msg.bot {
+            background-color: #eaeaea;
+            color: #333;
+            align-self: flex-start;
+            border-top-left-radius: 2px;
+        }
+        .msg.user {
+            background-color: var(--primary-color);
+            color: white;
+            align-self: flex-end;
+            border-top-right-radius: 2px;
+        }
+        
+        .chat-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 10px 15px;
+            background: #f7f9fa;
+            border-top: 1px solid #eee;
+        }
+        .chip {
+            background: white;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .chip:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .chat-footer {
+            display: flex;
+            border-top: 1px solid #eee;
+            padding: 10px;
+            background: white;
+        }
+        .chat-input {
+            flex: 1;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 8px 12px;
+            font-size: 13px;
+            outline: none;
+        }
+        .chat-send {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0 15px;
+            margin-left: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        /* --- Footer --- */
+        footer {
+            background-color: #1a1a1a;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+        }
+
+        /* Responsive Viewports Adjustment System */
+        @media (max-width: 1024px) {
+            .monitoring-section { grid-template-columns: 1fr; height: auto; }
+            .windy-container, .slideshow-container, .board-container { height: 360px; }
+        }
+        @media (max-width: 900px) {
+            .bulletin-section { grid-template-columns: 1fr; }
+            .bulletin-section .hazard-scroll-container, .bulletin-section .dashboard-frame { height: auto; min-height: 380px; }
+            .slideshow-container { height: 320px; }
+            .prepSlides { flex: 0 0 90%; } /* Slightly wider peek on small mobile views */
+        }
+        @media (max-width: 768px) {
+            header { flex-direction: row !important; justify-content: space-between !important; text-align: left !important; gap: 15px; }
+            .hero h2 { font-size: 28px; }
+            .chat-window { width: 300px; right: -10px; }
+        }
+    .hotline-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s, text-decoration 0.2s;
+        }
+        .hotline-link:hover {
+            color: var(--secondary-color);
+            text-decoration: underline;
+        }
+	</style>
+</head>
+<body>
+
+    <div class="alert-banner">
+        ⚠️ CURRENT STATUS: NORMAL OPERATIONS | MONITORING LOCAL WEATHER DISTURBANCES | FIRST RESPONDERS READINESS
+    </div>
+
+    <header>
+        <div class="logo-area">
+            <div class="logo-container-custom">
+                <img class="logo-img-frame" 
+                     src="logo.png" 
+                     alt="Tabaco City CDRRMO Shield Logo"
+                     style="width: 124px !important; height: auto !important;">
+                <div class="logo-subtitle-custom">PROTECT AND SAVE</div>
+            </div>
+			
+            <div class="brand-name">
+                <h1>CDRRMO</h1>
+                <p><strong>Tabaco City Disaster Risk Reduction & Management Office</strong></p>
+            </div>
+        </div>
+        
+        <div class="menu-container">
+            <button class="menu-toggle" onclick="toggleMenu(event)" aria-label="Toggle Navigation">
+                <i class="fa-solid fa-bars"></i> Menu
+            </button>
+            <nav id="navMenu" class="nav-links">
+                <a href="#about" onclick="closeMenu()">About</a>
+                <a href="#pillars" onclick="closeMenu()">Our Mandate</a>
+                <a href="#org-chart" onclick="closeMenu()">Leadership</a>
+                <a href="#action" onclick="closeMenu()">In Action</a>
+                <a href="javascript:void(0)" onclick="openCrewPortal(); closeMenu();">Our Crew Portal</a>
+                <a href="#hotlines" onclick="closeMenu()">Hotlines</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="bulletin-section">
+        <div class="hazard-scroll-container" id="hazardScrollContainer">
+            <div class="hazard-scroll-wrapper" id="prepSliderFrame">
+                <div class="prepSlides">
+                    <img src="Linog1.JPG" alt="Hazard Mitigation Map 1" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
+                </div>
+                <div class="prepSlides">
+                    <img src="Linog2.JPG" alt="Hazard Mitigation Map 2" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
+                </div>	
+                <div class="prepSlides">
+                    <img src="Linog3.JPG" alt="Hazard Mitigation Map 3" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
+                </div>   
+                <div class="prepSlides">
+                    <img src="Linog4.JPG" alt="Hazard Mitigation Map 4" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
+                </div>
+                <div class="prepSlides">
+                    <img src="Linog5.JPG" alt="Hazard Mitigation Map 5" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
+                </div>
+                <div class="prepSlides">
+                    <img src="Linog6.JPG" alt="Hazard Mitigation Map 6" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
+                </div>
+                <div class="prepSlides">
+                    <img src="Bagyo1.JPG" alt="Hazard Mitigation Map 6" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
+                </div>
+				<div class="prepSlides">
+                    <img src="Bagyo2.JPG" alt="Hazard Mitigation Map 6" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
+                </div>
+				<div class="prepSlides">
+                    <img src="Bagyo3.JPG" alt="Hazard Mitigation Map 6" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
+                </div>
+				<div class="prepSlides">
+                    <img src="Bagyo4.JPG" alt="Hazard Mitigation Map 6" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
+                </div>
+				<div class="prepSlides">
+                    <img src="Bagyo5.JPG" alt="Hazard Mitigation Map 6" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
+                </div>
+				<div class="prepSlides">
+                    <img src="Bagyo6.JPG" alt="Hazard Mitigation Map 6" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
+                </div>
+				<div class="prepSlides">
+                    <img src="Bulkan1.JPG" alt="Hazard Mitigation Map 6" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
+                </div>
+				<div class="prepSlides">
+                    <img src="Bulkan2.JPG" alt="Hazard Mitigation Map 6" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
+                </div>
+				<div class="prepSlides">
+                    <img src="Bulkan3.JPG" alt="Hazard Mitigation Map 6" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
+                </div>
+				<div class="prepSlides">
+                    <img src="Bulkan4.JPG" alt="Hazard Mitigation Map 6" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
+                </div>
+				<div class="prepSlides">
+                    <img src="Bulkan5.JPG" alt="Hazard Mitigation Map 6" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
+                </div>
+				<div class="prepSlides">
+                    <img src="Bulkan6.JPG" alt="Hazard Mitigation Map 6" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
+                </div>
+			</div>
+            <button class="prev-slide" onclick="scrollPrepSlides(-1)">❮</button>
+            <button class="next-slide" onclick="scrollPrepSlides(1)">❯</button>
+        </div>
+        
+        <div class="dashboard-frame" style="background-color: #fafafa; border: 1px solid #e2e8f0; border-radius: 8px; padding: 25px; display: flex; flex-direction: column; justify-content: center; text-align: center; box-sizing: border-box;">
+            <h4 style="margin: 0 0 10px 0; color: var(--primary-color); font-size: 20px;">Live Tactical Situation Dashboard</h4>
+            <p style="margin: 0; font-size: 14px; color: #555; line-height: 1.5;">This operational bulletin panel houses live monitoring metrics, satellite updates, and active public announcements tracked by our Tabaco City command deck. Review environmental data maps and alerts concurrently on the feeds provided below.</p>
+        </div>
+    </div>
+
+    <div class="monitoring-section">
+        <div class="windy-container">
+            <iframe src="https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=default&metricWind=default&zoom=8&overlay=wind&product=ecmwf&level=surface&lat=13.361&lon=123.731&detailLat=13.361&detailLon=123.731&marker=true" title="Live Windy Meteorological Tracking Map"></iframe>
+        </div>
+
+        <div class="slideshow-container">
+            <div class="mySlides">
+                <img src="NDRM1.jpg" alt="NDRM 2026">
+                <div class="slide-caption">
+                    <h4>2026 National Disaster Resilience Month</h4>
+                </div>
+            </div>
+			<div class="mySlides">
+                <img src="NDRM.jpg" alt="NDRM 2026">
+                <div class="slide-caption">
+                    <h4>2026 National Disaster Resilience Month</h4>
+                </div>
+            </div>
+			<div class="mySlides">
+                <img src="https://images.fineartamerica.com/images/artworkimages/mediumlarge/3/a-beautiful-sunset-at-the-mayon-volcano-william-e-rogers.jpg" alt="Mayon Scan Operations">
+                <div class="slide-caption">
+                    <h4>Volcanic Terrain Monitoring</h4>
+                    <p>Real-time checks conducted on active hazard instrumentation along lahar channels.</p>
+                </div>
+            </div>
+            <div class="mySlides">
+                <img src="community_drill.jpg" alt="Drill Simulation">
+                <div class="slide-caption">
+                    <h4>Community Simulation Drills</h4>
+                    <p>Coordinating earthquake and flash evacuation routes with local barangay leaders.</p>
+                </div>
+            </div>
+            <div class="mySlides">
+                <img src="emergency_resp01.jpg" alt="Equipment Checks">
+                <div class="slide-caption">
+                    <h4>Emergency Response</h4>
+                    <p>Organized and rapid deployment of resources and personnel to protect lives, property, and environmental safety vectors.</p>
+                </div>
+            </div>
+            <button class="prev-slide" onclick="plusSlides(-1)">❮</button>
+            <button class="next-slide" onclick="plusSlides(1)">❯</button>
+        </div>
+
+        <div class="board-container">
+            <div class="board-tabs">
+                <button class="tab-btn active" onclick="switchTab(event, 'announcements')">📢 Announcements</button>
+                <button class="tab-btn" onclick="switchTab(event, 'news')">📰 Latest News</button>
+                <button class="tab-btn" onclick="switchTab(event, 'events')">📅 Upcoming Events</button>
+            </div>
+
+            <div id="announcements" class="board-content active">
+                <div class="news-item">
+                    <span class="news-date">July 01, 2026</span>
+                    <h5 class="news-title">2026 NATIONAL DISASTER RESILIENCE MONTH (NDRM)</h5>
+                    <p class="news-desc">National Disaster Resilience Month (NDRM) is an annual observance held in July in the Philippines, mandated by Executive Order No. 29, s.  2017. It shifts the national focus from mere disaster awareness to building active disaster resilience, emphasizing the capacity of individuals, communities, and institutions to adapt to, withstand, and recover from hazards. </p>
+                </div>
+				<div class="news-item">
+                    <span class="news-date">June 18, 2026</span>
+                    <h5 class="news-title">Nationwide Earthquake Drill</h5>
+                    <p class="news-desc">The Office of Civil Defense (OCD) said the 2nd Quarter National Simultaneous Earthquake Drill (NSED) will be held on Thursday, June 18, 2026. The event will be held in collaboration with the National Disaster Risk Reduction and Management Council member agencies. Officials will participate in a ceremonial pressing of the button at Camp Aguinaldo in Quezon City to signal the start of the NSED.</p>
+                </div>
+				<div class="news-item">
+                    <span class="news-date">June 04, 2026</span>
+                    <h5 class="news-title">La Niña Monitoring Matrix Activated</h5>
+                    <p class="news-desc">All rescue personnel have transitioned to active weather alert statuses. Resource centers are stocking relief kits.</p>
+                </div>
+                <div class="news-item">
+                    <span class="news-date">May 28, 2026</span>
+                    <h5 class="news-title">Emergency Hotline Maintenance Completed</h5>
+                    <p class="news-desc">Our primary operation lines are fully responsive. Backup lines remain accessible during peak monitoring shifts.</p>
+                </div>
+            </div>
+
+            <div id="news" class="board-content">
+                <div class="news-item">
+                    <span class="news-date">June 02, 2026</span>
+                    <h5 class="news-title">Tabaco City Receives Hazard Management Citation</h5>
+                    <p class="news-desc">Recognized for structural resilience approaches and early community warning framework implementations.</p>
+                </div>
+                <div class="news-item">
+                    <span class="news-date">May 19, 2026</span>
+                    <h5 class="news-title">Lahar Defense Structures Inspected</h5>
+                    <p class="news-desc">Engineering teams cleared sand trap channels near base slopes to manage volcanic runoffs efficiently.</p>
+                </div>
+            </div>
+
+            <div id="events" class="board-content">
+				<div class="news-item">
+                    <span class="news-date">July 01, 2026</span>
+                    <h5 class="news-title">2026 National Disaster Resilience Month (NDRM) Kick-Off Ceremony</h5>
+                    <p class="news-desc">Naghahanda at Kumikilos tungo sa Panatag na Bagong Pilipinas</p>
+                </div>
+				 <div class="news-item">
+                    <span class="news-date">July 10, 2026</span>
+                    <h5 class="news-title">PROJECT: Oplan Alerto</h5>
+                    <p class="news-desc">Tsunami Early Warning System Activation Drill.</p>
+                </div>
+                <div class="news-item">
+                    <span class="news-date">July 13, 2026</span>
+                    <h5 class="news-title">Household Risk Assessment</h5>
+                    <p class="news-desc">Household risk assessment in high-risk zones involves evaluating specific hazards to determine the severity of threats to health, safety, and property, often utilizing standardized frameworks to guide mitigation or intervention.</p>
+                </div>
+				<div class="news-item">
+                    <span class="news-date">July 25-26, 2026</span>
+                    <h5 class="news-title">Force Multipliers in Action</h5>
+                    <p class="news-desc">CDRRMO Auxiliary Training Program.</p>
+                </div>
+				<div class="news-item">
+                    <span class="news-date">July 28, 2026</span>
+                    <h5 class="news-title">Tabaco City Hall Earthquake Drill</h5>
+                    <p class="news-desc">Building a Disaster-Resilient Tabaco.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section id="about">
+        <h2 class="section-title">Who We Are</h2>
+        <div style="max-width: 800px; margin: 0 auto; text-align: center;">
+            <p><strong>Tabaco City Disaster Risk Reduction and Management Office (CDRRMO)</strong> is the lead city's agency responsible for steering local efforts in disaster response. Our mandate spans mitigating geographic hazards, preparing local communities, ensuring rapid tactical deployment during crises, and executing comprehensive post-crisis rehabilitation frameworks.</p>
+        </div>
+    </section>
+
+    <section id="pillars" style="background-color: #fafafa;">
+        <h2 class="section-title">The Four Operational Pillars</h2>
+        <div class="grid-4">
+            <div class="card">
+                <div class="pillar-icon-wrapper">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h3>1. Prevention & Mitigation</h3>
+                <p>Conducting engineering controls, hazard mapping, and community risk assessments to eliminate or drastically minimize impact before threats manifest.</p>
+            </div>
+            <div class="card">
+                <div class="pillar-icon-wrapper">
+                    <i class="fa-solid fa-bullhorn"></i>
+                </div>
+                <h3>2. Disaster Preparedness</h3>
+                <p>Equipping families, local business networks, and responders with actionable safety protocols, regular drill simulations, and early warning sirens.</p>
+            </div>
+            <div class="card">
+                <div class="pillar-icon-wrapper">
+                    <i class="fa-solid fa-kit-medical"></i>
+                </div>
+                <h3>3. Disaster Response</h3>
+                <p>Deploying search and rescue assets, asset security frameworks, relief supply logistics, and immediate incident command protocols during live events.</p>
+            </div>
+            <div class="card">
+                <div class="pillar-icon-wrapper">
+                    <i class="fa-solid fa-trowel-bricks"></i>
+                </div>
+                <h3>4. Rehabilitation & Recovery</h3>
+                <p>Structuring post-disaster infrastructure checks, medical recovery phases, psychological support, and rebuilding communities stronger than before.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="org-chart" class="org-container">
+        <h2 class="section-title">Organizational Leadership</h2>
+        <div class="org-grid">
+            <div class="org-card">
+                <img src="mayor.jpg" alt="City Mayor" class="org-img" onerror="this.src='https://via.placeholder.com/120?text=Mayor'">
+                <div class="org-name">Reynaldo B. Bragais</div>
+                <div class="org-role">Tabaco City Mayor</div>
+            </div>
+            <div class="org-card">
+                <img src="cdrrmo-head.jpg" alt="CDRRMO Head" class="org-img" onerror="this.src='https://via.placeholder.com/120?text=CDRRMO+Head'">
+                <div class="org-name">Gelacio M. Molato Jr. LLB., MCDRM</div>
+                <div class="org-role">Head, Tabaco CDRRMO<br>LDRRMO IV</div>
+            </div>
+            <div class="org-card">
+                <img src="admin-head.jpg" alt="Administrative Head" class="org-img" onerror="this.src='https://via.placeholder.com/120?text=Admin+Head'">
+                <div class="org-name">Rowena B. Buenconsejo, MPA</div>
+                <div class="org-role">Chief, Admin. & Training Section<br>LDRRMO III</div>
+            </div>
+            <div class="org-card">
+                <img src="research-head.jpg" alt="Research & Planning Head" class="org-img" onerror="this.src='https://via.placeholder.com/120?text=Research+Head'">
+                <div class="org-name">Ronald Andrew B. Gonzales, MPA</div>
+                <div class="org-role">Chief, Research & Planning Section<br>LDRRMO II</div>
+            </div>
+        </div>
+    </section>
+
+    <section id="action" style="background-color: #ffffff;">
+        <h2 class="section-title">On the Frontline</h2>
+        <p style="text-align:center; max-width:600px; margin:-20px auto 40px auto; color:#666;">
+            Real-time field operations, response deployments, and mitigation operations across Tabaco City.
+        </p>
+        <div class="action-grid">
+            <div class="action-card">
+                <img src="action1.jpg" alt="Flood Rescue Deployment" class="action-img" onerror="this.src='https://via.placeholder.com/400x250?text=Rescue+Deployment'">
+                <div class="action-info">
+                    <h4>San Roque Rescue Operation</h4>
+                    <p>Flood response team clearing localized flash-flood points during typhoon surge monitoring.</p>
+                </div>
+            </div>
+            <div class="action-card">
+                <img src="action2.jpg" alt="Mayon Monitoring" class="action-img" onerror="this.src='https://via.placeholder.com/400x250?text=Lahar+Monitoring'">
+                <div class="action-info">
+                    <h4>Buang Lahar Route Inspection</h4>
+                    <p>Pre-emptive hazard assessment of active structural channels and warning instrumentation check.</p>
+                </div>
+            </div>
+            <div class="action-card">
+                <img src="action3.jpg" alt="Community Emergency Drill" class="action-img" onerror="this.src='https://via.placeholder.com/400x250?text=Community+Drill'">
+                <div class="action-info">
+                    <h4>Barangay Preparedness Training</h4>
+                    <p>Simulated community earthquake evacuation protocol training with local responders.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div id="crewPortalModal" class="crew-modal-overlay hidden" onclick="closeCrewPortal()">
+        <div class="portal-box" id="portalBox" onclick="event.stopPropagation()">
+            <button class="modal-close-btn" onclick="closeCrewPortal()">✕</button>
+            <h2 style="text-align: center; color: var(--primary-color); margin-top: 0;">Our Crew Portal</h2>
+            
+            <div id="loginView">
+                <p style="text-align: center; margin-bottom: 20px; font-size: 14px; color: #666;">
+                    First Responders & Staff: Log in to manage your public employee profile database.
+                </p>
+                <div class="form-group">
+                    <label for="username">Admin-Assigned Username</label>
+                    <input type="text" id="username" placeholder="e.g., responder1">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="••••••••">
+                </div>
+                <button class="btn-portal" onclick="handleLogin()">Sign In</button>
+                <p style="font-size: 11px; color:#999; margin-top:15px; text-align:center;">Demo Account Hint: Use username <strong>responder1</strong> & password <strong>Password123</strong></p>
+            </div>
+
+            <div id="profileView" class="hidden">
+                <h3 style="margin-top: 0; color: var(--primary-color);">Welcome Back, <span id="userDisplay">Responder</span></h3>
+                <hr style="border: 0; border-top: 1px solid #ddd; margin-bottom: 20px;">
+                
+                <div style="background: #fff8f5; padding: 15px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #ffe0b2;">
+                    <h4 style="margin: 0 0 10px 0; color: var(--secondary-color);">Security: Update Password</h4>
+                    <div class="form-group">
+                        <input type="password" id="newPassword" placeholder="Enter new custom password">
+                    </div>
+                    <button class="btn-portal" style="background-color: var(--secondary-color); padding: 8px; margin-top:0;" onclick="changePassword()">Apply New Password</button>
+                </div>
+
+                <div class="form-group">
+                    <label>Profile Picture</label>
+                    <img id="profilePreview" class="profile-preview-img" src="" alt="No Image Selected"><br>
+                    <input type="file" id="profileImageInput" accept="image/*" onchange="previewImage(event)">
+                </div>
+                <div class="form-group">
+                    <label for="fullName">Full Name</label>
+                    <input type="text" id="fullName" placeholder="First Name, Last Name">
+                </div>
+                <div class="form-group">
+                    <label for="designation">Designation / Team Assign</label>
+                    <input type="text" id="designation" placeholder="e.g., Medical Team Alpha, WASAR">
+                </div>
+                <div class="form-group">
+                    <label for="empStatus">Employment Status</label>
+                    <select id="empStatus">
+                        <option value="Permanent">Permanent</option>
+                        <option value="Contractual (COS)">Contractual (COS)</option>
+                        <option value="Job Order">Job Order</option>
+                    </select>
+                </div>
+
+                <button class="btn-portal" style="background-color: var(--success-color);" onclick="saveAndCompileProfile()">Save & Update Profile</button>
+                <button class="btn-portal btn-logout" onclick="handleLogout()">Sign Out</button>
+            </div>
+        </div>
+    </div>
+
+    <section id="hotlines" class="hotline-section">
+        <h2 class="section-title">Emergency Contact Center</h2>
+        <div class="hotline-box">
+            <p>For immediate rescue tracking, fire hazards, medical trauma dispatch, or life-threatening situations, contact our dispatch unit directly:</p>
+            <div class="hotline-number">0995 290 5288</div>
+            <p><strong>Alternative Operations Desk Lines:</strong><br>
+            0909 224 5858 | 0999 475 8582<br>
+            Email: <a href="mailto:cdrrmo_tabacocity@yahoo.com" class="hotline-link">cdrrmo_tabacocity@yahoo.com</a><br>
+	       Facebook: <a href="https://www.facebook.com/profile.php?id=100084520061699&rdid=TQ5NF9mFSt0WUkYa&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F17JFoBx1MT%2F#" target="_blank" class="hotline-fb-link">Tabaco CDRRMO</a></p>
+        </div>
+    </section>
+
+    <div class="hero">
+        <h2>Building a Resilient, Prepared Community</h2>
+        <p>Proactive crisis response, strategic risk assessment, and immediate emergency management to safeguard lives and assets across Tabaco City.</p>
+    </div>
+
+    <div class="chat-widget">
+        <div class="chat-button" onclick="toggleChatWindow(event)">💬</div>
+        
+        <div class="chat-window" id="chatWindow" onclick="event.stopPropagation();">
+            <div class="chat-header">
+                <span>Tabaco CDRRMO Assistant</span>
+                <span class="chat-close" onclick="toggleChatWindow(event)">✕</span>
+            </div>
+            
+            <div class="chat-body" id="chatBody">
+                <div class="msg bot">
+                    Marhay na Aldaw! Kami po an saimong Tabaco CDRRMO assistant. Paano po kami makakatabang saimo o sa saindong komunidad ngunyan?
+                </div>
+            </div>
+            
+            <div class="chat-chips">
+                <div class="chip" onclick="handleChipClick('Hotlines')">📞 Emergency Hotlines</div>
+                <div class="chip" onclick="handleChipClick('Services')">🛠️ Available Services</div>
+                <div class="chip" onclick="handleChipClick('Mandate')">🏛️ Our Mandate</div>
+                <div class="chip" onclick="handleChipClick('Leadership')">👤 Office Leadership</div>
+            </div>
+            
+            <div class="chat-footer">
+                <input type="text" class="chat-input" id="chatInput" placeholder="Type a question here..." onkeypress="handleChatKey(event)">
+                <button class="chat-send" onclick="sendUserMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+<div id="imageZoomModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); z-index: 4000; justify-content: center; align-items: center; flex-direction: column;" onclick="closeZoomModal()">
+    <span style="position: absolute; top: 20px; right: 35px; color: #fff; font-size: 40px; font-weight: bold; cursor: pointer;">&times;</span>
+    <img id="zoomedImage" src="" alt="Zoomed Slide View" style="max-width: 90%; max-height: 80%; object-fit: contain; border-radius: 4px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">
+    <div style="margin-top: 20px; display: flex; gap: 15px;">
+        <a id="downloadSlideBtn" href="" download class="btn-portal" style="background-color: var(--success-color); text-decoration: none; padding: 10px 20px; width: auto; border-radius: 4px; font-weight: bold;">
+            <i class="fa-solid fa-download"></i> Save Slide Image
+        </a>
+        <button class="btn-portal" style="background-color: rgba(255,255,255,0.2); width: auto; padding: 10px 20px;" onclick="closeZoomModal()">Close</button>
+    </div>
+</div>
+    <footer>
+        <p>© 2026 Tabaco City Disaster Risk Reduction and Management Office (CDRRMO). All Rights Reserved.<br>By: Julius T. Bariso</p>
+    </footer>
+    
+
+
+	
+    <script>
+        /* --- MENU TOGGLE LOGIC --- */
+        function toggleMenu(event) {
+            event.stopPropagation(); 
+            document.getElementById('navMenu').classList.toggle('show');
+        }
+
+        function closeMenu() {
+            document.getElementById('navMenu').classList.remove('show');
+        }
+
+        /* --- MODAL DIALOG INTERACTIVE TRIGGERS --- */
+        function openCrewPortal() {
+            document.getElementById('crewPortalModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; 
+        }
+
+        function closeCrewPortal() {
+            document.getElementById('crewPortalModal').classList.add('hidden');
+            document.body.style.overflow = ''; 
+        }
+
+        document.addEventListener('click', function(event) {
+            const navMenu = document.getElementById('navMenu');
+            if (navMenu && !navMenu.contains(event.target)) {
+                closeMenu();
+            }
+        });
+
+        if(!localStorage.getItem('user_responder1')) {
+            localStorage.setItem('user_responder1', JSON.stringify({
+                username: 'responder1',
+                password: 'Password123',
+                fullName: 'Juan Del Cruz',
+                designation: 'Rescue Specialist I',
+                empStatus: 'Permanent',
+                imgData: ''
+            }));
+        }
+
+        let currentActiveUser = null;
+
+        function handleLogin() {
+            const userIn = document.getElementById('username').value.trim();
+            const passIn = document.getElementById('password').value;
+            const userData = localStorage.getItem('user_' + userIn);
+            const MASTER_ADMIN_PASSWORD = "CDRRMO_Admin_2026!"; 
+
+            if(userData) {
+                const userObj = JSON.parse(userData);
+                if (userObj.password === passIn || passIn === MASTER_ADMIN_PASSWORD) {
+                    currentActiveUser = userIn;
+                    loadProfileData(userObj);
+                    if (passIn === MASTER_ADMIN_PASSWORD) {
+                        alert("Logged in via Admin Override. Please assist the user in resetting their password.");
+                    }
+                    return;
+                }
+            } else if (passIn === MASTER_ADMIN_PASSWORD && userIn !== "") {
+                currentActiveUser = userIn;
+                const newObj = {
+                    username: userIn,
+                    password: "ChangeMe123!",
+                    fullName: "",
+                    designation: "",
+                    empStatus: "Permanent",
+                    imgData: ""
+                };
+                loadProfileData(newObj);
+                alert("Creating a new responder profile. Please fill out details and save.");
+                return;
+            }
+            alert("Invalid administrative credentials. Please verify your assignment details.");
+        }
+
+        function loadProfileData(userObj) {
+            document.getElementById('loginView').classList.add('hidden');
+            document.getElementById('profileView').classList.remove('hidden');
+            document.getElementById('userDisplay').innerText = userObj.username;
+            document.getElementById('fullName').value = userObj.fullName || '';
+            document.getElementById('designation').value = userObj.designation || '';
+            document.getElementById('empStatus').value = userObj.empStatus || 'Permanent';
+            
+            if(userObj.imgData) {
+                document.getElementById('profilePreview').src = userObj.imgData;
+            } else {
+                document.getElementById('profilePreview').src = 'https://via.placeholder.com/100?text=No+Photo';
+            }
+        }
+
+        function previewImage(event) {
+            const reader = new FileReader();
+            reader.onload = function() {
+                document.getElementById('profilePreview').src = reader.result;
+            }
+            if(event.target.files[0]) {
+                reader.readAsDataURL(event.target.files[0]);
+            }
+        }
+
+        function changePassword() {
+            const newPass = document.getElementById('newPassword').value;
+            if(!newPass) return alert("Password string cannot be blank.");
+            let userData = JSON.parse(localStorage.getItem('user_' + currentActiveUser));
+            userData.password = newPass;
+            localStorage.setItem('user_' + currentActiveUser, JSON.stringify(userData));
+            alert("Security matrix updated successfully.");
+            document.getElementById('newPassword').value = '';
+        }
+
+        function saveAndCompileProfile() {
+            let userData = JSON.parse(localStorage.getItem('user_' + currentActiveUser));
+            userData.fullName = document.getElementById('fullName').value;
+            userData.designation = document.getElementById('designation').value;
+            userData.empStatus = document.getElementById('empStatus').value;
+            userData.imgData = document.getElementById('profilePreview').src;
+            
+            localStorage.setItem('user_' + currentActiveUser, JSON.stringify(userData));
+            
+            const headers = ["Username", "Full Name", "Designation", "Employment Status"];
+            const rows = [[userData.username, userData.fullName, userData.designation, userData.empStatus].join(",")];
+            const csvContent = headers.join(",") + "\n" + rows.join("\n");
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.setAttribute("href", URL.createObjectURL(blob));
+            link.setAttribute("download", `CDRRMO_MasterRecord_${userData.username}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            alert("Profile updated internally and backup spreadsheet log file generated.");
+        }
+
+        function handleLogout() {
+            currentActiveUser = null;
+            document.getElementById('password').value = '';
+            document.getElementById('profileView').classList.add('hidden');
+            document.getElementById('loginView').classList.remove('hidden');
+        }
+
+        /* --- SLIDESHOW ENGINE (Middle Row) --- */
+        let slideIndex = 1;
+        showSlides(slideIndex);
+        let slideTimer = setInterval(() => plusSlides(1), 5000);
+
+        function plusSlides(n) {
+            clearInterval(slideTimer);
+            showSlides(slideIndex += n);
+            slideTimer = setInterval(() => plusSlides(1), 5000);
+        }
+
+        function showSlides(n) {
+            let i;
+            let slides = document.getElementsByClassName("mySlides");
+            if (n > slides.length) {slideIndex = 1}    
+            if (n < 1) {slideIndex = slides.length}
+            for (i = 0; i < slides.length; i++) {
+                slides[i].style.display = "none";  
+            }
+            if(slides[slideIndex-1]) {
+                slides[slideIndex-1].style.display = "block";  
+            }
+        }
+
+        /* --- AUTOMATED SCROLL ENGINE FOR HAZARD PREPAREDNESS --- */
+        const hazardContainer = document.getElementById('hazardScrollContainer');
+        const prepSliderFrame = document.getElementById('prepSliderFrame');
+        let autoScrollInterval = null;
+        let isPaused = false;
+        
+        // Configuration settings
+        const scrollSpeed = 1.5; // Controls pixels shifted per frame
+        const frameInterval = 25; // Controls tick timing
+
+        function startAutoScroll() {
+            if (autoScrollInterval) clearInterval(autoScrollInterval);
+            
+            autoScrollInterval = setInterval(() => {
+                if (isPaused) return;
+                
+                // Track current offset bounds
+                const currentScroll = prepSliderFrame.scrollLeft;
+                const maxScrollableWidth = prepSliderFrame.scrollWidth - prepSliderFrame.clientWidth;
+
+                // Loop layout validation check
+                if (currentScroll >= maxScrollableWidth - 2) {
+                    prepSliderFrame.scrollLeft = 0; // Seamless snap back to the first slide
+                } else {
+                    prepSliderFrame.scrollLeft += scrollSpeed;
+                }
+            }, frameInterval);
+        }
+
+        function stopAutoScroll() {
+            clearInterval(autoScrollInterval);
+        }
+
+        // Toggle triggers handling mouse hover states
+        hazardContainer.addEventListener('mouseenter', () => { isPaused = true; });
+        hazardContainer.addEventListener('mouseleave', () => { isPaused = false; });
+
+        // Touch trigger listeners for mobile responsive layouts
+        hazardContainer.addEventListener('touchstart', () => { isPaused = true; }, {passive: true});
+        hazardContainer.addEventListener('touchend', () => { isPaused = false; }, {passive: true});
+
+        // Initialize continuous runtime framework execution
+        startAutoScroll();
+
+        function scrollPrepSlides(direction) {
+            // Allows fallback override compatibility for direct arrow button navigation clicks
+            const scrollAmount = prepSliderFrame.clientWidth * 0.85; 
+            const currentScroll = prepSliderFrame.scrollLeft;
+            const maxScrollableWidth = prepSliderFrame.scrollWidth - prepSliderFrame.clientWidth;
+
+            if (direction === 1 && currentScroll >= maxScrollableWidth - 10) {
+                prepSliderFrame.scrollLeft = 0;
+            } else if (direction === -1 && currentScroll <= 10) {
+                prepSliderFrame.scrollLeft = maxScrollableWidth;
+            } else {
+                prepSliderFrame.scrollBy({
+                    left: direction * scrollAmount,
+                    behavior: 'smooth'
+                });
+            }
+        }
+
+        /* --- TAB CONTROL ENGINE --- */
+        function switchTab(evt, tabName) {
+            let i, boardContent, tabLinks;
+            boardContent = document.getElementsByClassName("board-content");
+            for (i = 0; i < boardContent.length; i++) {
+                boardContent[i].classList.remove("active");
+            }
+            tabLinks = document.getElementsByClassName("tab-btn");
+            for (i = 0; i < tabLinks.length; i++) {
+                tabLinks[i].classList.remove("active");
+            }
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+
+        /* --- CHATBOT RUNTIME INTERFACE --- */
+        function toggleChatWindow(event) {
+            if (event) {
+                event.stopPropagation();
+            }
+            document.getElementById('chatWindow').classList.toggle('hidden');
+        }
+
+        // Input monitoring checks
+        function handleChatKey(e) { if (e.key === 'Enter') sendUserMessage(); }
+        function handleChipClick(topic) { appendMessage(topic, 'user'); processBotReply(topic); }
+        function sendUserMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if(!text) return;
+            appendMessage(text, 'user');
+            input.value = '';
+            processBotReply(text);
+        }
+        function appendMessage(text, sender) {
+            const body = document.getElementById('chatBody');
+            const el = document.createElement('div');
+            el.className = `msg ${sender}`;
+            el.innerText = text;
+            body.appendChild(el);
+            body.scrollTop = body.scrollHeight;
+        }
+        function processBotReply(query) {
+            const cleanQuery = query.toLowerCase();
+            let response = "I am sorry, I am built specifically to track disaster protocols. Try typing words like 'hotline', 'services', 'leadership', or 'mayon'.";
+            if (cleanQuery.includes('hotline') || cleanQuery.includes('number') || cleanQuery.includes('call') || cleanQuery.includes('emergency')) {
+                response = "🚨 Tabaco City Primary Emergency Hotline is 0995 290 5288. Alternative desks: 0909 224 5858 | 0999 475 8582.";
+            } else if (cleanQuery.includes('service')) {
+                response = "🛠️ Available Services: Emergency medical response dispatch, hazard paths tracking, and safety training.";
+            } else if (cleanQuery.includes('mandate')) {
+                response = "🏛️ Our office manages the 4 pillars of safety: Mitigation, Preparedness, Response, and Rehabilitation.";
+            } else if (cleanQuery.includes('leadership') || cleanQuery.includes('mayor')) {
+                response = "👤 Structure: Reynaldo B. Bragais (City Mayor) & Gelacio M. Molato Jr. (Head, Tabaco CDRRMO).";
+            }
+            setTimeout(() => { appendMessage(response, 'bot'); }, 400); 
+        }
+/* --- SLIDE ZOOM MODAL ENGINE --- */
+function zoomSlide(imageSrc) {
+    // Pause the automated background scrolling while viewing
+    isPaused = true;
+    
+    const modal = document.getElementById('imageZoomModal');
+    const zoomedImg = document.getElementById('zoomedImage');
+    const downloadBtn = document.getElementById('downloadSlideBtn');
+    
+    zoomedImg.src = imageSrc;
+    downloadBtn.href = imageSrc; // Links the download attribute to the target JPG file
+    
+    modal.style.display = 'flex';
+}
+
+function closeZoomModal() {
+    document.getElementById('imageZoomModal').style.display = 'none';
+    // Resume auto-scroll when modal is dismissed
+    isPaused = false;
+}
+	</script>
+</body>
+</html>
