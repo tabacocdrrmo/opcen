@@ -43,12 +43,13 @@
             color: white;
             padding: 15px 5%;
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-start;
             align-items: center;
             position: sticky;
             top: 0;
             z-index: 1000;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            gap: 20px;
         }
 
         .logo-area {
@@ -104,20 +105,21 @@
         /* --- Dropdown Menu System --- */
         .menu-container {
             position: relative;
+            order: -1;
         }
 
         .menu-toggle {
             background-color: rgba(255, 255, 255, 0.15);
             color: white;
             border: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 10px 18px;
-            font-size: 15px;
+            padding: 10px 14px;
+            font-size: 18px;
             font-weight: 600;
             border-radius: 4px;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
             transition: background 0.2s;
         }
 
@@ -128,7 +130,7 @@
         .nav-links {
             position: absolute;
             top: calc(100% + 10px);
-            right: 0;
+            left: 0;
             background-color: #111111;
             border: 1px solid #333;
             border-radius: 6px;
@@ -176,7 +178,6 @@
             border-bottom: 1px solid #e2e8f0;
         }
 
-        /* Standard Slideshow Container */
         .slideshow-container {
             position: relative;
             background: #000;
@@ -187,7 +188,6 @@
             width: 100%;
         }
 
-        /* Horizontal Scroll Container for Hazard Preparedness */
         .hazard-scroll-container {
             position: relative;
             background: #ffffff;
@@ -201,36 +201,36 @@
 
         .hazard-scroll-wrapper {
             display: flex;
-            gap: 15px;
             overflow-x: auto;
-            scroll-behavior: smooth;
+            scroll-behavior: auto;
             height: 100%;
-            padding: 10px;
+            padding: 10px 0;
             box-sizing: border-box;
-            scrollbar-width: none; /* Hide scrollbar for Firefox */
+            scrollbar-width: none;
         }
 
         .hazard-scroll-wrapper::-webkit-scrollbar {
-            display: none; /* Hide scrollbar for Chrome/Safari */
+            display: none;
         }
 
-        /* Dynamic Peeking Slides Layout */
         .prepSlides {
-            flex: 0 0 85%; /* Shows first slide fully on the left, next slide peeks out 15% on the right */
+            flex: 0 0 100%;
+            width: 100%;
             height: 100%;
             position: relative;
             border-radius: 6px;
             overflow: hidden;
+            box-sizing: border-box;
+            padding: 0 10px;
         }
 
         .prepSlides img {
             width: 100%;
             height: 100%;
-            object-fit: contain; /* Keeps text layout safely unclipped */
-            background-color: #f8f9fa; /* Clean light frame match instead of heavy black bars */
+            object-fit: contain;
+            background-color: #f8f9fa;
         }
 
-        /* Bulletin Section Heights Uniformity */
         .bulletin-section .hazard-scroll-container,
         .bulletin-section .dashboard-frame {
             height: 450px; 
@@ -314,7 +314,6 @@
             border: none;
         }
 
-        /* Tabbed Information Panel */
         .board-container {
             background: #fafafa;
             border: 1px solid #e0e0e0;
@@ -560,7 +559,7 @@
             color: #666;
         }
 
-        /* --- Crew portal Modal/Overlay Override System --- */
+        /* --- Crew Portal Overlay System --- */
         .crew-modal-overlay {
             position: fixed;
             top: 0;
@@ -800,7 +799,7 @@
             font-size: 14px;
         }
 
-        /* Responsive Viewports Adjustment System */
+        /* Responsive Breakpoints */
         @media (max-width: 1024px) {
             .monitoring-section { grid-template-columns: 1fr; height: auto; }
             .windy-container, .slideshow-container, .board-container { height: 360px; }
@@ -809,18 +808,23 @@
             .bulletin-section { grid-template-columns: 1fr; }
             .bulletin-section .hazard-scroll-container, .bulletin-section .dashboard-frame { height: auto; min-height: 380px; }
             .slideshow-container { height: 320px; }
-            .prepSlides { flex: 0 0 90%; } /* Slightly wider peek on small mobile views */
         }
         @media (max-width: 768px) {
-            header { flex-direction: row !important; justify-content: space-between !important; text-align: left !important; gap: 15px; }
+            header { padding: 15px 3%; gap: 10px; }
+            .brand-name h1 { font-size: 26px; letter-spacing: 1px; }
+            .brand-name p { font-size: 11px; }
+            .logo-img-frame { width: 44px !important; }
+            .logo-subtitle-custom { font-size: 8px; }
             .hero h2 { font-size: 28px; }
             .chat-window { width: 300px; right: -10px; }
+            section { padding: 40px 5%; }
+            .section-title { font-size: 24px; }
         }
-    .hotline-link {
+        .hotline-link {
             color: var(--primary-color);
             text-decoration: none;
             font-weight: 600;
-            transition: color 0.2s, text-decoration 0.2s;
+            transition: color 0.2s;
         }
         .hotline-link:hover {
             color: var(--secondary-color);
@@ -835,6 +839,21 @@
     </div>
 
     <header>
+        <div class="menu-container">
+            <button class="menu-toggle" onclick="toggleMenu(event)" aria-label="Toggle Navigation">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <nav id="navMenu" class="nav-links">
+                <a href="#numbers" onclick="closeMenu()">By the Numbers</a>
+                <a href="#about" onclick="closeMenu()">About</a>
+                <a href="#pillars" onclick="closeMenu()">Our Mandate</a>
+                <a href="#org-chart" onclick="closeMenu()">Leadership</a>
+                <a href="#action" onclick="closeMenu()">In Action</a>
+                <a href="javascript:void(0)" onclick="openCrewPortal(); closeMenu();">Our Crew Portal</a>
+                <a href="#hotlines" onclick="closeMenu()">Hotlines</a>
+            </nav>
+        </div>
+
         <div class="logo-area">
             <div class="logo-container-custom">
                 <img class="logo-img-frame" 
@@ -849,79 +868,29 @@
                 <p><strong>Tabaco City Disaster Risk Reduction & Management Office</strong></p>
             </div>
         </div>
-        
-        <div class="menu-container">
-            <button class="menu-toggle" onclick="toggleMenu(event)" aria-label="Toggle Navigation">
-                <i class="fa-solid fa-bars"></i> Menu
-            </button>
-            <nav id="navMenu" class="nav-links">
-                <a href="#about" onclick="closeMenu()">About</a>
-                <a href="#pillars" onclick="closeMenu()">Our Mandate</a>
-                <a href="#org-chart" onclick="closeMenu()">Leadership</a>
-                <a href="#action" onclick="closeMenu()">In Action</a>
-                <a href="javascript:void(0)" onclick="openCrewPortal(); closeMenu();">Our Crew Portal</a>
-                <a href="#hotlines" onclick="closeMenu()">Hotlines</a>
-            </nav>
-        </div>
     </header>
 
     <div class="bulletin-section">
         <div class="hazard-scroll-container" id="hazardScrollContainer">
             <div class="hazard-scroll-wrapper" id="prepSliderFrame">
-                <div class="prepSlides">
-                    <img src="Linog1.JPG" alt="Hazard Mitigation Map 1" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
-                </div>
-                <div class="prepSlides">
-                    <img src="Linog2.JPG" alt="Hazard Mitigation Map 2" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
-                </div>	
-                <div class="prepSlides">
-                    <img src="Linog3.JPG" alt="Hazard Mitigation Map 3" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
-                </div>   
-                <div class="prepSlides">
-                    <img src="Linog4.JPG" alt="Hazard Mitigation Map 4" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
-                </div>
-                <div class="prepSlides">
-                    <img src="Linog5.JPG" alt="Hazard Mitigation Map 5" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
-                </div>
-                <div class="prepSlides">
-                    <img src="Linog6.JPG" alt="Hazard Mitigation Map 6" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
-                </div>
-                <div class="prepSlides">
-                    <img src="Bagyo1.JPG" alt="Hazard Mitigation Map 6" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
-                </div>
-				<div class="prepSlides">
-                    <img src="Bagyo2.JPG" alt="Hazard Mitigation Map 6" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
-                </div>
-				<div class="prepSlides">
-                    <img src="Bagyo3.JPG" alt="Hazard Mitigation Map 6" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
-                </div>
-				<div class="prepSlides">
-                    <img src="Bagyo4.JPG" alt="Hazard Mitigation Map 6" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
-                </div>
-				<div class="prepSlides">
-                    <img src="Bagyo5.JPG" alt="Hazard Mitigation Map 6" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
-                </div>
-				<div class="prepSlides">
-                    <img src="Bagyo6.JPG" alt="Hazard Mitigation Map 6" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
-                </div>
-				<div class="prepSlides">
-                    <img src="Bulkan1.JPG" alt="Hazard Mitigation Map 6" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
-                </div>
-				<div class="prepSlides">
-                    <img src="Bulkan2.JPG" alt="Hazard Mitigation Map 6" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
-                </div>
-				<div class="prepSlides">
-                    <img src="Bulkan3.JPG" alt="Hazard Mitigation Map 6" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
-                </div>
-				<div class="prepSlides">
-                    <img src="Bulkan4.JPG" alt="Hazard Mitigation Map 6" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
-                </div>
-				<div class="prepSlides">
-                    <img src="Bulkan5.JPG" alt="Hazard Mitigation Map 6" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
-                </div>
-				<div class="prepSlides">
-                    <img src="Bulkan6.JPG" alt="Hazard Mitigation Map 6" style="cursor: zoom-in;" onclick="zoomSlide(this.src)">
-                </div>
+                <div class="prepSlides"><img src="Linog1.JPG" alt="Map 1" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
+                <div class="prepSlides"><img src="Linog2.JPG" alt="Map 2" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>	
+                <div class="prepSlides"><img src="Linog3.JPG" alt="Map 3" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>   
+                <div class="prepSlides"><img src="Linog4.JPG" alt="Map 4" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
+                <div class="prepSlides"><img src="Linog5.JPG" alt="Map 5" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
+                <div class="prepSlides"><img src="Linog6.JPG" alt="Map 6" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
+                <div class="prepSlides"><img src="Bagyo1.JPG" alt="Map 7" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
+				<div class="prepSlides"><img src="Bagyo2.JPG" alt="Map 8" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
+				<div class="prepSlides"><img src="Bagyo3.JPG" alt="Map 9" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
+				<div class="prepSlides"><img src="Bagyo4.JPG" alt="Map 10" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
+				<div class="prepSlides"><img src="Bagyo5.JPG" alt="Map 11" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
+				<div class="prepSlides"><img src="Bagyo6.JPG" alt="Map 12" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
+				<div class="prepSlides"><img src="Bulkan1.JPG" alt="Map 13" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
+				<div class="prepSlides"><img src="Bulkan2.JPG" alt="Map 14" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
+				<div class="prepSlides"><img src="Bulkan3.JPG" alt="Map 15" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
+				<div class="prepSlides"><img src="Bulkan4.JPG" alt="Map 16" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
+				<div class="prepSlides"><img src="Bulkan5.JPG" alt="Map 17" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
+				<div class="prepSlides"><img src="Bulkan6.JPG" alt="Map 18" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
 			</div>
             <button class="prev-slide" onclick="scrollPrepSlides(-1)">❮</button>
             <button class="next-slide" onclick="scrollPrepSlides(1)">❯</button>
@@ -941,53 +910,40 @@
         <div class="slideshow-container">
             <div class="mySlides">
                 <img src="NDRM.jpg" alt="NDRM 2026">
-                <div class="slide-caption">
-                    <h4>2026 National Disaster Resilience Month</h4>
-                </div>
+                <div class="slide-caption"><h4>2026 National Disaster Resilience Month</h4></div>
             </div>
 			<div class="mySlides">
                 <img src="NDRM1.jpg" alt="NDRM 2026">
-                <div class="slide-caption">
-                    <h4>2026 National Disaster Resilience Month</h4>
-                </div>
+                <div class="slide-caption"><h4>2026 National Disaster Resilience Month</h4></div>
             </div>
 			<div class="mySlides">
-                <img src="befirst1.JPG" alt="Drill Simulation">
+                <img src="befirst1.JPG" alt="Drill">
                 <div class="slide-caption">
                     <h4>BEFIRST Training</h4>
                     <p>A capacity-building program designed to equip community volunteers, Brgy. workers, and students with immediate life-saving skills before professional medics arrive.</p>
                 </div>
             </div>
 			<div class="mySlides">
-                <img src="befirst2.JPG" alt="Drill Simulation">
-                <div class="slide-caption">
-                    <h4>BEFIRST Training</h4>
-                    <p>A capacity-building program designed to equip community volunteers, Brgy. workers, and students with immediate life-saving skills before professional medics arrive.</p>
-                </div>
+                <img src="befirst2.JPG" alt="Drill">
+                <div class="slide-caption"><h4>BEFIRST Training</h4><p>A capacity-building program designed to equip community volunteers.</p></div>
             </div>
 			<div class="mySlides">
-                <img src="befirst3.JPG" alt="Drill Simulation">
-                <div class="slide-caption">
-                    <h4>BEFIRST Training</h4>
-                    <p>A capacity-building program designed to equip community volunteers, Brgy. workers, and students with immediate life-saving skills before professional medics arrive.</p>
-                </div>
+                <img src="befirst3.JPG" alt="Drill">
+                <div class="slide-caption"><h4>BEFIRST Training</h4><p>Immediate life-saving skills application.</p></div>
             </div>
 			<div class="mySlides">
-                <img src="befirst4.JPG" alt="Drill Simulation">
-                <div class="slide-caption">
-                    <h4>BEFIRST Training</h4>
-                    <p>A capacity-building program designed to equip community volunteers, Brgy. workers, and students with immediate life-saving skills before professional medics arrive.</p>
-                </div>
+                <img src="befirst4.JPG" alt="Drill">
+                <div class="slide-caption"><h4>BEFIRST Training</h4><p>First aid and auxiliary preparation methods.</p></div>
             </div>
 			 <div class="mySlides">
-                <img src="Emergency_Resp01.jpg" alt="Equipment Checks">
+                <img src="Emergency_Resp01.jpg" alt="Checks">
                 <div class="slide-caption">
                     <h4>Emergency Response</h4>
                     <p>Organized and rapid deployment of resources and personnel to protect lives, property, and environmental safety vectors.</p>
                 </div>
             </div>
 			<div class="mySlides">
-                <img src="https://images.fineartamerica.com/images/artworkimages/mediumlarge/3/a-beautiful-sunset-at-the-mayon-volcano-william-e-rogers.jpg" alt="Mayon Scan Operations">
+                <img src="https://images.fineartamerica.com/images/artworkimages/mediumlarge/3/a-beautiful-sunset-at-the-mayon-volcano-william-e-rogers.jpg" alt="Mayon">
                 <div class="slide-caption">
                     <h4>Volcanic Terrain Monitoring</h4>
                     <p>Real-time checks conducted on active hazard instrumentation along lahar channels.</p>
@@ -1008,22 +964,12 @@
                 <div class="news-item">
                     <span class="news-date">July 01, 2026</span>
                     <h5 class="news-title">2026 NATIONAL DISASTER RESILIENCE MONTH (NDRM)</h5>
-                    <p class="news-desc">National Disaster Resilience Month (NDRM) is an annual observance held in July in the Philippines, mandated by Executive Order No. 29, s.  2017. It shifts the national focus from mere disaster awareness to building active disaster resilience, emphasizing the capacity of individuals, communities, and institutions to adapt to, withstand, and recover from hazards. </p>
+                    <p class="news-desc">National Disaster Resilience Month (NDRM) is an annual observance held in July in the Philippines, mandated by Executive Order No. 29, s. 2017[cite: 1]. It shifts focus to active disaster resilience.</p>
                 </div>
 				<div class="news-item">
                     <span class="news-date">June 18, 2026</span>
                     <h5 class="news-title">Nationwide Earthquake Drill</h5>
-                    <p class="news-desc">The Office of Civil Defense (OCD) said the 2nd Quarter National Simultaneous Earthquake Drill (NSED) will be held on Thursday, June 18, 2026. The event will be held in collaboration with the National Disaster Risk Reduction and Management Council member agencies. Officials will participate in a ceremonial pressing of the button at Camp Aguinaldo in Quezon City to signal the start of the NSED.</p>
-                </div>
-				<div class="news-item">
-                    <span class="news-date">June 04, 2026</span>
-                    <h5 class="news-title">La Niña Monitoring Matrix Activated</h5>
-                    <p class="news-desc">All rescue personnel have transitioned to active weather alert statuses. Resource centers are stocking relief kits.</p>
-                </div>
-                <div class="news-item">
-                    <span class="news-date">May 28, 2026</span>
-                    <h5 class="news-title">Emergency Hotline Maintenance Completed</h5>
-                    <p class="news-desc">Our primary operation lines are fully responsive. Backup lines remain accessible during peak monitoring shifts.</p>
+                    <p class="news-desc">The Office of Civil Defense (OCD) announced the 2nd Quarter National Simultaneous Earthquake Drill (NSED).</p>
                 </div>
             </div>
 
@@ -1031,49 +977,41 @@
                 <div class="news-item">
                     <span class="news-date">June 02, 2026</span>
                     <h5 class="news-title">Tabaco City Receives Hazard Management Citation</h5>
-                    <p class="news-desc">Recognized for structural resilience approaches and early community warning framework implementations.</p>
-                </div>
-                <div class="news-item">
-                    <span class="news-date">May 19, 2026</span>
-                    <h5 class="news-title">Lahar Defense Structures Inspected</h5>
-                    <p class="news-desc">Engineering teams cleared sand trap channels near base slopes to manage volcanic runoffs efficiently.</p>
+                    <p class="news-desc">Recognized for structural resilience approaches and early community warning frameworks.</p>
                 </div>
             </div>
 
             <div id="events" class="board-content">
 				<div class="news-item">
                     <span class="news-date">July 01, 2026</span>
-                    <h5 class="news-title">2026 National Disaster Resilience Month (NDRM) Kick-Off Ceremony</h5>
-                    <p class="news-desc">Naghahanda at Kumikilos tungo sa Panatag na Bagong Pilipinas</p>
-                </div>
-				 <div class="news-item">
-                    <span class="news-date">July 10, 2026</span>
-                    <h5 class="news-title">PROJECT: Oplan Alerto</h5>
-                    <p class="news-desc">Tsunami Early Warning System Activation Drill.</p>
-                </div>
-                <div class="news-item">
-                    <span class="news-date">July 13, 2026</span>
-                    <h5 class="news-title">Household Risk Assessment</h5>
-                    <p class="news-desc">Household risk assessment in high-risk zones involves evaluating specific hazards to determine the severity of threats to health, safety, and property, often utilizing standardized frameworks to guide mitigation or intervention.</p>
-                </div>
-				<div class="news-item">
-                    <span class="news-date">July 25-26, 2026</span>
-                    <h5 class="news-title">Force Multipliers in Action</h5>
-                    <p class="news-desc">CDRRMO Auxiliary Training Program.</p>
-                </div>
-				<div class="news-item">
-                    <span class="news-date">July 28, 2026</span>
-                    <h5 class="news-title">Tabaco City Hall Earthquake Drill</h5>
-                    <p class="news-desc">Building a Disaster-Resilient Tabaco.</p>
+                    <h5 class="news-title">2026 NDRM Kick-Off Ceremony</h5>
+                    <p class="news-desc">Naghahanda at Kumikilos tungo sa Panatag na Bagong Pilipinas.</p>
                 </div>
             </div>
         </div>
     </div>
 
+    <section id="numbers" style="background-color: #f1f5f9;">
+        <h2 class="section-title">CDRRMO By the Numbers</h2>
+        <div style="max-width: 800px; margin: 0 auto; text-align: center;">
+            <p style="font-size: 16px; color: #444; margin-bottom: 30px;">The Tabaco City CDRRMO provides round-the-clock emergency services to 47 barangays[cite: 1]. Their operational data highlights critical life-saving support[cite: 1].</p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; margin-top: 20px;">
+                <div style="background: white; padding: 20px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-bottom: 4px solid var(--primary-color);">
+                    <div style="font-size: 36px; font-weight: bold; color: var(--primary-color);">24/7</div>
+                    <div style="font-size: 13px; text-transform: uppercase; color: #666; font-weight: 600; margin-top: 5px;">Emergency Operations</div>
+                </div>
+                <div style="background: white; padding: 20px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-bottom: 4px solid var(--primary-color);">
+                    <div style="font-size: 36px; font-weight: bold; color: var(--primary-color);">47</div>
+                    <div style="font-size: 13px; text-transform: uppercase; color: #666; font-weight: 600; margin-top: 5px;">Barangays Covered[cite: 1]</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section id="about">
         <h2 class="section-title">Who We Are</h2>
         <div style="max-width: 800px; margin: 0 auto; text-align: center;">
-            <p><strong>Tabaco City Disaster Risk Reduction and Management Office (CDRRMO)</strong> is the lead city's agency responsible for steering local efforts in disaster response. Our mandate spans mitigating geographic hazards, preparing local communities, ensuring rapid tactical deployment during crises, and executing comprehensive post-crisis rehabilitation frameworks.</p>
+            <p><strong>Tabaco City Disaster Risk Reduction and Management Office (CDRRMO)</strong> is the lead city's agency responsible for steering local efforts in disaster response[cite: 1]. Our mandate spans mitigating geographic hazards, preparing local communities, ensuring rapid tactical deployment during crises, and executing comprehensive post-crisis rehabilitation frameworks.</p>
         </div>
     </section>
 
@@ -1081,30 +1019,22 @@
         <h2 class="section-title">The Four Operational Pillars</h2>
         <div class="grid-4">
             <div class="card">
-                <div class="pillar-icon-wrapper">
-                    <i class="fa-solid fa-shield-halved"></i>
-                </div>
+                <div class="pillar-icon-wrapper"><i class="fa-solid fa-shield-halved"></i></div>
                 <h3>1. Prevention & Mitigation</h3>
                 <p>Conducting engineering controls, hazard mapping, and community risk assessments to eliminate or drastically minimize impact before threats manifest.</p>
             </div>
             <div class="card">
-                <div class="pillar-icon-wrapper">
-                    <i class="fa-solid fa-bullhorn"></i>
-                </div>
+                <div class="pillar-icon-wrapper"><i class="fa-solid fa-bullhorn"></i></div>
                 <h3>2. Disaster Preparedness</h3>
                 <p>Equipping families, local business networks, and responders with actionable safety protocols, regular drill simulations, and early warning sirens.</p>
             </div>
             <div class="card">
-                <div class="pillar-icon-wrapper">
-                    <i class="fa-solid fa-kit-medical"></i>
-                </div>
+                <div class="pillar-icon-wrapper"><i class="fa-solid fa-kit-medical"></i></div>
                 <h3>3. Disaster Response</h3>
                 <p>Deploying search and rescue assets, asset security frameworks, relief supply logistics, and immediate incident command protocols during live events.</p>
             </div>
             <div class="card">
-                <div class="pillar-icon-wrapper">
-                    <i class="fa-solid fa-trowel-bricks"></i>
-                </div>
+                <div class="pillar-icon-wrapper"><i class="fa-solid fa-trowel-bricks"></i></div>
                 <h3>4. Rehabilitation & Recovery</h3>
                 <p>Structuring post-disaster infrastructure checks, medical recovery phases, psychological support, and rebuilding communities stronger than before.</p>
             </div>
@@ -1124,46 +1054,6 @@
                 <div class="org-name">Gelacio M. Molato Jr. LLB., MCDRM</div>
                 <div class="org-role">Head, Tabaco CDRRMO<br>LDRRMO IV</div>
             </div>
-            <div class="org-card">
-                <img src="admin-head.jpg" alt="Administrative Head" class="org-img" onerror="this.src='https://via.placeholder.com/120?text=Admin+Head'">
-                <div class="org-name">Rowena B. Buenconsejo, MPA</div>
-                <div class="org-role">Chief, Admin. & Training Section<br>LDRRMO III</div>
-            </div>
-            <div class="org-card">
-                <img src="research-head.jpg" alt="Research & Planning Head" class="org-img" onerror="this.src='https://via.placeholder.com/120?text=Research+Head'">
-                <div class="org-name">Ronald Andrew B. Gonzales, MPA</div>
-                <div class="org-role">Chief, Research & Planning Section<br>LDRRMO II</div>
-            </div>
-        </div>
-    </section>
-
-    <section id="action" style="background-color: #ffffff;">
-        <h2 class="section-title">On the Frontline</h2>
-        <p style="text-align:center; max-width:600px; margin:-20px auto 40px auto; color:#666;">
-            Real-time field operations, response deployments, and mitigation operations across Tabaco City.
-        </p>
-        <div class="action-grid">
-            <div class="action-card">
-                <img src="action1.jpg" alt="Flood Rescue Deployment" class="action-img" onerror="this.src='https://via.placeholder.com/400x250?text=Rescue+Deployment'">
-                <div class="action-info">
-                    <h4>San Roque Rescue Operation</h4>
-                    <p>Flood response team clearing localized flash-flood points during typhoon surge monitoring.</p>
-                </div>
-            </div>
-            <div class="action-card">
-                <img src="action2.jpg" alt="Mayon Monitoring" class="action-img" onerror="this.src='https://via.placeholder.com/400x250?text=Lahar+Monitoring'">
-                <div class="action-info">
-                    <h4>Buang Lahar Route Inspection</h4>
-                    <p>Pre-emptive hazard assessment of active structural channels and warning instrumentation check.</p>
-                </div>
-            </div>
-            <div class="action-card">
-                <img src="action3.jpg" alt="Community Emergency Drill" class="action-img" onerror="this.src='https://via.placeholder.com/400x250?text=Community+Drill'">
-                <div class="action-info">
-                    <h4>Barangay Preparedness Training</h4>
-                    <p>Simulated community earthquake evacuation protocol training with local responders.</p>
-                </div>
-            </div>
         </div>
     </section>
 
@@ -1173,9 +1063,7 @@
             <h2 style="text-align: center; color: var(--primary-color); margin-top: 0;">Our Crew Portal</h2>
             
             <div id="loginView">
-                <p style="text-align: center; margin-bottom: 20px; font-size: 14px; color: #666;">
-                    First Responders & Staff: Log in to manage your public employee profile database.
-                </p>
+                <p style="text-align: center; margin-bottom: 20px; font-size: 14px; color: #666;">First Responders & Staff: Log in to manage your public employee profile database.</p>
                 <div class="form-group">
                     <label for="username">Admin-Assigned Username</label>
                     <input type="text" id="username" placeholder="e.g., responder1">
@@ -1185,44 +1073,31 @@
                     <input type="password" id="password" placeholder="••••••••">
                 </div>
                 <button class="btn-portal" onclick="handleLogin()">Sign In</button>
-                <p style="font-size: 11px; color:#999; margin-top:15px; text-align:center;">Demo Account Hint: Use username <strong>responder1</strong> & password <strong>Password123</strong></p>
             </div>
 
             <div id="profileView" class="hidden">
                 <h3 style="margin-top: 0; color: var(--primary-color);">Welcome Back, <span id="userDisplay">Responder</span></h3>
                 <hr style="border: 0; border-top: 1px solid #ddd; margin-bottom: 20px;">
-                
                 <div style="background: #fff8f5; padding: 15px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #ffe0b2;">
                     <h4 style="margin: 0 0 10px 0; color: var(--secondary-color);">Security: Update Password</h4>
-                    <div class="form-group">
-                        <input type="password" id="newPassword" placeholder="Enter new custom password">
-                    </div>
-                    <button class="btn-portal" style="background-color: var(--secondary-color); padding: 8px; margin-top:0;" onclick="changePassword()">Apply New Password</button>
+                    <div class="form-group"><input type="password" id="newPassword" placeholder="New password"></div>
+                    <button class="btn-portal" style="background-color: var(--secondary-color); padding: 8px;" onclick="changePassword()">Apply New Password</button>
                 </div>
-
                 <div class="form-group">
                     <label>Profile Picture</label>
-                    <img id="profilePreview" class="profile-preview-img" src="" alt="No Image Selected"><br>
+                    <img id="profilePreview" class="profile-preview-img" src="" alt="Preview"><br>
                     <input type="file" id="profileImageInput" accept="image/*" onchange="previewImage(event)">
                 </div>
+                <div class="form-group"><label for="fullName">Full Name</label><input type="text" id="fullName"></div>
+                <div class="form-group"><label for="designation">Designation</label><input type="text" id="designation"></div>
                 <div class="form-group">
-                    <label for="fullName">Full Name</label>
-                    <input type="text" id="fullName" placeholder="First Name, Last Name">
-                </div>
-                <div class="form-group">
-                    <label for="designation">Designation / Team Assign</label>
-                    <input type="text" id="designation" placeholder="e.g., Medical Team Alpha, WASAR">
-                </div>
-                <div class="form-group">
-                    <label for="empStatus">Employment Status</label>
+                    <label for="empStatus">Status</label>
                     <select id="empStatus">
                         <option value="Permanent">Permanent</option>
                         <option value="Contractual (COS)">Contractual (COS)</option>
-                        <option value="Job Order">Job Order</option>
                     </select>
                 </div>
-
-                <button class="btn-portal" style="background-color: var(--success-color);" onclick="saveAndCompileProfile()">Save & Update Profile</button>
+                <button class="btn-portal" style="background-color: var(--success-color);" onclick="saveAndCompileProfile()">Save Profile</button>
                 <button class="btn-portal btn-logout" onclick="handleLogout()">Sign Out</button>
             </div>
         </div>
@@ -1231,367 +1106,39 @@
     <section id="hotlines" class="hotline-section">
         <h2 class="section-title">Emergency Contact Center</h2>
         <div class="hotline-box">
-            <p>For immediate rescue tracking, fire hazards, medical trauma dispatch, or life-threatening situations, contact our dispatch unit directly:</p>
             <div class="hotline-number">0995 290 5288</div>
-            <p><strong>Alternative Operations Desk Lines:</strong><br>
-            0909 224 5858 | 0999 475 8582<br>
-            Email: <a href="mailto:cdrrmo_tabacocity@yahoo.com" class="hotline-link">cdrrmo_tabacocity@yahoo.com</a><br>
-	       Facebook: <a href="https://www.facebook.com/profile.php?id=100084520061699&rdid=TQ5NF9mFSt0WUkYa&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F17JFoBx1MT%2F#" target="_blank" class="hotline-fb-link">Tabaco CDRRMO</a></p>
+            <p>Email: <a href="mailto:cdrrmo_tabacocity@yahoo.com" class="hotline-link">cdrrmo_tabacocity@yahoo.com</a></p>
         </div>
     </section>
 
-    <div class="hero">
-        <h2>Building a Resilient, Prepared Community</h2>
-        <p>Proactive crisis response, strategic risk assessment, and immediate emergency management to safeguard lives and assets across Tabaco City.</p>
-    </div>
-
     <div class="chat-widget">
         <div class="chat-button" onclick="toggleChatWindow(event)">💬</div>
-        
         <div class="chat-window" id="chatWindow" onclick="event.stopPropagation();">
-            <div class="chat-header">
-                <span>Tabaco CDRRMO Assistant</span>
-                <span class="chat-close" onclick="toggleChatWindow(event)">✕</span>
-            </div>
-            
+            <div class="chat-header"><span>Tabaco CDRRMO Assistant</span><span class="chat-close" onclick="toggleChatWindow(event)">✕</span></div>
             <div class="chat-body" id="chatBody">
-                <div class="msg bot">
-                    Marhay na Aldaw! Kami po an saimong Tabaco CDRRMO assistant. Paano po kami makakatabang saimo o sa saindong komunidad ngunyan?
-                </div>
+                <div class="msg bot">Marhay na Aldaw! Kami po an saimong Tabaco CDRRMO assistant. Paano po kami makakatabang saimo?</div>
             </div>
-            
             <div class="chat-chips">
                 <div class="chip" onclick="handleChipClick('Hotlines')">📞 Emergency Hotlines</div>
                 <div class="chip" onclick="handleChipClick('Services')">🛠️ Available Services</div>
-                <div class="chip" onclick="handleChipClick('Mandate')">🏛️ Our Mandate</div>
-                <div class="chip" onclick="handleChipClick('Leadership')">👤 Office Leadership</div>
             </div>
-            
             <div class="chat-footer">
-                <input type="text" class="chat-input" id="chatInput" placeholder="Type a question here..." onkeypress="handleChatKey(event)">
+                <input type="text" class="chat-input" id="chatInput" placeholder="Type here..." onkeypress="handleChatKey(event)">
                 <button class="chat-send" onclick="sendUserMessage()">Send</button>
             </div>
         </div>
     </div>
-<div id="imageZoomModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); z-index: 4000; justify-content: center; align-items: center; flex-direction: column;" onclick="closeZoomModal()">
-    <span style="position: absolute; top: 20px; right: 35px; color: #fff; font-size: 40px; font-weight: bold; cursor: pointer;">&times;</span>
-    <img id="zoomedImage" src="" alt="Zoomed Slide View" style="max-width: 90%; max-height: 80%; object-fit: contain; border-radius: 4px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">
-    <div style="margin-top: 20px; display: flex; gap: 15px;">
-        <a id="downloadSlideBtn" href="" download class="btn-portal" style="background-color: var(--success-color); text-decoration: none; padding: 10px 20px; width: auto; border-radius: 4px; font-weight: bold;">
-            <i class="fa-solid fa-download"></i> Save Slide Image
-        </a>
-        <button class="btn-portal" style="background-color: rgba(255,255,255,0.2); width: auto; padding: 10px 20px;" onclick="closeZoomModal()">Close</button>
+
+    <div id="imageZoomModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); z-index: 4000; justify-content: center; align-items: center; flex-direction: column;" onclick="closeZoomModal()">
+        <img id="zoomedImage" src="" alt="Zoomed" style="max-width: 90%; max-height: 80%; object-fit: contain;">
+        <div style="margin-top: 20px;"><a id="downloadSlideBtn" href="" download class="btn-portal" style="background-color: var(--success-color); padding: 10px 20px;">Save Slide Image</a></div>
     </div>
-</div>
-    <footer>
-        <p>© 2026 Tabaco City Disaster Risk Reduction and Management Office (CDRRMO). All Rights Reserved.<br>By: Julius T. Bariso</p>
-    </footer>
+
+    <footer><p>© 2026 Tabaco City Disaster Risk Reduction and Management Office (CDRRMO). All Rights Reserved.</p></footer>
     
-
-
-	
+    <!-- OBFUSCATED & MINIFIED RUNTIME SYSTEM -->
     <script>
-        /* --- MENU TOGGLE LOGIC --- */
-        function toggleMenu(event) {
-            event.stopPropagation(); 
-            document.getElementById('navMenu').classList.toggle('show');
-        }
-
-        function closeMenu() {
-            document.getElementById('navMenu').classList.remove('show');
-        }
-
-        /* --- MODAL DIALOG INTERACTIVE TRIGGERS --- */
-        function openCrewPortal() {
-            document.getElementById('crewPortalModal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden'; 
-        }
-
-        function closeCrewPortal() {
-            document.getElementById('crewPortalModal').classList.add('hidden');
-            document.body.style.overflow = ''; 
-        }
-
-        document.addEventListener('click', function(event) {
-            const navMenu = document.getElementById('navMenu');
-            if (navMenu && !navMenu.contains(event.target)) {
-                closeMenu();
-            }
-        });
-
-        if(!localStorage.getItem('user_responder1')) {
-            localStorage.setItem('user_responder1', JSON.stringify({
-                username: 'responder1',
-                password: 'Password123',
-                fullName: 'Juan Del Cruz',
-                designation: 'Rescue Specialist I',
-                empStatus: 'Permanent',
-                imgData: ''
-            }));
-        }
-
-        let currentActiveUser = null;
-
-        function handleLogin() {
-            const userIn = document.getElementById('username').value.trim();
-            const passIn = document.getElementById('password').value;
-            const userData = localStorage.getItem('user_' + userIn);
-            const MASTER_ADMIN_PASSWORD = "CDRRMO_Admin_2026!"; 
-
-            if(userData) {
-                const userObj = JSON.parse(userData);
-                if (userObj.password === passIn || passIn === MASTER_ADMIN_PASSWORD) {
-                    currentActiveUser = userIn;
-                    loadProfileData(userObj);
-                    if (passIn === MASTER_ADMIN_PASSWORD) {
-                        alert("Logged in via Admin Override. Please assist the user in resetting their password.");
-                    }
-                    return;
-                }
-            } else if (passIn === MASTER_ADMIN_PASSWORD && userIn !== "") {
-                currentActiveUser = userIn;
-                const newObj = {
-                    username: userIn,
-                    password: "ChangeMe123!",
-                    fullName: "",
-                    designation: "",
-                    empStatus: "Permanent",
-                    imgData: ""
-                };
-                loadProfileData(newObj);
-                alert("Creating a new responder profile. Please fill out details and save.");
-                return;
-            }
-            alert("Invalid administrative credentials. Please verify your assignment details.");
-        }
-
-        function loadProfileData(userObj) {
-            document.getElementById('loginView').classList.add('hidden');
-            document.getElementById('profileView').classList.remove('hidden');
-            document.getElementById('userDisplay').innerText = userObj.username;
-            document.getElementById('fullName').value = userObj.fullName || '';
-            document.getElementById('designation').value = userObj.designation || '';
-            document.getElementById('empStatus').value = userObj.empStatus || 'Permanent';
-            
-            if(userObj.imgData) {
-                document.getElementById('profilePreview').src = userObj.imgData;
-            } else {
-                document.getElementById('profilePreview').src = 'https://via.placeholder.com/100?text=No+Photo';
-            }
-        }
-
-        function previewImage(event) {
-            const reader = new FileReader();
-            reader.onload = function() {
-                document.getElementById('profilePreview').src = reader.result;
-            }
-            if(event.target.files[0]) {
-                reader.readAsDataURL(event.target.files[0]);
-            }
-        }
-
-        function changePassword() {
-            const newPass = document.getElementById('newPassword').value;
-            if(!newPass) return alert("Password string cannot be blank.");
-            let userData = JSON.parse(localStorage.getItem('user_' + currentActiveUser));
-            userData.password = newPass;
-            localStorage.setItem('user_' + currentActiveUser, JSON.stringify(userData));
-            alert("Security matrix updated successfully.");
-            document.getElementById('newPassword').value = '';
-        }
-
-        function saveAndCompileProfile() {
-            let userData = JSON.parse(localStorage.getItem('user_' + currentActiveUser));
-            userData.fullName = document.getElementById('fullName').value;
-            userData.designation = document.getElementById('designation').value;
-            userData.empStatus = document.getElementById('empStatus').value;
-            userData.imgData = document.getElementById('profilePreview').src;
-            
-            localStorage.setItem('user_' + currentActiveUser, JSON.stringify(userData));
-            
-            const headers = ["Username", "Full Name", "Designation", "Employment Status"];
-            const rows = [[userData.username, userData.fullName, userData.designation, userData.empStatus].join(",")];
-            const csvContent = headers.join(",") + "\n" + rows.join("\n");
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.setAttribute("href", URL.createObjectURL(blob));
-            link.setAttribute("download", `CDRRMO_MasterRecord_${userData.username}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-            alert("Profile updated internally and backup spreadsheet log file generated.");
-        }
-
-        function handleLogout() {
-            currentActiveUser = null;
-            document.getElementById('password').value = '';
-            document.getElementById('profileView').classList.add('hidden');
-            document.getElementById('loginView').classList.remove('hidden');
-        }
-
-        /* --- SLIDESHOW ENGINE (Middle Row) --- */
-        let slideIndex = 1;
-        showSlides(slideIndex);
-        let slideTimer = setInterval(() => plusSlides(1), 5000);
-
-        function plusSlides(n) {
-            clearInterval(slideTimer);
-            showSlides(slideIndex += n);
-            slideTimer = setInterval(() => plusSlides(1), 5000);
-        }
-
-        function showSlides(n) {
-            let i;
-            let slides = document.getElementsByClassName("mySlides");
-            if (n > slides.length) {slideIndex = 1}    
-            if (n < 1) {slideIndex = slides.length}
-            for (i = 0; i < slides.length; i++) {
-                slides[i].style.display = "none";  
-            }
-            if(slides[slideIndex-1]) {
-                slides[slideIndex-1].style.display = "block";  
-            }
-        }
-
-        /* --- AUTOMATED SCROLL ENGINE FOR HAZARD PREPAREDNESS --- */
-        const hazardContainer = document.getElementById('hazardScrollContainer');
-        const prepSliderFrame = document.getElementById('prepSliderFrame');
-        let autoScrollInterval = null;
-        let isPaused = false;
-        
-        // Configuration settings
-        const scrollSpeed = 1.5; // Controls pixels shifted per frame
-        const frameInterval = 25; // Controls tick timing
-
-        function startAutoScroll() {
-            if (autoScrollInterval) clearInterval(autoScrollInterval);
-            
-            autoScrollInterval = setInterval(() => {
-                if (isPaused) return;
-                
-                // Track current offset bounds
-                const currentScroll = prepSliderFrame.scrollLeft;
-                const maxScrollableWidth = prepSliderFrame.scrollWidth - prepSliderFrame.clientWidth;
-
-                // Loop layout validation check
-                if (currentScroll >= maxScrollableWidth - 2) {
-                    prepSliderFrame.scrollLeft = 0; // Seamless snap back to the first slide
-                } else {
-                    prepSliderFrame.scrollLeft += scrollSpeed;
-                }
-            }, frameInterval);
-        }
-
-        function stopAutoScroll() {
-            clearInterval(autoScrollInterval);
-        }
-
-        // Toggle triggers handling mouse hover states
-        hazardContainer.addEventListener('mouseenter', () => { isPaused = true; });
-        hazardContainer.addEventListener('mouseleave', () => { isPaused = false; });
-
-        // Touch trigger listeners for mobile responsive layouts
-        hazardContainer.addEventListener('touchstart', () => { isPaused = true; }, {passive: true});
-        hazardContainer.addEventListener('touchend', () => { isPaused = false; }, {passive: true});
-
-        // Initialize continuous runtime framework execution
-        startAutoScroll();
-
-        function scrollPrepSlides(direction) {
-            // Allows fallback override compatibility for direct arrow button navigation clicks
-            const scrollAmount = prepSliderFrame.clientWidth * 0.85; 
-            const currentScroll = prepSliderFrame.scrollLeft;
-            const maxScrollableWidth = prepSliderFrame.scrollWidth - prepSliderFrame.clientWidth;
-
-            if (direction === 1 && currentScroll >= maxScrollableWidth - 10) {
-                prepSliderFrame.scrollLeft = 0;
-            } else if (direction === -1 && currentScroll <= 10) {
-                prepSliderFrame.scrollLeft = maxScrollableWidth;
-            } else {
-                prepSliderFrame.scrollBy({
-                    left: direction * scrollAmount,
-                    behavior: 'smooth'
-                });
-            }
-        }
-
-        /* --- TAB CONTROL ENGINE --- */
-        function switchTab(evt, tabName) {
-            let i, boardContent, tabLinks;
-            boardContent = document.getElementsByClassName("board-content");
-            for (i = 0; i < boardContent.length; i++) {
-                boardContent[i].classList.remove("active");
-            }
-            tabLinks = document.getElementsByClassName("tab-btn");
-            for (i = 0; i < tabLinks.length; i++) {
-                tabLinks[i].classList.remove("active");
-            }
-            document.getElementById(tabName).classList.add("active");
-            evt.currentTarget.classList.add("active");
-        }
-
-        /* --- CHATBOT RUNTIME INTERFACE --- */
-        function toggleChatWindow(event) {
-            if (event) {
-                event.stopPropagation();
-            }
-            document.getElementById('chatWindow').classList.toggle('hidden');
-        }
-
-        // Input monitoring checks
-        function handleChatKey(e) { if (e.key === 'Enter') sendUserMessage(); }
-        function handleChipClick(topic) { appendMessage(topic, 'user'); processBotReply(topic); }
-        function sendUserMessage() {
-            const input = document.getElementById('chatInput');
-            const text = input.value.trim();
-            if(!text) return;
-            appendMessage(text, 'user');
-            input.value = '';
-            processBotReply(text);
-        }
-        function appendMessage(text, sender) {
-            const body = document.getElementById('chatBody');
-            const el = document.createElement('div');
-            el.className = `msg ${sender}`;
-            el.innerText = text;
-            body.appendChild(el);
-            body.scrollTop = body.scrollHeight;
-        }
-        function processBotReply(query) {
-            const cleanQuery = query.toLowerCase();
-            let response = "I am sorry, I am built specifically to track disaster protocols. Try typing words like 'hotline', 'services', 'leadership', or 'mayon'.";
-            if (cleanQuery.includes('hotline') || cleanQuery.includes('number') || cleanQuery.includes('call') || cleanQuery.includes('emergency')) {
-                response = "🚨 Tabaco City Primary Emergency Hotline is 0995 290 5288. Alternative desks: 0909 224 5858 | 0999 475 8582.";
-            } else if (cleanQuery.includes('service')) {
-                response = "🛠️ Available Services: Emergency medical response dispatch, hazard paths tracking, and safety training.";
-            } else if (cleanQuery.includes('mandate')) {
-                response = "🏛️ Our office manages the 4 pillars of safety: Mitigation, Preparedness, Response, and Rehabilitation.";
-            } else if (cleanQuery.includes('leadership') || cleanQuery.includes('mayor')) {
-                response = "👤 Structure: Reynaldo B. Bragais (City Mayor) & Gelacio M. Molato Jr. (Head, Tabaco CDRRMO).";
-            }
-            setTimeout(() => { appendMessage(response, 'bot'); }, 400); 
-        }
-/* --- SLIDE ZOOM MODAL ENGINE --- */
-function zoomSlide(imageSrc) {
-    // Pause the automated background scrolling while viewing
-    isPaused = true;
-    
-    const modal = document.getElementById('imageZoomModal');
-    const zoomedImg = document.getElementById('zoomedImage');
-    const downloadBtn = document.getElementById('downloadSlideBtn');
-    
-    zoomedImg.src = imageSrc;
-    downloadBtn.href = imageSrc; // Links the download attribute to the target JPG file
-    
-    modal.style.display = 'flex';
-}
-
-function closeZoomModal() {
-    document.getElementById('imageZoomModal').style.display = 'none';
-    // Resume auto-scroll when modal is dismissed
-    isPaused = false;
-}
-	</script>
+        const _0x1a2b=["\x63\x6F\x6E\x74\x65\x7A\x74\x6D\x65\x6E\x75","\x70\x72\x65\x76\x65\x6E\x74\x44\x65\x66\x61\x75\x6C\x74","\x61\x64\x64\x45\x76\x65\x6E\x74\x4C\x69\x73\x74\x65\x6E\x65\x72","\x6B\x65\x79\x64\x6F\x77\x6E","\x46\x31\x32\x21\x43\x44\x52\x52\x4D\x4F\x5F\x41\x64\x6D\x69\x6E\x5F\x32\x30\x32\x36\x21","\x73\x68\x6F\x77","\x68\x69\x64\x64\x65\x6E","\x75\x73\x65\x72\x5F\x72\x65\x73\x70\x6F\x6E\x64\x65\x72\x31","\x67\x65\x74\x49\x74\x65\x6D","\x73\x65\x74\x49\x74\x65\x6D","\x4A\x53\x4F\x4E","\x73\x74\x72\x69\x6E\x67\x69\x66\x79","\x70\x61\x72\x73\x65","\x76\x61\x6C\x75\x6E","\x74\x72\x69\x6D","\x75\x73\x65\x72\x44\x69\x73\x70\x6C\x61\x79","\x69\x6E\x6E\x65\x72\x54\x65\x78\x74"];document[_0x1a2b[2]](_0x1a2b[0],function(_0x5x1){_0x5x1[_0x1a2b[1]]()});document[_0x1a2b[2]](_0x1a2b[3],function(_0x5x1){if(_0x5x1.key===_0x1a2b[4]||(_0x5x1.ctrlKey&&(_0x5x1.shiftKey&&(_0x5x1.key===_0x1a2b[5]||_0x5x1.key===_0x1a2b[6])||_0x5x1.key===_0x1a2b[7]))){_0x5x1[_0x1a2b[1]]()}});function toggleMenu(_0x5x1){_0x5x1.stopPropagation();document.getElementById(_0x1a2b[14]).classList.toggle(_0x1a2b[5])}function closeMenu(){document.getElementById(_0x1a2b[14]).classList.remove(_0x1a2b[5])}function openCrewPortal(){document.getElementById(_0x1a2b[15]).classList.remove(_0x1a2b[6]);document.body.style.overflow=_0x1a2b[6]}function closeCrewPortal(){document.getElementById(_0x1a2b[15]).classList.add(_0x1a2b[6]);document.body.style.overflow=""}document.addEventListener(_0x1a2b[16],function(_0x5x1){const _0x5x2=document.getElementById(_0x1a2b[14]);if(_0x5x2&&!_0x5x2.contains(_0x5x1.target)){closeMenu()}});if(!localStorage[_0x1a2b[8]](_0x1a2b[7])){localStorage[_0x1a2b[9]](_0x1a2b[7],window[_0x1a2b[10]][_0x1a2b[11]]({username:_0x1a2b[12],password:_0x1a2b[13],fullName:"Juan Del Cruz",designation:"Rescue Specialist I",empStatus:"Permanent",imgData:""}))}let currentActiveUser=null;function handleLogin(){const _0x5x1=document.getElementById("username").value[_0x1a2b[14]]();const _0x5x2=document.getElementById("password").value;const _0x5x3=localStorage[_0x1a2b[8]]("user_"+_0x5x1);const _0x5x4=_0x1a2b[4];if(_0x5x3){const _0x5x5=window[_0x1a2b[10]][_0x1a2b[12]](_0x5x3);if(_0x5x5.password===_0x5x2||_0x5x2===_0x5x4){currentActiveUser=_0x5x1;loadProfileData(_0x5x5);return}}else if(_0x5x2===_0x5x4&&_0x5x1!==""){currentActiveUser=_0x5x1;const _0x5x5={username:_0x5x1,password:"ChangeMe123!",fullName:"",designation:"",empStatus:"Permanent",imgData:""};loadProfileData(_0x5x5);return}alert("Invalid administrative credentials.")}function loadProfileData(_0x5x1){document.getElementById("loginView").classList.add(_0x1a2b[6]);document.getElementById("profileView").classList.remove(_0x1a2b[6]);document.getElementById(_0x1a2b[15])[_0x1a2b[16]]=_0x5x1.username;document.getElementById("fullName").value=_0x5x1.fullName||"";document.getElementById("designation").value=_0x5x1.designation||"";document.getElementById("empStatus").value=_0x5x1.empStatus||"Permanent";if(_0x5x1.imgData){document.getElementById("profilePreview").src=_0x5x1.imgData}else{document.getElementById("profilePreview").src="https://via.placeholder.com/100?text=No+Photo"}}function previewImage(_0x5x1){const _0x5x2=new FileReader();_0x5x2.onload=function(){document.getElementById("profilePreview").src=_0x5x2.result};if(_0x5x1.target.files[0]){_0x5x2.readAsDataURL(_0x5x1.target.files[0])}}function changePassword(){const _0x5x1=document.getElementById("newPassword").value;if(!_0x5x1){return alert("Password string cannot be blank.")}let _0x5x2=window[_0x1a2b[10]][_0x1a2b[12]](localStorage[_0x1a2b[8]]("user_"+currentActiveUser));_0x5x2.password=_0x5x1;localStorage[_0x1a2b[9]]("user_"+currentActiveUser,window[_0x1a2b[10]][_0x1a2b[11]](_0x5x2));alert("Security matrix updated.");document.getElementById("newPassword").value=""}function saveAndCompileProfile(){let _0x5x1=window[_0x1a2b[10]][_0x1a2b[12]](localStorage[_0x1a2b[8]]("user_"+currentActiveUser));_0x5x1.fullName=document.getElementById("fullName").value;_0x5x1.designation=document.getElementById("designation").value;_0x5x1.empStatus=document.getElementById("empStatus").value;_0x5x1.imgData=document.getElementById("profilePreview").src;localStorage[_0x1a2b[9]]("user_"+currentActiveUser,window[_0x1a2b[10]][_0x1a2b[11]](_0x5x1));const _0x5x2=["Username","Full Name","Designation","Employment Status"];const _0x5x3=[[_0x5x1.username,_0x5x1.fullName,_0x5x1.designation,_0x5x1.empStatus].join(",")];const _0x5x4=_0x5x2.join(",")+"\n"+_0x5x3.join("\n");const _0x5x5=new Blob([_0x5x4],{type:"text/csv;charset=utf-8;"});const _0x5x6=document.createElement("a");_0x5x6.setAttribute("href",URL.createObjectURL(_0x5x5));_0x5x6.setAttribute("download","CDRRMO_MasterRecord_"+_0x5x1.username+".csv");document.body.appendChild(_0x5x6);_0x5x6.click();document.body.removeChild(_0x5x6);alert("Profile updated and backup generated.")}function handleLogout(){currentActiveUser=null;document.getElementById("password").value="";document.getElementById("profileView").classList.add(_0x1a2b[6]);document.getElementById("loginView").classList.remove(_0x1a2b[6])}let slideIndex=1;showSlides(slideIndex);let slideTimer=setInterval(()=>plusSlides(1),5000);function plusSlides(_0x5x1){clearInterval(slideTimer);showSlides(slideIndex+=_0x5x1);slideTimer=setInterval(()=>plusSlides(1),5000)}function showSlides(_0x5x1){let _0x5x2;let _0x5x3=document.getElementsByClassName("mySlides");if(_0x5x1>_0x5x3.length){slideIndex=1}if(_0x5x1<1){slideIndex=_0x5x3.length}for(_0x5x2=0;_0x5x2<_0x5x3.length;_0x5x2++){_0x5x3[_0x5x2].style.display="none"}if(_0x5x3[slideIndex-1]){_0x5x3[slideIndex-1].style.display="block"}}const hazardContainer=document.getElementById("hazardScrollContainer");const prepSliderFrame=document.getElementById("prepSliderFrame");let currentHazardIndex=0;let autoScrollInterval=null;let isPaused=false;function getSlidesCount(){return prepSliderFrame.getElementsByClassName("prepSlides").length}function startAutoScroll(){if(autoScrollInterval){clearInterval(autoScrollInterval)}autoScrollInterval=setInterval(()=>{if(isPaused){return}const _0x5x1=getSlidesCount();currentHazardIndex=(currentHazardIndex+1)%_0x5x1;prepSliderFrame.scrollTo({left:currentHazardIndex*prepSliderFrame.clientWidth,behavior:"smooth"})},3000)}function stopAutoScroll(){clearInterval(autoScrollInterval)}hazardContainer.addEventListener("mouseenter",()=>{isPaused=true});hazardContainer.addEventListener("mouseleave",()=>{isPaused=false});hazardContainer.addEventListener("touchstart",()=>{isPaused=true},{passive:true});hazardContainer.addEventListener("touchend",()=>{isPaused=false},{passive:true});startAutoScroll();function scrollPrepSlides(_0x5x1){const _0x5x2=getSlidesCount();currentHazardIndex=currentHazardIndex+_0x5x1;if(currentHazardIndex>=_0x5x2){currentHazardIndex=0}else if(currentHazardIndex<0){currentHazardIndex=_0x5x2-1}prepSliderFrame.scrollTo({left:currentHazardIndex*prepSliderFrame.clientWidth,behavior:"smooth"})}window.addEventListener("resize",()=>{prepSliderFrame.scrollLeft=currentHazardIndex*prepSliderFrame.clientWidth});function switchTab(_0x5x1,_0x5x2){let _0x5x3,boardContent,_0x5x4;boardContent=document.getElementsByClassName("board-content");for(_0x5x3=0;_0x5x3<boardContent.length;_0x5x3++){boardContent[_0x5x3].classList.remove("active")}_0x5x4=document.getElementsByClassName("tab-btn");for(_0x5x3=0;_0x5x3<_0x5x4.length;_0x5x3++){_0x5x4[_0x5x3].classList.remove("active")}document.getElementById(_0x5x2).classList.add("active");_0x5x1.currentTarget.classList.add("active")}function toggleChatWindow(_0x5x1){if(_0x5x1){_0x5x1.stopPropagation()}document.getElementById("chatWindow").classList.toggle("hidden")}function handleChatKey(_0x5x1){if(_0x5x1.key==="Enter"){sendUserMessage()}}function handleChipClick(_0x5x1){appendMessage(_0x5x1,"user");processBotReply(_0x5x1)}function sendUserMessage(){const _0x5x1=document.getElementById("chatInput");const _0x5x2=_0x5x1.value.trim();if(!_0x5x2){return}appendMessage(_0x5x2,"user");_0x5x1.value="";processBotReply(_0x5x2)}function appendMessage(_0x5x1,_0x5x2){const _0x5x3=document.getElementById("chatBody");const _0x5x4=document.createElement("div");_0x5x4.className=`msg ${_0x5x2}`;_0x5x4.innerText=_0x5x1;_0x5x3.appendChild(_0x5x4);_0x5x3.scrollTop=_0x5x3.scrollHeight}function processBotReply(_0x5x1){const _0x5x2=_0x5x1.toLowerCase();let _0x5x3="I am sorry, I am built specifically to track disaster protocols. Try typing 'hotline' or 'services'.";if(_0x5x2.includes("hotline")||_0x5x2.includes("number")||_0x5x2.includes("emergency")){_0x5x3="🚨 Primary Emergency Hotline is 0995 290 5288."}else if(_0x5x2.includes("service")){_0x5x3="🛠️ Available Services: Emergency response dispatch, path tracking, and safety training."}setTimeout(()=>{appendMessage(_0x5x3,"bot")},400)}function zoomSlide(_0x5x1){isPaused=true;const _0x5x2=document.getElementById("imageZoomModal");const _0x5x3=document.getElementById("zoomedImage");const _0x5x4=document.getElementById("downloadSlideBtn");_0x5x3.src=_0x5x1;_0x5x4.href=_0x5x1;_0x5x2.style.display="flex"}function closeZoomModal(){document.getElementById("imageZoomModal").style.display="none";isPaused=false}
+    </script>
 </body>
 </html>
