@@ -825,6 +825,15 @@
             color: var(--secondary-color);
             text-decoration: underline;
         }
+      /* Keeps the dropdown text gray until a real option is selected */
+        select:invalid, select:has(option[value="choose"]:checked) {
+        color: gray;
+        font-style: italic;
+}
+select option {
+    color: black;
+    font-style: normal;
+}	
 	</style>
 </head>
 <body>
@@ -1536,15 +1545,6 @@
             document.getElementById("imageZoomModal").style.display = "none";
             isPaused = false;
         }
-/* Keeps the dropdown text gray until a real option is selected */
-select:invalid, select:has(option[value="choose"]:checked) {
-    color: gray;
-    font-style: italic;
-}
-select option {
-    color: black;
-    font-style: normal;
-}
 	</script>
 </body>
 </html>
