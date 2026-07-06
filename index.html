@@ -85,7 +85,6 @@
         .brand-name h1 {
             margin: 0;
             font-size: 44px;
-            letter-spacing: 2px;
             line-height: 1;
 			font-family: 'Syncopate', sans-serif;
        		font-weight: 700;
@@ -815,25 +814,25 @@
             section { padding: 40px 5%; }
             .section-title { font-size: 24px; }
         }
-        .hotline-link {
+        .hotline-link, .hotline-fb-link {
             color: var(--primary-color);
             text-decoration: none;
             font-weight: 600;
             transition: color 0.2s;
         }
-        .hotline-link:hover {
+        .hotline-link:hover, .hotline-fb-link:hover {
             color: var(--secondary-color);
             text-decoration: underline;
         }
-      /* Keeps the dropdown text gray until a real option is selected */
+        /* Keeps the dropdown text gray until a real option is selected */
         select:invalid, select:has(option[value="choose"]:checked) {
-        color: gray;
-        font-style: italic;
-}
-select option {
-    color: black;
-    font-style: normal;
-}	
+            color: gray;
+            font-style: italic;
+        }
+        select option {
+            color: black;
+            font-style: normal;
+        }	
 	</style>
 </head>
 <body>
@@ -1088,7 +1087,7 @@ select option {
         </div>
     </section>
 
-<section id="action" style="background-color: #ffffff;">
+    <section id="action" style="background-color: #ffffff;">
         <h2 class="section-title">On the Frontline</h2>
         <p style="text-align:center; max-width:600px; margin:-20px auto 40px auto; color:#666;">
             Real-time field operations, response deployments, and mitigation operations across Tabaco City.
@@ -1102,7 +1101,7 @@ select option {
                 </div>
             </div>
             <div class="action-card">
-                <img src="action2.jpg" alt="Mayon Monitoring" class="action-img" onerror="this.src='https://www.facebook.com/civildefensePH/posts/-mayon-volcano-air-quality-updateair-quality-in-areas-surrounding-mayon-volcano-/1478333264336440/'">
+                <img src="action2.jpg" alt="Mayon Monitoring" class="action-img" onerror="this.src='https://www.facebook.com/civildefensePH/posts/?id=1478333264336440'">
                 <div class="action-info">
                     <h4>Buang Lahar Route Inspection</h4>
                     <p>Pre-emptive hazard assessment of active structural channels and warning instrumentation check.</p>
@@ -1161,77 +1160,76 @@ select option {
                 </div>
                 <button class="btn-portal" onclick="handleLogin()">Sign In</button>
             </div>
-<div id="profileView" class="hidden">
-    <h3 style="margin-top: 0; color: var(--primary-color);">Welcome Back, <span id="userDisplay">Responder</span></h3>
-    <hr style="border: 0; border-top: 1px solid #ddd; margin-bottom: 20px;">
-    
-    <div style="background: #fff8f5; padding: 15px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #ffe0b2;">
-        <h4 style="margin: 0 0 10px 0; color: var(--secondary-color);">Security: Update Password</h4>
-        <div class="form-group"><input type="password" id="newPassword" placeholder="New password"></div>
-        <button class="btn-portal" style="background-color: var(--secondary-color); padding: 8px;" onclick="changePassword()">Apply New Password</button>
-    </div>
-    
-    <div class="form-group">
-        <label>Profile Picture</label>
-        <img id="profilePreview" class="profile-preview-img" src="" alt="Preview"><br>
-        <input type="file" id="profileImageInput" accept="image/*" onchange="previewImage(event)">
-    </div>
-    
-    <div class="form-group"><label for="fullName">Full Name</label><input type="text" id="fullName"></div>
-    <div class="form-group"><label for="designation">Designation</label><input type="text" id="designation"></div>
-    <div class="form-group"><label for="personalno">Personal Contact No.</label><input type="text" id="personalno"></div>
-    <div class="form-group"><label for="email">Email Address</label><input type="text" id="email"></div>
-    
-    <div class="form-group">
-        <label for="empStatus">Status</label>
-        <select id="empStatus">
-            <option value="Permanent">Permanent</option>
-            <option value="Contractual (COS)">Contractual (COS)</option>
-            <option value="Job Order">Job Order</option>
-        </select>
-    </div>
+            <div id="profileView" class="hidden">
+                <h3 style="margin-top: 0; color: var(--primary-color);">Welcome Back, <span id="userDisplay">Responder</span></h3>
+                <hr style="border: 0; border-top: 1px solid #ddd; margin-bottom: 20px;">
+                
+                <div style="background: #fff8f5; padding: 15px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #ffe0b2;">
+                    <h4 style="margin: 0 0 10px 0; color: var(--secondary-color);">Security: Update Password</h4>
+                    <div class="form-group"><input type="password" id="newPassword" placeholder="New password"></div>
+                    <button class="btn-portal" style="background-color: var(--secondary-color); padding: 8px;" onclick="changePassword()">Apply New Password</button>
+                </div>
+                
+                <div class="form-group">
+                    <label>Profile Picture</label>
+                    <img id="profilePreview" class="profile-preview-img" src="" alt="Preview"><br>
+                    <input type="file" id="profileImageInput" accept="image/*" onchange="previewImage(event)">
+                </div>
+                
+                <div class="form-group"><label for="fullName">Full Name</label><input type="text" id="fullName"></div>
+                <div class="form-group"><label for="designation">Designation</label><input type="text" id="designation"></div>
+                <div class="form-group"><label for="personalno">Personal Contact No.</label><input type="text" id="personalno"></div>
+                <div class="form-group"><label for="email">Email Address</label><input type="text" id="email"></div>
+                
+                <div class="form-group">
+                    <label for="empStatus">Status</label>
+                    <select id="empStatus">
+                        <option value="Permanent">Permanent</option>
+                        <option value="Contractual (COS)">Contractual (COS)</option>
+                        <option value="Job Order">Job Order</option>
+                    </select>
+                </div>
 
-    <!-- Added Date of Joining Field -->
-    <div class="form-group">
-        <label for="dateOfJoining">Date of Joining</label>
-        <input type="date" id="dateOfJoining">
-    </div>
+                <!-- Added Date of Joining Field -->
+                <div class="form-group">
+                    <label for="dateOfJoining">Date of Joining</label>
+                    <input type="date" id="dateOfJoining">
+                </div>
 
-    <div class="form-group"><label for="eligibility">Eligibility</label><input type="text" id="eligibility"></div>
-    
-    <div class="form-group">
-        <label for="bloodtype">Blood Type</label>
-        <select id="bloodtype">
-            <option value="A+">A Positive (A+)</option>
-            <option value="A-">A Negative (A-)</option>
-            <option value="B+">B Positive (B+)</option>
-            <option value="B-">B Negative (B-)</option>
-            <option value="AB+">AB Positive (AB+)</option>
-            <option value="AB-">AB Negative (AB-)</option>
-            <option value="O+">O Positive (O+)</option>
-            <option value="O-">O Negative (O-)</option>
-            <option value="Unknown">Unknown</option>
-        </select>
-    </div>
-    
-    <div class="form-group">
-        <label for="Educ">Educational Attainment</label>
-        <select id="Educ">
-            <option value="basic">Basic Education</option>
-            <option value="postSecond">High School Graduate</option>
-            <option value="college">College Graduate</option>
-            <option value="master">Master's Degree</option>
-            <option value="doctor">Doctoral Degrees</option>
-        </select>
-    </div>
-    
-    <div class="form-group"><label for="ContactName">In case of emergency, please contact:</label><input type="text" id="ContactName"></div>
-    <div class="form-group"><label for="ContactNo">Emergency Contact Number(s):</label><input type="text" id="ContactNo"></div>
-    
-    <button class="btn-portal" style="background-color: var(--success-color);" onclick="saveAndCompileProfile()">Save Profile</button>
-    <button class="btn-portal btn-logout" onclick="handleLogout()">Sign Out</button>
-</div>
-    
+                <div class="form-group"><label for="eligibility">Eligibility</label><input type="text" id="eligibility"></div>
+                
+                <div class="form-group">
+                    <label for="bloodtype">Blood Type</label>
+                    <select id="bloodtype">
+                        <option value="A+">A Positive (A+)</option>
+                        <option value="A-">A Negative (A-)</option>
+                        <option value="B+">B Positive (B+)</option>
+                        <option value="B-">B Negative (B-)</option>
+                        <option value="AB+">AB Positive (AB+)</option>
+                        <option value="AB-">AB Negative (AB-)</option>
+                        <option value="O+">O Positive (O+)</option>
+                        <option value="O-">O Negative (O-)</option>
+                        <option value="Unknown">Unknown</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="Educ">Educational Attainment</label>
+                    <select id="Educ">
+                        <option value="basic">Basic Education</option>
+                        <option value="postSecond">High School Graduate</option>
+                        <option value="college">College Graduate</option>
+                        <option value="master">Master's Degree</option>
+                        <option value="doctor">Doctoral Degrees</option>
+                    </select>
+                </div>
+                
+                <div class="form-group"><label for="ContactName">In case of emergency, please contact:</label><input type="text" id="ContactName"></div>
+                <div class="form-group"><label for="ContactNo">Emergency Contact Number(s):</label><input type="text" id="ContactNo"></div>
+                
+                <button class="btn-portal" style="background-color: var(--success-color);" onclick="saveAndCompileProfile()">Save Profile</button>
+                <button class="btn-portal btn-logout" onclick="handleLogout()">Sign Out</button>
+            </div>
         </div>
     </div>
 
@@ -1243,11 +1241,11 @@ select option {
             <p><strong>Alternative Operations Desk Lines:</strong><br>
             0909 224 5858 | 0999 475 8582<br>
             Email: <a href="mailto:cdrrmo_tabacocity@yahoo.com" class="hotline-link">cdrrmo_tabacocity@yahoo.com</a><br>
-	       Facebook: <a href="https://www.facebook.com/profile.php%3Fid%3D100084520061699%26rdid%3DTQ5NF9mFSt0WUkYa%26share_url%3Dhttps%253A%252F%252Fwww.facebook.com%252Fshare%252F17JFoBx1MT%252F#" target="_blank" class="hotline-fb-link">Tabaco CDRRMO</a></p>
+	       Facebook: <a href="https://www.facebook.com/profile.php?id=100084520061699" target="_blank" class="hotline-fb-link">Tabaco CDRRMO</a></p>
         </div>
     </section>
 
- <div class="hero">
+    <div class="hero">
         <h2>Building a Resilient, Prepared Community</h2>
         <p>Proactive crisis response, strategic risk assessment, and immediate emergency management to safeguard lives and assets across Tabaco City.</p>
     </div>
