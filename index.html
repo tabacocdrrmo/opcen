@@ -1144,65 +1144,80 @@
                 </div>
                 <button class="btn-portal" onclick="handleLogin()">Sign In</button>
             </div>
+<div id="profileView" class="hidden">
+    <h3 style="margin-top: 0; color: var(--primary-color);">Welcome Back, <span id="userDisplay">Responder</span></h3>
+    <hr style="border: 0; border-top: 1px solid #ddd; margin-bottom: 20px;">
+    
+    <div style="background: #fff8f5; padding: 15px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #ffe0b2;">
+        <h4 style="margin: 0 0 10px 0; color: var(--secondary-color);">Security: Update Password</h4>
+        <div class="form-group"><input type="password" id="newPassword" placeholder="New password"></div>
+        <button class="btn-portal" style="background-color: var(--secondary-color); padding: 8px;" onclick="changePassword()">Apply New Password</button>
+    </div>
+    
+    <div class="form-group">
+        <label>Profile Picture</label>
+        <img id="profilePreview" class="profile-preview-img" src="" alt="Preview"><br>
+        <input type="file" id="profileImageInput" accept="image/*" onchange="previewImage(event)">
+    </div>
+    
+    <div class="form-group"><label for="fullName">Full Name</label><input type="text" id="fullName"></div>
+    <div class="form-group"><label for="designation">Designation</label><input type="text" id="designation"></div>
+    <div class="form-group"><label for="personalno">Personal Contact No.</label><input type="text" id="personalno"></div>
+    <div class="form-group"><label for="email">Email Address</label><input type="text" id="email"></div>
+    
+    <div class="form-group">
+        <label for="empStatus">Status</label>
+        <select id="empStatus">
+            <option value="choose" disabled selected style="color: gray; font-style: italic;">Choose selection</option>
+            <option value="Permanent">Permanent</option>
+            <option value="Contractual (COS)">Contractual (COS)</option>
+            <option value="Job Order">Job Order</option>
+        </select>
+    </div>
 
-            <div id="profileView" class="hidden">
-                <h3 style="margin-top: 0; color: var(--primary-color);">Welcome Back, <span id="userDisplay">Responder</span></h3>
-                <hr style="border: 0; border-top: 1px solid #ddd; margin-bottom: 20px;">
-                <div style="background: #fff8f5; padding: 15px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #ffe0b2;">
-                    <h4 style="margin: 0 0 10px 0; color: var(--secondary-color);">Security: Update Password</h4>
-                    <div class="form-group"><input type="password" id="newPassword" placeholder="New password"></div>
-                    <button class="btn-portal" style="background-color: var(--secondary-color); padding: 8px;" onclick="changePassword()">Apply New Password</button>
-                </div>
-                <div class="form-group">
-                    <label>Profile Picture</label>
-                    <img id="profilePreview" class="profile-preview-img" src="" alt="Preview"><br>
-                    <input type="file" id="profileImageInput" accept="image/*" onchange="previewImage(event)">
-                </div>
-                <div class="form-group"><label for="fullName">Full Name</label><input type="text" id="fullName"></div>
-                <div class="form-group"><label for="designation">Designation</label><input type="text" id="designation"></div>
-                <div class="form-group"><label for="personalno">Personal Contact No.</label><input type="text" id="personalno"></div>
-                <div class="form-group"><label for="email">Email Address</label><input type="text" id="email"></div>
-                <div class="form-group">
-                    <label for="empStatus">Status</label>
-                    <select id="empStatus">
-						<option value="choose"><i>Choose selection</i></option>
-                        <option value="Permanent">Permanent</option>
-                        <option value="Contractual (COS)">Contractual (COS)</option>`
-                        <option value="Job Order">Job Order</option>
-                    </select>
-                </div>
-				<div class="form-group"><label for="eligibility">Eligibility</label><input type="text" id="eligibility"></div>
-                <div class="form-group">
-                    <label for="bloodtype">Blood Type</label>
-                    <select id="blodtype">
-                        <option value="choose"><i>Choose selection</i></option>
-						<option value="A+">A Positive (A+)</option>
-                        <option value="A-">A Negative (A-)</option>`
-                        <option value="B+">B Positive (B+)</option>
-						<option value="B-">B Negative (B-)</option>
-						<option value="AB+">AB Positive (AB+)</option>
-						<option value="AB-">AB Negative (AB-)</option>
-                        <option value="O+">O Positive (O+)</option>
-                        <option value="O-">O Negative (O-)</option>
-                        <option value="Unknown">Unknown</option>
-                    </select>
-                </div>
-		    <div class="form-group">
-                    <label for="Educ">Educational Attainment</label>
-                    <select id="Educ">
-                        <option value="choose"><i>Choose selection</i></option>
-						<option value="basic">Basic Education</option>
-                        <option value="postSecond">High School Graduate</option>`
-                        <option value="college">College Graduate</option>
-                        <option value="master">Master's Degree</option>
-                        <option value="doctor">Doctoral Degrees</option>
-                    </select>
-                </div>
-		<div class="form-group"><label for="Incaseofemer">In case of emergency, please contact:(name)</label><input type="text" id="ContactName"></div>
-		<div class="form-group"><label for="ContactNo">Emergency Contact Number(s):</label><input type="text" id="ContactNo"></div>
-                <button class="btn-portal" style="background-color: var(--success-color);" onclick="saveAndCompileProfile()">Save Profile</button>
-                <button class="btn-portal btn-logout" onclick="handleLogout()">Sign Out</button>
-            </div>
+    <!-- Added Date of Joining Field -->
+    <div class="form-group">
+        <label for="dateOfJoining">Date of Joining</label>
+        <input type="date" id="dateOfJoining">
+    </div>
+
+    <div class="form-group"><label for="eligibility">Eligibility</label><input type="text" id="eligibility"></div>
+    
+    <div class="form-group">
+        <label for="bloodtype">Blood Type</label>
+        <select id="bloodtype">
+            <option value="choose" disabled selected style="color: gray; font-style: italic;">Choose selection</option>
+            <option value="A+">A Positive (A+)</option>
+            <option value="A-">A Negative (A-)</option>
+            <option value="B+">B Positive (B+)</option>
+            <option value="B-">B Negative (B-)</option>
+            <option value="AB+">AB Positive (AB+)</option>
+            <option value="AB-">AB Negative (AB-)</option>
+            <option value="O+">O Positive (O+)</option>
+            <option value="O-">O Negative (O-)</option>
+            <option value="Unknown">Unknown</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label for="Educ">Educational Attainment</label>
+        <select id="Educ">
+            <option value="choose" disabled selected style="color: gray; font-style: italic;">Choose selection</option>
+            <option value="basic">Basic Education</option>
+            <option value="postSecond">High School Graduate</option>
+            <option value="college">College Graduate</option>
+            <option value="master">Master's Degree</option>
+            <option value="doctor">Doctoral Degrees</option>
+        </select>
+    </div>
+    
+    <div class="form-group"><label for="ContactName">In case of emergency, please contact: (name)</label><input type="text" id="ContactName"></div>
+    <div class="form-group"><label for="ContactNo">Emergency Contact Number(s):</label><input type="text" id="ContactNo"></div>
+    
+    <button class="btn-portal" style="background-color: var(--success-color);" onclick="saveAndCompileProfile()">Save Profile</button>
+    <button class="btn-portal btn-logout" onclick="handleLogout()">Sign Out</button>
+</div>
+    
         </div>
     </div>
 
@@ -1512,6 +1527,15 @@
             document.getElementById("imageZoomModal").style.display = "none";
             isPaused = false;
         }
-    </script>
+/* Keeps the dropdown text gray until a real option is selected */
+select:invalid, select:has(option[value="choose"]:checked) {
+    color: gray;
+    font-style: italic;
+}
+select option {
+    color: black;
+    font-style: normal;
+}
+	</script>
 </body>
 </html>
