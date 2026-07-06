@@ -1245,7 +1245,7 @@
 	
     <div class="chat-widget">
         <div class="chat-button" onclick="toggleChatWindow(event)">💬</div>
-        <div class="chat-window" id="chatWindow" onclick="event.stopPropagation();">
+        <div class="chat-window hidden" id="chatWindow" onclick="event.stopPropagation();">
             <div class="chat-header"><span>Tabaco CDRRMO Assistant</span><span class="chat-close" onclick="toggleChatWindow(event)">✕</span></div>
             <div class="chat-body" id="chatBody">
                 <div class="msg bot">Marhay na Aldaw! Kami po an saimong Tabaco CDRRMO assistant. Paano po kami makakatabang saimo o sa saindong komunidad ngunyan?<br>Kindly select your specific issue to discuss your concern.</div>
@@ -1291,7 +1291,8 @@
         }
         document.addEventListener("click", function(event) {
             const navMenu = document.getElementById("navMenu");
-            if (navMenu && !navMenu.contains(event.target)) {
+            const menuToggle = document.querySelector(".menu-toggle");
+            if (navMenu && !navMenu.contains(event.target) && !menuToggle.contains(event.target)) {
                 closeMenu();
             }
         });
