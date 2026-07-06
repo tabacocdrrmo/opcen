@@ -1170,32 +1170,33 @@
                         <option value="Job Order">Job Order</option>
                     </select>
                 </div>
+				<div class="form-group"><label for="eligibility">Eligibility</label><input type="text" id="eligibility"></div>
                 <div class="form-group">
                     <label for="bloodtype">Blood Type</label>
                     <select id="blodtype">
-                        <option value="A Positive (A+)">A+</option>
-                        <option value="A Negative (A-)">A-</option>`
-                        <option value="B Positive (B+)">B+</option>
-			<option value="B Negative (B-)">B-</option>
-			<option value="AB Positive (AB+)">AB+</option>
-			<option value="AB Negative (AB-)">AB-</option>
-                        <option value="O Positive (O+)">O+</option>
-                        <option value="O Negative (O-)">O-</option>
+                        <option value="A+">A Positive (A+)</option>
+                        <option value="A-">A Negative (A-)</option>`
+                        <option value="B+">B Positive (B+)</option>
+						<option value="B-">B Negative (B-)</option>
+						<option value="AB+">AB Positive (AB+)</option>
+						<option value="AB-">AB Negative (AB-)</option>
+                        <option value="O+">O Positive (O+)</option>
+                        <option value="O-">O Negative (O-)</option>
                         <option value="Unknown">Unknown</option>
                     </select>
                 </div>
 		    <div class="form-group">
                     <label for="Educ">Educational Attainment</label>
                     <select id="Educ">
-                        <option value="Basic Education">basic</option>
-                        <option value="High School Graduate">postSecond</option>`
-                        <option value="College Graduate">college</option>
-                        <option value="Master's Degree">master</option>
-                        <option value="Doctoral Degrees">doctor</option>
+                        <option value="basic">Basic Education</option>
+                        <option value="postSecond">High School Graduate</option>`
+                        <option value="college">College Graduate</option>
+                        <option value="master">Master's Degree</option>
+                        <option value="doctor">Doctoral Degrees</option>
                     </select>
                 </div>
-		<div class="form-group"><label for="Incaseofemer">In Case of Emergency, Contact:</label><input type="text" id="ContactName"></div>
-		<div class="form-group"><label for="ContactNo">Contact Number(s):</label><input type="text" id="ContactNo"></div>
+		<div class="form-group"><label for="Incaseofemer">In case of emergency, please contact:(name)</label><input type="text" id="ContactName"></div>
+		<div class="form-group"><label for="ContactNo">Emergency Contact Number(s):</label><input type="text" id="ContactNo"></div>
                 <button class="btn-portal" style="background-color: var(--success-color);" onclick="saveAndCompileProfile()">Save Profile</button>
                 <button class="btn-portal btn-logout" onclick="handleLogout()">Sign Out</button>
             </div>
