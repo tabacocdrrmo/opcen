@@ -891,9 +891,17 @@
             <button class="next-slide" onclick="scrollPrepSlides(1)">❯</button>
         </div>
         
-        <div class="dashboard-frame" style="background-color: #fafafa; border: 1px solid #e2e8f0; border-radius: 8px; padding: 25px; display: flex; flex-direction: column; justify-content: center; text-align: center; box-sizing: border-box;">
+        <!-- Live Tactical Situation Dashboard Video Frame Implementation -->
+        <div class="dashboard-frame" style="background-color: #fafafa; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; justify-content: flex-start; text-align: center; box-sizing: border-box;">
             <h4 style="margin: 0 0 10px 0; color: var(--primary-color); font-size: 20px;">Live Tactical Situation Dashboard</h4>
-            <p style="margin: 0; font-size: 14px; color: #555; line-height: 1.5;">This operational bulletin panel houses live monitoring metrics, satellite updates, and active public announcements tracked by our Tabaco City command deck. Review environmental data maps and alerts concurrently on the feeds provided below.</p>
+            <div style="flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; background: #000; border-radius: 6px; overflow: hidden; margin-bottom: 10px;">
+                <video controls autoplay loop muted style="width: 100%; height: 100%; object-fit: contain;">
+                    <source src="crisisop.mp4" type="video/mp4">
+                    <source src="crisisop.webm" type="video/webm">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+            <p style="margin: 0; font-size: 13px; color: #555; line-height: 1.4;">This operational bulletin panel houses live monitoring metrics, satellite updates, and active public announcements tracked by our Tabaco City command deck. Review environmental data maps and alerts concurrently on the feeds provided below.</p>
         </div>
     </div>
 
@@ -1305,10 +1313,10 @@
                 password: "Password2026!",
                 fullName: "Juan Del Cruz",
                 designation: "Rescue Specialist I",
-				empStatus: "~Choose Selection~"
-				bloodtype: "~Choose Selection~"
-				Educ: "~Choose Selection~"
-				ContactName: "Name of Spouse or nearest Next of Kin"
+				empStatus: "~Choose Selection~",
+				bloodtype: "~Choose Selection~",
+				Educ: "~Choose Selection~",
+				ContactName: "Name of Spouse or nearest Next of Kin",
                 imgData: ""
             }));
         }
@@ -1499,8 +1507,8 @@
             body.scrollTop = body.scrollHeight;
         }
         function processBotReply(userInput) {
-            const norm = userInput.toLowerCase();
-           let response = "I am sorry, I am built specifically to track disaster protocols. Try typing words like 'emergency', 'hotline', 'services', 'ambulance', or 'help'.";
+            const cleanQuery = userInput.toLowerCase();
+            let response = "I am sorry, I am built specifically to track disaster protocols. Try typing words like 'emergency', 'hotline', 'services', 'ambulance', or 'help'.";
             if (cleanQuery.includes('hotline') || cleanQuery.includes('number') || cleanQuery.includes('call') || cleanQuery.includes('emergency')) {
                 response = "🚨 Tabaco City Primary Emergency Hotline is 0995 290 5288. Alternative desks: 0909 224 5858 | 0999 475 8582.";
             } else if (cleanQuery.includes('service')) {
