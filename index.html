@@ -842,9 +842,8 @@
                 <a href="#numbers" onclick="closeMenu()">By the Numbers</a>
                 <a href="#about" onclick="closeMenu()">About</a>
                 <a href="#pillars" onclick="closeMenu()">Our Mandate</a>
-				<a href="#pillars" onclick="closeMenu()">In Action</a>
+		<a href="#action" onclick="closeMenu()">In Action</a>
                 <a href="#org-chart" onclick="closeMenu()">Leadership</a>
-                <a href="#action" onclick="closeMenu()">In Action</a>
                 <a href="javascript:void(0)" onclick="openCrewPortal(); closeMenu();">Our Crew Portal</a>
                 <a href="#hotlines" onclick="closeMenu()">Hotlines</a>
             </nav>
@@ -876,18 +875,18 @@
                 <div class="prepSlides"><img src="Linog5.JPG" alt="Map 5" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
                 <div class="prepSlides"><img src="Linog6.JPG" alt="Map 6" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
                 <div class="prepSlides"><img src="Bagyo1.JPG" alt="Map 7" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
-				<div class="prepSlides"><img src="Bagyo2.JPG" alt="Map 8" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
-				<div class="prepSlides"><img src="Bagyo3.JPG" alt="Map 9" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
-				<div class="prepSlides"><img src="Bagyo4.JPG" alt="Map 10" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
-				<div class="prepSlides"><img src="Bagyo5.JPG" alt="Map 11" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
-				<div class="prepSlides"><img src="Bagyo6.JPG" alt="Map 12" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
-				<div class="prepSlides"><img src="Bulkan1.JPG" alt="Map 13" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
-				<div class="prepSlides"><img src="Bulkan2.JPG" alt="Map 14" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
-				<div class="prepSlides"><img src="Bulkan3.JPG" alt="Map 15" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
-				<div class="prepSlides"><img src="Bulkan4.JPG" alt="Map 16" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
-				<div class="prepSlides"><img src="Bulkan5.JPG" alt="Map 17" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
-				<div class="prepSlides"><img src="Bulkan6.JPG" alt="Map 18" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
-			</div>
+		<div class="prepSlides"><img src="Bagyo2.JPG" alt="Map 8" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
+		<div class="prepSlides"><img src="Bagyo3.JPG" alt="Map 9" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
+		<div class="prepSlides"><img src="Bagyo4.JPG" alt="Map 10" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
+		<div class="prepSlides"><img src="Bagyo5.JPG" alt="Map 11" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
+		<div class="prepSlides"><img src="Bagyo6.JPG" alt="Map 12" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
+		<div class="prepSlides"><img src="Bulkan1.JPG" alt="Map 13" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
+		<div class="prepSlides"><img src="Bulkan2.JPG" alt="Map 14" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
+		<div class="prepSlides"><img src="Bulkan3.JPG" alt="Map 15" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
+		<div class="prepSlides"><img src="Bulkan4.JPG" alt="Map 16" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
+		<div class="prepSlides"><img src="Bulkan5.JPG" alt="Map 17" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
+		<div class="prepSlides"><img src="Bulkan6.JPG" alt="Map 18" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
+	   </div>
             <button class="prev-slide" onclick="scrollPrepSlides(-1)">❮</button>
             <button class="next-slide" onclick="scrollPrepSlides(1)">❯</button>
         </div>
@@ -1115,7 +1114,7 @@
                 <div class="org-name">Gelacio M. Molato Jr. LLB., MCDRM</div>
                 <div class="org-role">Head, Tabaco CDRRMO<br>LDRRMO IV</div>
             </div>
-			 <div class="org-card">
+	    <div class="org-card">
                 <img src="admin-head.jpg" alt="Administrative Head" class="org-img" onerror="this.src='https://via.placeholder.com/120?text=Admin+Head'">
                 <div class="org-name">Rowena B. Buenconsejo, MPA</div>
                 <div class="org-role">Chief, Admin. & Training Section<br>LDRRMO III</div>
@@ -1161,13 +1160,42 @@
                 </div>
                 <div class="form-group"><label for="fullName">Full Name</label><input type="text" id="fullName"></div>
                 <div class="form-group"><label for="designation">Designation</label><input type="text" id="designation"></div>
+                <div class="form-group"><label for="personalno">Personal Contact No.</label><input type="text" id="personalno"></div>
+                <div class="form-group"><label for="email">Email Address</label><input type="text" id="email"></div>
                 <div class="form-group">
                     <label for="empStatus">Status</label>
                     <select id="empStatus">
                         <option value="Permanent">Permanent</option>
-                        <option value="Contractual (COS)">Contractual (COS)</option>
+                        <option value="Contractual (COS)">Contractual (COS)</option>`
+                        <option value="Job Order">Job Order</option>
                     </select>
                 </div>
+                <div class="form-group">
+                    <label for="bloodtype">Blood Type</label>
+                    <select id="blodtype">
+                        <option value="A Positive (A+)">A+</option>
+                        <option value="A Negative (A-)">A-</option>`
+                        <option value="B Positive (B+)">B+</option>
+			<option value="B Negative (B-)">B-</option>
+			<option value="AB Positive (AB+)">AB+</option>
+			<option value="AB Negative (AB-)">AB-</option>
+                        <option value="O Positive (O+)">O+</option>
+                        <option value="O Negative (O-)">O-</option>
+                        <option value="Unknown">Unknown</option>
+                    </select>
+                </div>
+		    <div class="form-group">
+                    <label for="Educ">Educational Attainment</label>
+                    <select id="Educ">
+                        <option value="Basic Education">basic</option>
+                        <option value="High School Graduate">postSecond</option>`
+                        <option value="College Graduate">college</option>
+                        <option value="Master's Degree">master</option>
+                        <option value="Doctoral Degrees">doctor</option>
+                    </select>
+                </div>
+		<div class="form-group"><label for="Incaseofemer">In Case of Emergency, Contact:</label><input type="text" id="ContactName"></div>
+		<div class="form-group"><label for="ContactNo">Contact Number(s):</label><input type="text" id="ContactNo"></div>
                 <button class="btn-portal" style="background-color: var(--success-color);" onclick="saveAndCompileProfile()">Save Profile</button>
                 <button class="btn-portal btn-logout" onclick="handleLogout()">Sign Out</button>
             </div>
@@ -1196,11 +1224,13 @@
         <div class="chat-window" id="chatWindow" onclick="event.stopPropagation();">
             <div class="chat-header"><span>Tabaco CDRRMO Assistant</span><span class="chat-close" onclick="toggleChatWindow(event)">✕</span></div>
             <div class="chat-body" id="chatBody">
-                <div class="msg bot">Marhay na Aldaw! Kami po an saimong Tabaco CDRRMO assistant. Paano po kami makakatabang saimo?</div>
+                <div class="msg bot">Marhay na Aldaw! Kami po an saimong Tabaco CDRRMO assistant. Paano po kami makakatabang saimo o sa saindong komunidad ngunyan?<br>Kindly select your specific issue to discuss your concern.</div>
             </div>
             <div class="chat-chips">
                 <div class="chip" onclick="handleChipClick('Hotlines')">📞 Emergency Hotlines</div>
                 <div class="chip" onclick="handleChipClick('Services')">🛠️ Available Services</div>
+		<div class="chip" onclick="handleChipClick('Mandate')">🏛️ Our Mandate</div>
+                <div class="chip" onclick="handleChipClick('Leadership')">👤 Office Leadership</div>
             </div>
             <div class="chat-footer">
                 <input type="text" class="chat-input" id="chatInput" placeholder="Type here..." onkeypress="handleChatKey(event)">
@@ -1451,13 +1481,17 @@
         }
         function processBotReply(userInput) {
             const norm = userInput.toLowerCase();
-            let response = "I am sorry, I am built specifically to track disaster protocols. Try typing 'hotline' or 'services'.";
-            if (norm.includes("hotline") || norm.includes("number") || norm.includes("emergency")) {
-                response = "🚨 Primary Emergency Hotline is 0995 290 5288.";
-            } else if (norm.includes("service")) {
-                response = "🛠️ Available Services: Emergency response dispatch, hazard path tracking, and resiliency training programs.";
+           let response = "I am sorry, I am built specifically to track disaster protocols. Try typing words like 'emergency', 'hotline', 'services', 'ambulance', or 'help'.";
+            if (cleanQuery.includes('hotline') || cleanQuery.includes('number') || cleanQuery.includes('call') || cleanQuery.includes('emergency')) {
+                response = "🚨 Tabaco City Primary Emergency Hotline is 0995 290 5288. Alternative desks: 0909 224 5858 | 0999 475 8582.";
+            } else if (cleanQuery.includes('service')) {
+                response = "🛠️ Available Services: Emergency medical response dispatch, hazard paths tracking, and safety training.";
+            } else if (cleanQuery.includes('mandate')) {
+                response = "🏛️ Our office manages the 4 pillars of safety: Mitigation, Preparedness, Response, and Rehabilitation.";
+            } else if (cleanQuery.includes('leadership') || cleanQuery.includes('mayor')) {
+                response = "👤 Structure: Reynaldo B. Bragais (City Mayor) & Gelacio M. Molato Jr. (Head, Tabaco CDRRMO).";
             }
-            setTimeout(() => { appendMessage(response, "bot"); }, 400);
+            setTimeout(() => { appendMessage(response, 'bot'); }, 400);
         }
 
         // Image Zoom Modal Functions
