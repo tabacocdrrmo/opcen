@@ -1062,7 +1062,7 @@
     </section>
 
     <section id="pillars" style="background-color: #fafafa;">
-        <h2 class="section-title">The Four Operational Pillars</h2>
+        <h2 class="section-title">The Four Thematic Areas</h2>
         <div class="grid-4">
             <div class="card">
                 <div class="pillar-icon-wrapper"><i class="fa-solid fa-shield-halved"></i></div>
@@ -1237,10 +1237,8 @@
         <h2 class="section-title">Emergency Contact Center</h2>
         <div class="hotline-box">
             <p>For immediate rescue tracking, fire hazards, medical trauma dispatch, or life-threatening situations, contact our dispatch unit directly:</p>
-            <div class="hotline-number">0995 290 5288</div>
-            <p><strong>Alternative Operations Desk Lines:</strong><br>
-            0909 224 5858 | 0999 475 8582<br>
-            Email: <a href="mailto:cdrrmo_tabacocity@yahoo.com" class="hotline-link">cdrrmo_tabacocity@yahoo.com</a><br>
+            <div class="hotline-number">0909 224 5858<br>0999 475 8582<br>0939 782 9833</div>
+            <p>Email: <a href="mailto:cdrrmo_tabacocity@yahoo.com" class="hotline-link">cdrrmo_tabacocity@yahoo.com</a><br>
 	       Facebook: <a href="https://www.facebook.com/profile.php?id=100084520061699" target="_blank" class="hotline-fb-link">Tabaco CDRRMO</a></p>
         </div>
     </section>
@@ -1516,13 +1514,13 @@
         }
         function processBotReply(userInput) {
             const cleanQuery = userInput.toLowerCase();
-            let response = "I am sorry, I am built specifically to track disaster protocols. Try typing words like 'emergency', 'hotline', 'services', 'ambulance', or 'help'.";
-            if (cleanQuery.includes('hotline') || cleanQuery.includes('number') || cleanQuery.includes('call') || cleanQuery.includes('emergency')) {
-                response = "🚨 Tabaco City Primary Emergency Hotline is 0995 290 5288. Alternative desks: 0909 224 5858 | 0999 475 8582.";
+            let response = "I am sorry, I am built specifically to track disaster protocols. Try typing words like 'emergency', 'hotline', 'service', 'ambulance', or 'help'.";
+            if (cleanQuery.includes('hotline') || cleanQuery.includes('number') || cleanQuery.includes('ambulance') || cleanQuery.includes('call') || cleanQuery.includes('help') || cleanQuery.includes('emergency')) {
+                response = "🚨 Tabaco City Primary Emergency Hotline is 0909 224 5858 | 0999 475 8582 | 0939 782 9833";
             } else if (cleanQuery.includes('service')) {
                 response = "🛠️ Available Services: Emergency medical response dispatch, hazard paths tracking, and safety training.";
             } else if (cleanQuery.includes('mandate')) {
-                response = "🏛️ Our office manages the 4 pillars of safety: Mitigation, Preparedness, Response, and Rehabilitation.";
+                response = "🏛️ Our office manages the 4 Thematic Areas: Mitigation, Preparedness, Response, and Rehabilitation.";
             } else if (cleanQuery.includes('leadership') || cleanQuery.includes('mayor')) {
                 response = "👤 Structure: Reynaldo B. Bragais (City Mayor) & Gelacio M. Molato Jr. (Head, Tabaco CDRRMO).";
             }
