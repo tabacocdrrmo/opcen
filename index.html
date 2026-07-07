@@ -1285,6 +1285,36 @@
     </footer>
     
     <script>
+        const fallbackImageSrc = "img_placeholder.jpg"; // placeholder image for missing/broken images
+
+        function applyImageFallbacks() {
+            document.querySelectorAll("img").forEach((img) => {
+                if (img.getAttribute("data-fallback-applied") === "true") return;
+
+                if (!img.getAttribute("src")) {
+                    img.setAttribute("src", fallbackImageSrc);
+                    img.setAttribute("data-fallback-applied", "true");
+                    return;
+                }
+
+                if (img.complete && img.naturalWidth === 0) {
+                    img.setAttribute("src", fallbackImageSrc);
+                    img.setAttribute("data-fallback-applied", "true");
+                    return;
+                }
+
+                img.addEventListener("error", function handleImageError() {
+                    if (this.getAttribute("data-fallback-applied") === "true") return;
+                    this.setAttribute("data-fallback-applied", "true");
+                    this.setAttribute("src", fallbackImageSrc);
+                    this.removeAttribute("onerror");
+                }, { once: true });
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", applyImageFallbacks);
+        window.addEventListener("load", applyImageFallbacks);
+
         // Clean runtime system handling restrictions, menu, profile portal, dashboards, and automated chatbot
         document.addEventListener("contextmenu", function(e) { e.preventDefault(); });
         document.addEventListener("keydown", function(e) {
