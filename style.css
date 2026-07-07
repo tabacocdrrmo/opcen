@@ -275,7 +275,7 @@ header {
 /* --- Three Column Layout Extension --- */
 .monitoring-section {
     background-color: #ffffff;
-    padding: 30px 5% 0 5%;
+    padding: 30px 5% 30px 5%;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 20px;
