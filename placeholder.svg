@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500">
+  <rect width="800" height="500" fill="#f3f4f6"/>
+  <rect x="40" y="40" width="720" height="420" rx="24" fill="#ffffff" stroke="#d1d5db" stroke-width="4"/>
+  <circle cx="400" cy="220" r="110" fill="#e5e7eb"/>
+  <path d="M305 330c25-58 65-88 95-88s70 30 95 88" fill="#d1d5db"/>
+  <rect x="240" y="120" width="320" height="70" rx="12" fill="#f59e0b" opacity="0.15"/>
+  <text x="400" y="295" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#374151">Image unavailable</text>
+  <text x="400" y="340" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" fill="#6b7280">Temporary placeholder</text>
+</svg>
