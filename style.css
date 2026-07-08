@@ -809,6 +809,11 @@ footer {
     .chat-window { width: 300px; right: -10px; }
     section { padding: 40px 5%; }
     .section-title { font-size: 24px; }
+	#numbers div style, 
+    #numbers > div > div[style*="display: grid"] {
+        grid-template-columns: 1fr !important;
+        gap: 15px !important;
+    }
 }
 .hotline-link, .hotline-fb-link {
     color: var(--primary-color);
