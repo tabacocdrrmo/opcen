@@ -25,7 +25,6 @@ function applyImageFallbacks() {
     });
 }
 
-document.addEventListener("DOMContentLoaded", applyImageFallbacks);
 window.addEventListener("load", applyImageFallbacks);
 
 document.addEventListener("contextmenu", function(e) { e.preventDefault(); });
@@ -50,6 +49,59 @@ document.addEventListener("click", function(event) {
     }
 });
 
+// SUPABASE REST API HELPERS
+const DB_HEADERS = {
+    'apikey': SUPABASE_ANON_KEY,
+    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+    'Content-Type': 'application/json',
+    'Prefer': 'return=representation'
+};
+
+async function dbGet(table, { select = '*', filter = '' } = {}) {
+    let url = `${SUPABASE_URL}${table}?select=${encodeURIComponent(select)}`;
+    if (filter) url += `&${filter}`;
+    const res = await fetch(url, {
+        headers: { ...DB_HEADERS, 'Prefer': undefined }
+    });
+    if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`GET ${table} (${res.status}): ${text}`);
+    }
+    return res.json();
+}
+
+async function dbInsert(table, data) {
+    const res = await fetch(`${SUPABASE_URL}${table}`, {
+        method: 'POST',
+        headers: DB_HEADERS,
+        body: JSON.stringify(data)
+    });
+    if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`INSERT ${table} (${res.status}): ${text}`);
+    }
+    return res.json();
+}
+
+async function dbUpdate(table, data, filter) {
+    const res = await fetch(`${SUPABASE_URL}${table}?${filter}`, {
+        method: 'PATCH',
+        headers: DB_HEADERS,
+        body: JSON.stringify(data)
+    });
+    if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`UPDATE ${table} (${res.status}): ${text}`);
+    }
+    return res.json();
+}
+
+// ==========================================
+// CREW PORTAL - DATABASE BACKED
+// ==========================================
+let currentActiveUser = null;
+let currentEmployeeDbId = null;
+
 function openCrewPortal() {
     document.getElementById("crewPortalModal").classList.remove("hidden");
     document.body.style.overflow = "hidden";
@@ -59,86 +111,99 @@ function closeCrewPortal() {
     document.body.style.overflow = "";
 }
 
-if (!localStorage.getItem("user_responder1")) {
-    localStorage.setItem("user_responder1", JSON.stringify({
-        username: "responder1",
-        password: "Password2026!",
-        firstName: "Juan",
-        lastName: "Dela Cruz",
-        gender: "",
-        dob: "",
-        address: "",
-        contactNo: "0917xxxxxxx",
-        email: "juan.delacruz@tabacocdrrmo.gov.ph",
-        bloodtype: "",
-        employeeId: "CDR-001",
-        empType: "Permanent",
-        eligibility: "Career Service Professional",
-        dateOfJoining: "",
-        empStatus: "Active",
-        educAttain: "College Graduate",
-        contactPerson: "Maria Dela Cruz",
-        emergencyRel: "Spouse",
-        emergencyNo: "0918xxxxxxx",
-        imgData: "",
-    }));
-}
-
-let currentActiveUser = null;
-function handleLogin() {
+async function handleLogin() {
     const userIn = document.getElementById("username").value.trim();
     const passIn = document.getElementById("password").value;
-    const masterPass = "F12!CDRRMO_Admin_2026!";
-    const localData = localStorage.getItem("user_" + userIn);
 
-    if (localData) {
-        const userObj = JSON.parse(localData);
-        if (userObj.password === passIn || passIn === masterPass) {
-            currentActiveUser = userIn;
-            loadProfileData(userObj);
-            return;
+    if (!userIn) return alert("Please enter a username.");
+
+    try {
+        const accounts = await dbGet("accounts", {
+            select: "*,employees(*)",
+            filter: `username=eq.${userIn}`
+        });
+
+        if (accounts.length === 0) {
+            return alert("Account not found. Contact an administrator.");
         }
-    } else if (passIn === masterPass && userIn !== "") {
+
+        const acct = accounts[0];
+        const emp = acct.employees;
+
+        if (acct.password_hash !== passIn) {
+            return alert("Invalid credentials.");
+        }
+
         currentActiveUser = userIn;
-        const newObj = { username: userIn, password: "ChangeMe123!", firstName: "", lastName: "", gender: "", dob: "", address: "", contactNo: "", email: "", bloodtype: "", employeeId: "", empType: "", eligibility: "", dateOfJoining: "", empStatus: "Active", educAttain: "", contactPerson: "", emergencyRel: "", emergencyNo: "", imgData: "" };
-        loadProfileData(newObj);
-        return;
+        currentEmployeeDbId = acct.employee_id;
+
+        let contact = {};
+        try {
+            const contacts = await dbGet("emergency_contacts", {
+                filter: `employee_id=eq.${acct.employee_id}`
+            });
+            if (contacts.length > 0) contact = contacts[0];
+        } catch (_) {}
+
+        loadProfileView({
+            username: acct.username,
+            employee_id: emp.employee_id || "",
+            position: emp.position || "",
+            first_name: emp.first_name || "",
+            last_name: emp.last_name || "",
+            gender: emp.gender || "",
+            date_of_birth: emp.date_of_birth || "",
+            address: emp.address || "",
+            contact_number: emp.contact_number || "",
+            email: emp.email || "",
+            blood_type: emp.blood_type || "",
+            employment_type: emp.employment_type || "",
+            eligibility: emp.eligibility || "",
+            date_of_joining: emp.date_of_joining || "",
+            status: emp.status || "Active",
+            educational_attainment: emp.educational_attainment || "",
+            profile_picture: emp.profile_picture || "",
+            contact_person: contact.contact_person || "",
+            emergency_rel: contact.relationship || "",
+            emergency_no: contact.contact_number || ""
+        });
+    } catch (err) {
+        console.error("Login error:", err);
+        alert("Database connection error: " + err.message);
     }
-    alert("Invalid administrative credentials.");
 }
 
-function loadProfileData(userObj) {
+function loadProfileView(data) {
     document.getElementById("loginView").classList.add("hidden");
     document.getElementById("profileView").classList.remove("hidden");
-    document.getElementById("userDisplay").innerText = userObj.username;
-    document.getElementById("profileUsername").value = userObj.username;
-    document.getElementById("firstName").value = userObj.firstName || "";
-    document.getElementById("lastName").value = userObj.lastName || "";
-    document.getElementById("gender").value = userObj.gender || "";
-    document.getElementById("dob").value = userObj.dob || "";
-    document.getElementById("address").value = userObj.address || "";
-    document.getElementById("contactNo").value = userObj.contactNo || "";
-    document.getElementById("email").value = userObj.email || "";
-    document.getElementById("bloodtype").value = userObj.bloodtype || "";
-    document.getElementById("employeeId").value = userObj.employeeId || "";
-    document.getElementById("empType").value = userObj.empType || "";
-    document.getElementById("eligibility").value = userObj.eligibility || "";
-    document.getElementById("dateOfJoining").value = userObj.dateOfJoining || "";
-    document.getElementById("empStatus").value = userObj.empStatus || "Active";
-    document.getElementById("educAttain").value = userObj.educAttain || "";
-    document.getElementById("contactPerson").value = userObj.contactPerson || "";
-    document.getElementById("emergencyRel").value = userObj.emergencyRel || "";
-    document.getElementById("emergencyNo").value = userObj.emergencyNo || "";
-    if (userObj.imgData) {
-        document.getElementById("profilePreview").src = userObj.imgData;
-    } else {
-        document.getElementById("profilePreview").src = "https://via.placeholder.com/100?text=No+Photo";
-    }
+
+    document.getElementById("userDisplay").innerText = data.username;
+    document.getElementById("profileUsername").value = data.username;
+    document.getElementById("employeeId").value = data.employee_id;
+    document.getElementById("position").value = data.position || "";
+    document.getElementById("firstName").value = data.first_name;
+    document.getElementById("lastName").value = data.last_name;
+    document.getElementById("gender").value = data.gender;
+    document.getElementById("dob").value = data.date_of_birth;
+    document.getElementById("address").value = data.address;
+    document.getElementById("contactNo").value = data.contact_number;
+    document.getElementById("email").value = data.email;
+    document.getElementById("bloodtype").value = data.blood_type;
+    document.getElementById("empType").value = data.employment_type;
+    document.getElementById("eligibility").value = data.eligibility;
+    document.getElementById("dateOfJoining").value = data.date_of_joining;
+    document.getElementById("empStatus").value = data.status;
+    document.getElementById("educAttain").value = data.educational_attainment;
+    document.getElementById("contactPerson").value = data.contact_person;
+    document.getElementById("emergencyRel").value = data.emergency_rel;
+    document.getElementById("emergencyNo").value = data.emergency_no;
+
+    document.getElementById("profilePreview").src = data.profile_picture || "assets/img_placeholder.jpg";
 }
 
 function previewImage(event) {
     const reader = new FileReader();
-    reader.onload = function() {
+    reader.onload = function () {
         document.getElementById("profilePreview").src = reader.result;
     };
     if (event.target.files[0]) {
@@ -146,54 +211,122 @@ function previewImage(event) {
     }
 }
 
-function changePassword() {
+async function changePassword() {
     const newPass = document.getElementById("newPassword").value;
-    if (!newPass) return alert("Password string cannot be blank.");
-    let userObj = JSON.parse(localStorage.getItem("user_" + currentActiveUser));
-    userObj.password = newPass;
-    localStorage.setItem("user_" + currentActiveUser, JSON.stringify(userObj));
-    alert("Security matrix updated.");
-    document.getElementById("newPassword").value = "";
+    if (!newPass) return alert("Password cannot be blank.");
+    if (!currentEmployeeDbId) return alert("Save your profile first before changing the password.");
+
+    try {
+        await dbUpdate("accounts", { password_hash: newPass }, `employee_id=eq.${currentEmployeeDbId}`);
+        alert("Password updated successfully.");
+        document.getElementById("newPassword").value = "";
+    } catch (err) {
+        alert("Error updating password: " + err.message);
+    }
 }
 
-function saveAndCompileProfile() {
-    let userObj = JSON.parse(localStorage.getItem("user_" + currentActiveUser));
-    userObj.firstName = document.getElementById("firstName").value;
-    userObj.lastName = document.getElementById("lastName").value;
-    userObj.gender = document.getElementById("gender").value;
-    userObj.dob = document.getElementById("dob").value;
-    userObj.address = document.getElementById("address").value;
-    userObj.contactNo = document.getElementById("contactNo").value;
-    userObj.email = document.getElementById("email").value;
-    userObj.bloodtype = document.getElementById("bloodtype").value;
-    userObj.employeeId = document.getElementById("employeeId").value;
-    userObj.empType = document.getElementById("empType").value;
-    userObj.eligibility = document.getElementById("eligibility").value;
-    userObj.dateOfJoining = document.getElementById("dateOfJoining").value;
-    userObj.empStatus = document.getElementById("empStatus").value;
-    userObj.educAttain = document.getElementById("educAttain").value;
-    userObj.contactPerson = document.getElementById("contactPerson").value;
-    userObj.emergencyRel = document.getElementById("emergencyRel").value;
-    userObj.emergencyNo = document.getElementById("emergencyNo").value;
-    userObj.imgData = document.getElementById("profilePreview").src;
-    localStorage.setItem("user_" + currentActiveUser, JSON.stringify(userObj));
+async function saveAndCompileProfile() {
+    try {
+        const empData = {
+            employee_id: document.getElementById("employeeId").value,
+            position: document.getElementById("position").value,
+            first_name: document.getElementById("firstName").value,
+            last_name: document.getElementById("lastName").value,
+            gender: document.getElementById("gender").value,
+            date_of_birth: document.getElementById("dob").value || null,
+            address: document.getElementById("address").value,
+            contact_number: document.getElementById("contactNo").value,
+            email: document.getElementById("email").value,
+            blood_type: document.getElementById("bloodtype").value || null,
+            employment_type: document.getElementById("empType").value,
+            eligibility: document.getElementById("eligibility").value,
+            date_of_joining: document.getElementById("dateOfJoining").value || null,
+            status: document.getElementById("empStatus").value,
+            educational_attainment: document.getElementById("educAttain").value,
+            profile_picture: document.getElementById("profilePreview").src
+        };
 
-    const headers = ["Username","First Name","Last Name","Gender","Date of Birth","Address","Contact No.","Email","Blood Type","Employee ID","Employment Type","Eligibility","Date of Joining","Status","Educational Attainment","Emergency Contact Person","Relationship","Emergency Contact No."].join(",");
-    const rows = [[userObj.username, userObj.firstName, userObj.lastName, userObj.gender, userObj.dob, userObj.address, userObj.contactNo, userObj.email, userObj.bloodtype, userObj.employeeId, userObj.empType, userObj.eligibility, userObj.dateOfJoining, userObj.empStatus, userObj.educAttain, userObj.contactPerson, userObj.emergencyRel, userObj.emergencyNo].join(",")];
-    const csvContent = headers + "\n" + rows.join("\n");
-    
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    link.setAttribute("href", URL.createObjectURL(blob));
-    link.setAttribute("download", "CDRRMO_MasterRecord_" + userObj.username + ".csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    alert("Profile updated and backup generated.");
+        const contactData = {
+            contact_person: document.getElementById("contactPerson").value,
+            relationship: document.getElementById("emergencyRel").value,
+            contact_number: document.getElementById("emergencyNo").value
+        };
+
+        let empId = currentEmployeeDbId;
+
+        if (empId) {
+            await dbUpdate("employees", empData, `id=eq.${empId}`);
+
+            const existing = await dbGet("emergency_contacts", {
+                filter: `employee_id=eq.${empId}`
+            });
+
+            if (existing.length > 0) {
+                await dbUpdate("emergency_contacts", contactData, `employee_id=eq.${empId}`);
+            } else if (contactData.contact_person) {
+                await dbInsert("emergency_contacts", { ...contactData, employee_id: empId });
+            }
+        } else {
+            const inserted = await dbInsert("employees", empData);
+            if (!inserted || inserted.length === 0) throw new Error("Failed to create employee record.");
+            empId = inserted[0].id;
+            currentEmployeeDbId = empId;
+
+            await dbInsert("accounts", {
+                employee_id: empId,
+                username: currentActiveUser,
+                password_hash: "ChangeMe123!"
+            });
+
+            if (contactData.contact_person) {
+                await dbInsert("emergency_contacts", { ...contactData, employee_id: empId });
+            }
+        }
+
+        const fields = [
+            ["Username", currentActiveUser],
+            ["First Name", empData.first_name],
+            ["Last Name", empData.last_name],
+            ["Gender", empData.gender],
+            ["Date of Birth", empData.date_of_birth],
+            ["Address", empData.address],
+            ["Contact No.", empData.contact_number],
+            ["Email", empData.email],
+            ["Blood Type", empData.blood_type],
+            ["Employee ID", empData.employee_id],
+            ["Position", empData.position],
+            ["Employment Type", empData.employment_type],
+            ["Eligibility", empData.eligibility],
+            ["Date of Joining", empData.date_of_joining],
+            ["Status", empData.status],
+            ["Educational Attainment", empData.educational_attainment],
+            ["Emergency Contact Person", contactData.contact_person],
+            ["Relationship", contactData.relationship],
+            ["Emergency Contact No.", contactData.contact_number]
+        ];
+
+        const csvHeader = fields.map(f => f[0]).join(",");
+        const csvRow = fields.map(f => `"${(f[1] || "").replace(/"/g, '""')}"`).join(",");
+        const csvContent = csvHeader + "\n" + csvRow;
+
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "CDRRMO_Record_" + currentActiveUser + ".csv";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        alert("Profile saved to database. Backup CSV downloaded.");
+    } catch (err) {
+        console.error("Save error:", err);
+        alert("Database error: " + err.message);
+    }
 }
 
 function handleLogout() {
     currentActiveUser = null;
+    currentEmployeeDbId = null;
     document.getElementById("password").value = "";
     document.getElementById("profileView").classList.add("hidden");
     document.getElementById("loginView").classList.remove("hidden");
@@ -318,3 +451,7 @@ function closeZoomModal() {
     document.getElementById("imageZoomModal").style.display = "none";
     isPaused = false;
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+    applyImageFallbacks();
+});
