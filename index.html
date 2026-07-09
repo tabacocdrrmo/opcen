@@ -332,22 +332,22 @@
         <h2 class="section-title">Organizational Leadership</h2>
         <div class="org-grid">
             <div class="org-card">
-                <img src="assets/mayor.jpg" alt="City Mayor" class="org-img" onerror="this.src='https://via.placeholder.com/120?text=Mayor'">
+                <img src="assets/mayor.jpg" alt="City Mayor" class="org-img" onerror="this.src='assets/img_placeholder.jpg'">
                 <div class="org-name">Reynaldo B. Bragais</div>
                 <div class="org-role">Tabaco City Mayor</div>
             </div>
             <div class="org-card">
-                <img src="assets/cdrrmo-head.jpg" alt="CDRRMO Head" class="org-img" onerror="this.src='https://via.placeholder.com/120?text=CDRRMO+Head'">
+                <img src="assets/cdrrmo-head.jpg" alt="CDRRMO Head" class="org-img" onerror="this.src='assets/img_placeholder.jpg'">
                 <div class="org-name">Gelacio M. Molato Jr. LLB., MCDRM</div>
                 <div class="org-role">Head, Tabaco CDRRMO<br>LDRRMO IV</div>
             </div>
 	    <div class="org-card">
-                <img src="assets/admin-head.jpg" alt="Administrative Head" class="org-img" onerror="this.src='https://via.placeholder.com/120?text=Admin+Head'">
+                <img src="assets/admin-head.jpg" alt="Administrative Head" class="org-img" onerror="this.src='assets/img_placeholder.jpg'">
                 <div class="org-name">Rowena B. Buenconsejo, MPA</div>
                 <div class="org-role">Chief, Admin. & Training Section<br>LDRRMO III</div>
             </div>
             <div class="org-card">
-                <img src="assets/research-head.jpg" alt="Research & Planning Head" class="org-img" onerror="this.src='https://via.placeholder.com/120?text=Research+Head'">
+                <img src="assets/research-head.jpg" alt="Research & Planning Head" class="org-img" onerror="this.src='assets/img_placeholder.jpg'">
                 <div class="org-name">Ronald Andrew B. Gonzales, MPA</div>
                 <div class="org-role">Chief, Research & Planning Section<br>LDRRMO II</div>
             </div>
@@ -386,8 +386,8 @@
                 <h4 style="color: var(--primary-color); margin: 0 0 10px 0; font-size: 22px;">Personal Information</h4>
                 <div class="form-group">
                     <label>Profile Picture</label>
-                    <img id="profilePreview" class="profile-preview-img" src="" alt="Preview"><br>
-                    <input type="file" id="profileImageInput" accept="image/*" onchange="previewImage(event)">
+                    <img id="profilePreview" class="profile-preview-img" onerror="this.onerror=null; this.src='assets/img_placeholder.jpg'">
+                    
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                     <div class="form-group"><label for="firstName">First Name</label><input type="text" id="firstName"></div>
@@ -429,6 +429,9 @@
                 <h4 style="color: var(--primary-color); margin: 20px 0 10px 0; font-size: 22px;">Employment Information</h4>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                     <div class="form-group"><label for="employeeId">Employee ID</label><input type="text" id="employeeId"></div>
+                    <div class="form-group"><label for="position">Position</label><input type="text" id="position"></div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                     <div class="form-group">
                         <label for="empType">Employment Type</label>
                         <select id="empType">
@@ -525,6 +528,7 @@
             By: Julius T. Bariso</p>
     </footer>
     
+    <script src="supabase.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
