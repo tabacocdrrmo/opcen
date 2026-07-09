@@ -161,6 +161,7 @@ async function handleLogin() {
             eligibility: emp.eligibility || "",
             date_of_joining: emp.date_of_joining || "",
             status: emp.status || "Active",
+            marital_status: emp.marital_status || "",
             educational_attainment: emp.educational_attainment || "",
             profile_picture: emp.profile_picture || "",
             contact_person: contact.contact_person || "",
@@ -193,6 +194,7 @@ function loadProfileView(data) {
     document.getElementById("eligibility").value = data.eligibility;
     document.getElementById("dateOfJoining").value = data.date_of_joining;
     document.getElementById("empStatus").value = data.status;
+    document.getElementById("maritalStatus").value = data.marital_status;
     document.getElementById("educAttain").value = data.educational_attainment;
     document.getElementById("contactPerson").value = data.contact_person;
     document.getElementById("emergencyRel").value = data.emergency_rel;
@@ -241,6 +243,7 @@ async function saveAndCompileProfile() {
             employment_type: document.getElementById("empType").value,
             eligibility: document.getElementById("eligibility").value,
             date_of_joining: document.getElementById("dateOfJoining").value || null,
+            marital_status: document.getElementById("maritalStatus").value,
             status: document.getElementById("empStatus").value,
             educational_attainment: document.getElementById("educAttain").value,
             profile_picture: document.getElementById("profilePreview").src
@@ -298,6 +301,7 @@ async function saveAndCompileProfile() {
             ["Employment Type", empData.employment_type],
             ["Eligibility", empData.eligibility],
             ["Date of Joining", empData.date_of_joining],
+            ["Marital Status", empData.marital_status],
             ["Status", empData.status],
             ["Educational Attainment", empData.educational_attainment],
             ["Emergency Contact Person", contactData.contact_person],
