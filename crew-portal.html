@@ -16,7 +16,7 @@
                 CDRRMO Crew Portal
             </a>
             <div class="d-flex align-items-center gap-3">
-                <span class="text-light-emphasis small" id="userDisplay">Responder</span>
+                <span class="text-white  small" id="userDisplay">Responder</span>
                 <a href="admin.html" class="btn btn-outline-warning btn-sm d-none" id="adminNavLink">
                     <i class="fa-solid fa-shield"></i> Admin Panel
                 </a>
@@ -64,17 +64,13 @@
                 <div class="row g-3">
                     <div class="col-md-3">
                         <label class="form-label">Username</label>
-                        <input type="text" id="profileUsername" class="form-control" readonly>
+                        <div class="fw-medium" id="profileUsername">—</div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-5">
                         <label class="form-label">Email</label>
-                        <input type="text" id="accountEmail" class="form-control" readonly>
+                        <div class="fw-medium" id="accountEmail">—</div>
                     </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Member Since</label>
-                        <input type="text" id="memberSince" class="form-control" readonly>
-                    </div>
-                    <div class="col-md-3 d-flex align-items-end">
+                    <div class="col-md-3 d-flex align-items-end ms-auto">
                         <button class="btn btn-warning w-100" data-bs-toggle="modal" data-bs-target="#passwordModal">
                             <i class="fa-solid fa-key"></i> Change Password
                         </button>

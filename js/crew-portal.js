@@ -140,9 +140,8 @@ document.addEventListener("DOMContentLoaded", async function () {
 function loadProfileView(data) {
     document.getElementById("userDisplay").innerText = data.username;
 
-    document.getElementById("profileUsername").value = data.username;
-    document.getElementById("accountEmail").value = data.email;
-    document.getElementById("memberSince").value = data.date_of_joining;
+    document.getElementById("profileUsername").innerText = data.username;
+    document.getElementById("accountEmail").innerText = data.email;
 
     document.getElementById("profilePreview").src = data.profile_picture || "assets/images/img_placeholder.jpg";
     document.getElementById("displayFullName").innerText = (data.first_name + " " + data.last_name).trim() || "—";
@@ -253,13 +252,15 @@ async function uploadProfileImage(file, employeeId) {
     const ext = file.name.split('.').pop().toLowerCase() || 'jpg';
     const fileName = `${employeeId}_${Date.now()}.${ext}`;
     const storageUrl = SUPABASE_URL.replace('/rest/v1/', '/storage/v1/');
+    const formData = new FormData();
+    formData.append('file', file);
     const res = await fetch(`${storageUrl}object/profile-pictures/${fileName}`, {
         method: 'POST',
         headers: {
-            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-            'Content-Type': file.type || 'application/octet-stream'
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
         },
-        body: file
+        body: formData
     });
     if (!res.ok) {
         const text = await res.text();
@@ -334,6 +335,7 @@ async function saveAndCompileProfile() {
                 empData.profile_picture = imageUrl;
             } catch (uploadErr) {
                 console.error("Image upload failed:", uploadErr);
+                alert("Profile saved but image upload failed: " + uploadErr.message + "\n\nYou can try uploading again from the edit profile page.");
             }
             pendingProfileFile = null;
         }
