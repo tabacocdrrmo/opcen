@@ -47,6 +47,7 @@ async function dbUpdate(table, data, filter) {
 let currentActiveUser = null;
 let currentEmployeeDbId = null;
 let profileData = null;
+let pendingProfileFile = null;
 
 function getSession() {
     const raw = sessionStorage.getItem("crewSession");
@@ -143,7 +144,7 @@ function loadProfileView(data) {
     document.getElementById("accountEmail").value = data.email;
     document.getElementById("memberSince").value = data.date_of_joining;
 
-    document.getElementById("profilePreview").src = data.profile_picture || "assets/img_placeholder.jpg";
+    document.getElementById("profilePreview").src = data.profile_picture || "assets/images/img_placeholder.jpg";
     document.getElementById("displayFullName").innerText = (data.first_name + " " + data.last_name).trim() || "—";
     document.getElementById("displayPosition").innerText = data.position || "—";
     document.getElementById("displayEmployeeId").innerText = data.employee_id || "—";
@@ -205,18 +206,15 @@ document.getElementById("editProfileModal").addEventListener("show.bs.modal", fu
     document.getElementById("emergencyRel").value = profileData.emergency_rel;
     document.getElementById("emergencyNo").value = profileData.emergency_no;
 
-    document.getElementById("editProfilePreview").src = profileData.profile_picture || "assets/img_placeholder.jpg";
+    document.getElementById("editProfilePreview").src = profileData.profile_picture || "assets/images/img_placeholder.jpg";
 });
 
 function previewImage(event) {
-    const reader = new FileReader();
-    reader.onload = function () {
-        const img = document.getElementById("editProfilePreview");
-        if (img) img.src = reader.result;
-    };
-    if (event.target.files[0]) {
-        reader.readAsDataURL(event.target.files[0]);
-    }
+    const file = event.target.files[0];
+    if (!file) return;
+    pendingProfileFile = file;
+    const img = document.getElementById("editProfilePreview");
+    if (img) img.src = URL.createObjectURL(file);
 }
 
 async function changePassword() {
@@ -251,6 +249,25 @@ async function changePassword() {
     }
 }
 
+async function uploadProfileImage(file, employeeId) {
+    const ext = file.name.split('.').pop().toLowerCase() || 'jpg';
+    const fileName = `${employeeId}_${Date.now()}.${ext}`;
+    const storageUrl = SUPABASE_URL.replace('/rest/v1/', '/storage/v1/');
+    const res = await fetch(`${storageUrl}object/profile-pictures/${fileName}`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            'Content-Type': file.type || 'application/octet-stream'
+        },
+        body: file
+    });
+    if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Upload failed (${res.status}): ${text}`);
+    }
+    return `${storageUrl}object/public/profile-pictures/${fileName}`;
+}
+
 async function saveAndCompileProfile() {
     try {
         const empData = {
@@ -270,7 +287,6 @@ async function saveAndCompileProfile() {
             marital_status: document.getElementById("maritalStatus").value,
             status: document.getElementById("empStatus").value,
             educational_attainment: document.getElementById("educAttain").value,
-            profile_picture: document.getElementById("editProfilePreview").src
         };
 
         const contactData = {
@@ -311,6 +327,17 @@ async function saveAndCompileProfile() {
             }
         }
 
+        if (pendingProfileFile) {
+            try {
+                const imageUrl = await uploadProfileImage(pendingProfileFile, empId);
+                await dbUpdate("employees", { profile_picture: imageUrl }, `id=eq.${empId}`);
+                empData.profile_picture = imageUrl;
+            } catch (uploadErr) {
+                console.error("Image upload failed:", uploadErr);
+            }
+            pendingProfileFile = null;
+        }
+
         profileData = {
             username: currentActiveUser,
             employee_id: empData.employee_id,
@@ -329,7 +356,7 @@ async function saveAndCompileProfile() {
             status: empData.status,
             marital_status: empData.marital_status,
             educational_attainment: empData.educational_attainment,
-            profile_picture: empData.profile_picture,
+            profile_picture: empData.profile_picture || profileData.profile_picture,
             contact_person: contactData.contact_person,
             emergency_rel: contactData.relationship,
             emergency_no: contactData.contact_number

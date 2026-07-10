@@ -1,4 +1,4 @@
-const fallbackImageSrc = "assets/img_placeholder.jpg";
+const fallbackImageSrc = "assets/images/img_placeholder.jpg";
 
 function applyImageFallbacks() {
     document.querySelectorAll("img").forEach((img) => {
