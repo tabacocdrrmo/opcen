@@ -79,6 +79,18 @@
             </div>
         </div>
 
+        <!-- Tab Navigation -->
+        <ul class="nav nav-pills mb-4" id="crewTabs">
+            <li class="nav-item">
+                <a class="nav-link active" href="#" data-tab="profile" onclick="switchCrewTab('profile'); return false;">Profile</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-tab="leave" onclick="switchCrewTab('leave'); return false;">Leave</a>
+            </li>
+        </ul>
+
+        <div id="tab-profile">
+
         <!-- Personal Details -->
         <div class="card shadow-sm mb-4">
             <div class="card-body">
@@ -158,6 +170,14 @@
                         <div class="text-muted small text-uppercase mb-1">Educational Attainment</div>
                         <div class="fw-medium" id="displayEducAttain">—</div>
                     </div>
+                    <div class="col-md-4">
+                        <div class="text-muted small text-uppercase mb-1">Institution / University</div>
+                        <div class="fw-medium" id="displayEducInstitution">—</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-muted small text-uppercase mb-1">Course / Major</div>
+                        <div class="fw-medium" id="displayEducCourse">—</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -190,6 +210,98 @@
             </button>
         </div>
 
+        </div>
+
+        <div id="tab-leave" class="d-none">
+
+        <!-- Leave Applications -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title mb-0">Leave Applications</h5>
+                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#leaveModal">
+                        <i class="fa-solid fa-plus"></i> Apply for Leave
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0 align-middle" style="table-layout: fixed; font-size: 0.85rem;">
+                        <colgroup>
+                            <col style="width: 100px;">
+                            <col style="width: 95px;">
+                            <col style="width: 95px;">
+                            <col>
+                            <col style="width: 80px;">
+                            <col style="width: 85px;">
+                        </colgroup>
+                        <thead class="table-light">
+                            <tr>
+                                <th>Leave Type</th>
+                                <th>Start</th>
+                                <th>End</th>
+                                <th>Reason</th>
+                                <th>Status</th>
+                                <th>Submitted</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaveHistoryBody">
+                            <tr><td colspan="6" class="text-center text-muted py-3">No leave applications found.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        </div>
+
+    </div>
+
+    <!-- Leave Application Modal -->
+    <div class="modal fade" id="leaveModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Apply for Leave</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="leaveType" class="form-label">Leave Type</label>
+                        <select id="leaveType" class="form-select">
+                            <option value="">Select...</option>
+                            <option value="Sick">Sick</option>
+                            <option value="Vacation">Vacation</option>
+                            <option value="Emergency">Emergency</option>
+                            <option value="Personal">Personal</option>
+                            <option value="Calamity">Calamity</option>
+                            <option value="Maternity">Maternity</option>
+                            <option value="Paternity">Paternity</option>
+                            <option value="Paid">Paid</option>
+                            <option value="Unpaid">Unpaid</option>
+                        </select>
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="leaveStart" class="form-label">Start Date</label>
+                            <input type="date" id="leaveStart" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="leaveEnd" class="form-label">End Date</label>
+                            <input type="date" id="leaveEnd" class="form-control">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="leaveReason" class="form-label">Reason</label>
+                        <textarea id="leaveReason" class="form-control" rows="3" placeholder="Optional"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="submitLeaveRequest()">
+                        <i class="fa-solid fa-paper-plane"></i> Submit
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Edit Profile Modal -->
@@ -317,6 +429,14 @@
                                 <option value="Master's Degree">Master's Degree</option>
                                 <option value="Doctoral Degree">Doctoral Degree</option>
                             </select>
+                        </div>
+                        <div class="col-md-4 edu-extra-institution" style="display:none;">
+                            <label for="educInstitution" class="form-label">Institution / University</label>
+                            <input type="text" id="educInstitution" class="form-control">
+                        </div>
+                        <div class="col-md-4 edu-extra-course" style="display:none;">
+                            <label for="educCourse" class="form-label">Course / Major</label>
+                            <input type="text" id="educCourse" class="form-control">
                         </div>
                     </div>
 
