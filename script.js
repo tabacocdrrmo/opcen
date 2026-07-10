@@ -97,11 +97,8 @@ async function dbUpdate(table, data, filter) {
 }
 
 // ==========================================
-// CREW PORTAL - DATABASE BACKED
+// CREW PORTAL - LOGIN (redirects to crew-portal.html)
 // ==========================================
-let currentActiveUser = null;
-let currentEmployeeDbId = null;
-
 function openCrewPortal() {
     document.getElementById("crewPortalModal").classList.remove("hidden");
     document.body.style.overflow = "hidden";
@@ -128,212 +125,23 @@ async function handleLogin() {
         }
 
         const acct = accounts[0];
-        const emp = acct.employees;
 
         if (acct.password_hash !== passIn) {
             return alert("Invalid credentials.");
         }
 
-        currentActiveUser = userIn;
-        currentEmployeeDbId = acct.employee_id;
+        sessionStorage.setItem("crewSession", JSON.stringify({
+            username: userIn,
+            employeeDbId: acct.employee_id,
+            role: acct.role || "staff"
+        }));
 
-        let contact = {};
-        try {
-            const contacts = await dbGet("emergency_contacts", {
-                filter: `employee_id=eq.${acct.employee_id}`
-            });
-            if (contacts.length > 0) contact = contacts[0];
-        } catch (_) {}
-
-        loadProfileView({
-            username: acct.username,
-            employee_id: emp.employee_id || "",
-            position: emp.position || "",
-            first_name: emp.first_name || "",
-            last_name: emp.last_name || "",
-            gender: emp.gender || "",
-            date_of_birth: emp.date_of_birth || "",
-            address: emp.address || "",
-            contact_number: emp.contact_number || "",
-            email: emp.email || "",
-            blood_type: emp.blood_type || "",
-            employment_type: emp.employment_type || "",
-            eligibility: emp.eligibility || "",
-            date_of_joining: emp.date_of_joining || "",
-            status: emp.status || "Active",
-            marital_status: emp.marital_status || "",
-            educational_attainment: emp.educational_attainment || "",
-            profile_picture: emp.profile_picture || "",
-            contact_person: contact.contact_person || "",
-            emergency_rel: contact.relationship || "",
-            emergency_no: contact.contact_number || ""
-        });
+        const redirect = acct.role === "admin" ? "admin.html" : "crew-portal.html";
+        window.location.href = redirect;
     } catch (err) {
         console.error("Login error:", err);
         alert("Database connection error: " + err.message);
     }
-}
-
-function loadProfileView(data) {
-    document.getElementById("loginView").classList.add("hidden");
-    document.getElementById("profileView").classList.remove("hidden");
-
-    document.getElementById("userDisplay").innerText = data.username;
-    document.getElementById("profileUsername").value = data.username;
-    document.getElementById("employeeId").value = data.employee_id;
-    document.getElementById("position").value = data.position || "";
-    document.getElementById("firstName").value = data.first_name;
-    document.getElementById("lastName").value = data.last_name;
-    document.getElementById("gender").value = data.gender;
-    document.getElementById("dob").value = data.date_of_birth;
-    document.getElementById("address").value = data.address;
-    document.getElementById("contactNo").value = data.contact_number;
-    document.getElementById("email").value = data.email;
-    document.getElementById("bloodtype").value = data.blood_type;
-    document.getElementById("empType").value = data.employment_type;
-    document.getElementById("eligibility").value = data.eligibility;
-    document.getElementById("dateOfJoining").value = data.date_of_joining;
-    document.getElementById("empStatus").value = data.status;
-    document.getElementById("maritalStatus").value = data.marital_status;
-    document.getElementById("educAttain").value = data.educational_attainment;
-    document.getElementById("contactPerson").value = data.contact_person;
-    document.getElementById("emergencyRel").value = data.emergency_rel;
-    document.getElementById("emergencyNo").value = data.emergency_no;
-
-    document.getElementById("profilePreview").src = data.profile_picture || "assets/img_placeholder.jpg";
-}
-
-function previewImage(event) {
-    const reader = new FileReader();
-    reader.onload = function () {
-        document.getElementById("profilePreview").src = reader.result;
-    };
-    if (event.target.files[0]) {
-        reader.readAsDataURL(event.target.files[0]);
-    }
-}
-
-async function changePassword() {
-    const newPass = document.getElementById("newPassword").value;
-    if (!newPass) return alert("Password cannot be blank.");
-    if (!currentEmployeeDbId) return alert("Save your profile first before changing the password.");
-
-    try {
-        await dbUpdate("accounts", { password_hash: newPass }, `employee_id=eq.${currentEmployeeDbId}`);
-        alert("Password updated successfully.");
-        document.getElementById("newPassword").value = "";
-    } catch (err) {
-        alert("Error updating password: " + err.message);
-    }
-}
-
-async function saveAndCompileProfile() {
-    try {
-        const empData = {
-            employee_id: document.getElementById("employeeId").value,
-            position: document.getElementById("position").value,
-            first_name: document.getElementById("firstName").value,
-            last_name: document.getElementById("lastName").value,
-            gender: document.getElementById("gender").value,
-            date_of_birth: document.getElementById("dob").value || null,
-            address: document.getElementById("address").value,
-            contact_number: document.getElementById("contactNo").value,
-            email: document.getElementById("email").value,
-            blood_type: document.getElementById("bloodtype").value || null,
-            employment_type: document.getElementById("empType").value,
-            eligibility: document.getElementById("eligibility").value,
-            date_of_joining: document.getElementById("dateOfJoining").value || null,
-            marital_status: document.getElementById("maritalStatus").value,
-            status: document.getElementById("empStatus").value,
-            educational_attainment: document.getElementById("educAttain").value,
-            profile_picture: document.getElementById("profilePreview").src
-        };
-
-        const contactData = {
-            contact_person: document.getElementById("contactPerson").value,
-            relationship: document.getElementById("emergencyRel").value,
-            contact_number: document.getElementById("emergencyNo").value
-        };
-
-        let empId = currentEmployeeDbId;
-
-        if (empId) {
-            await dbUpdate("employees", empData, `id=eq.${empId}`);
-
-            const existing = await dbGet("emergency_contacts", {
-                filter: `employee_id=eq.${empId}`
-            });
-
-            if (existing.length > 0) {
-                await dbUpdate("emergency_contacts", contactData, `employee_id=eq.${empId}`);
-            } else if (contactData.contact_person) {
-                await dbInsert("emergency_contacts", { ...contactData, employee_id: empId });
-            }
-        } else {
-            const inserted = await dbInsert("employees", empData);
-            if (!inserted || inserted.length === 0) throw new Error("Failed to create employee record.");
-            empId = inserted[0].id;
-            currentEmployeeDbId = empId;
-
-            await dbInsert("accounts", {
-                employee_id: empId,
-                username: currentActiveUser,
-                password_hash: "ChangeMe123!"
-            });
-
-            if (contactData.contact_person) {
-                await dbInsert("emergency_contacts", { ...contactData, employee_id: empId });
-            }
-        }
-
-        const fields = [
-            ["Username", currentActiveUser],
-            ["First Name", empData.first_name],
-            ["Last Name", empData.last_name],
-            ["Gender", empData.gender],
-            ["Date of Birth", empData.date_of_birth],
-            ["Address", empData.address],
-            ["Contact No.", empData.contact_number],
-            ["Email", empData.email],
-            ["Blood Type", empData.blood_type],
-            ["Employee ID", empData.employee_id],
-            ["Position", empData.position],
-            ["Employment Type", empData.employment_type],
-            ["Eligibility", empData.eligibility],
-            ["Date of Joining", empData.date_of_joining],
-            ["Marital Status", empData.marital_status],
-            ["Status", empData.status],
-            ["Educational Attainment", empData.educational_attainment],
-            ["Emergency Contact Person", contactData.contact_person],
-            ["Relationship", contactData.relationship],
-            ["Emergency Contact No.", contactData.contact_number]
-        ];
-
-        const csvHeader = fields.map(f => f[0]).join(",");
-        const csvRow = fields.map(f => `"${(f[1] || "").replace(/"/g, '""')}"`).join(",");
-        const csvContent = csvHeader + "\n" + csvRow;
-
-        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = "CDRRMO_Record_" + currentActiveUser + ".csv";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        alert("Profile saved to database. Backup CSV downloaded.");
-    } catch (err) {
-        console.error("Save error:", err);
-        alert("Database error: " + err.message);
-    }
-}
-
-function handleLogout() {
-    currentActiveUser = null;
-    currentEmployeeDbId = null;
-    document.getElementById("password").value = "";
-    document.getElementById("profileView").classList.add("hidden");
-    document.getElementById("loginView").classList.remove("hidden");
 }
 
 let slideIndex = 1;
