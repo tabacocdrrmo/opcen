@@ -1,0 +1,58 @@
+body { overflow-x: hidden; }
+.sidebar {
+    width: 240px;
+    min-height: calc(100vh - 56px);
+    flex-shrink: 0;
+}
+.sidebar .nav-link {
+    border-radius: 0;
+    padding: 12px 20px;
+    color: rgba(255,255,255,.65);
+    border-left: 3px solid transparent;
+}
+.sidebar .nav-link:hover {
+    color: #fff;
+    background: rgba(255,255,255,.08);
+}
+.sidebar .nav-link.active {
+    color: #fff;
+    background: rgba(255,255,255,.12);
+    border-left-color: #ffc107;
+}
+.sidebar .nav-link i {
+    width: 22px;
+    text-align: center;
+}
+.sidebar .sidebar-heading {
+    padding: 16px 20px 8px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,.35);
+}
+#employeeTable { font-size: 0.8rem; }
+#employeeTable .btn-sm { font-size: 0.75rem; }
+@media (max-width: 767.98px) {
+    .sidebar {
+        position: fixed;
+        top: 56px;
+        left: -240px;
+        z-index: 1030;
+        transition: left .25s ease;
+        height: calc(100vh - 56px);
+        overflow-y: auto;
+    }
+    .sidebar.show {
+        left: 0;
+    }
+    .sidebar-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 1029;
+        background: rgba(0,0,0,.4);
+    }
+    .sidebar-backdrop.show {
+        display: block;
+    }
+}
