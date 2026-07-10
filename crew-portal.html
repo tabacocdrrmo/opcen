@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crew Portal - CDRRMO Tabaco City</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container" style="max-width: 960px;">
+            <a class="navbar-brand" href="index.html">
+                <img src="assets/logo.png" alt="" width="32" height="32" class="d-inline-block align-text-top me-2">
+                CDRRMO Crew Portal
+            </a>
+            <div class="d-flex align-items-center gap-3">
+                <span class="text-light-emphasis small" id="userDisplay">Responder</span>
+                <a href="admin.html" class="btn btn-outline-warning btn-sm d-none" id="adminNavLink">
+                    <i class="fa-solid fa-shield"></i> Admin Panel
+                </a>
+                <button class="btn btn-outline-light btn-sm" onclick="handleLogout()">
+                    <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4" style="max-width: 960px;">
+        
+        <!-- Profile Header -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-auto text-center mb-3 mb-md-0">
+                        <img id="profilePreview" class="rounded-circle border" width="120" height="120"
+                             style="object-fit: cover;"
+                             onerror="this.onerror=null; this.src='assets/img_placeholder.jpg'">
+                    </div>
+                    <div class="col-md">
+                        <h3 class="mb-1" id="displayFullName">—</h3>
+                        <div class="text-muted" id="displayPosition">—</div>
+                        <span class="badge bg-success fs-6 mt-2" id="displayStatusBadge">—</span>
+                    </div>
+                    <div class="col-md-auto text-md-end mt-3 mt-md-0">
+                        <div class="mb-2">
+                            <span class="text-muted small text-uppercase">Employee ID</span><br>
+                            <span class="fw-medium" id="displayEmployeeId">—</span>
+                        </div>
+                        <div>
+                            <span class="text-muted small text-uppercase">Employment Type</span><br>
+                            <span class="fw-medium" id="displayEmpType">—</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Settings -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Account Settings</h5>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Username</label>
+                        <input type="text" id="profileUsername" class="form-control" readonly>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Email</label>
+                        <input type="text" id="accountEmail" class="form-control" readonly>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Member Since</label>
+                        <input type="text" id="memberSince" class="form-control" readonly>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button class="btn btn-warning w-100" data-bs-toggle="modal" data-bs-target="#passwordModal">
+                            <i class="fa-solid fa-key"></i> Change Password
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Personal Details -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Personal Details</h5>
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="text-muted small text-uppercase mb-1">First Name</div>
+                        <div class="fw-medium" id="displayFirstName">—</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-muted small text-uppercase mb-1">Last Name</div>
+                        <div class="fw-medium" id="displayLastName">—</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-muted small text-uppercase mb-1">Gender</div>
+                        <div class="fw-medium" id="displayGender">—</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-muted small text-uppercase mb-1">Date of Birth</div>
+                        <div class="fw-medium" id="displayDob">—</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-muted small text-uppercase mb-1">Marital Status</div>
+                        <div class="fw-medium" id="displayMarital">—</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-muted small text-uppercase mb-1">Blood Type</div>
+                        <div class="fw-medium" id="displayBloodType">—</div>
+                    </div>
+                    <div class="col-12">
+                        <div class="text-muted small text-uppercase mb-1">Address</div>
+                        <div class="fw-medium" id="displayAddress">—</div>
+                    </div>
+                    <div class="col-12"><hr class="my-1"></div>
+                    <div class="col-md-6">
+                        <div class="text-muted small text-uppercase mb-1">Contact No.</div>
+                        <div class="fw-medium" id="displayContactNo">—</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-muted small text-uppercase mb-1">Email Address</div>
+                        <div class="fw-medium" id="displayEmail">—</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Employment Details -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Employment Details</h5>
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="text-muted small text-uppercase mb-1">Employee ID</div>
+                        <div class="fw-medium" id="displayEmpId2">—</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-muted small text-uppercase mb-1">Position</div>
+                        <div class="fw-medium" id="displayPosition2">—</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-muted small text-uppercase mb-1">Employment Type</div>
+                        <div class="fw-medium" id="displayEmpType2">—</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-muted small text-uppercase mb-1">Eligibility</div>
+                        <div class="fw-medium" id="displayEligibility">—</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-muted small text-uppercase mb-1">Date of Joining</div>
+                        <div class="fw-medium" id="displayDateJoined">—</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-muted small text-uppercase mb-1">Status</div>
+                        <div class="fw-medium" id="displayStatus">—</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-muted small text-uppercase mb-1">Educational Attainment</div>
+                        <div class="fw-medium" id="displayEducAttain">—</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Emergency Contact -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Emergency Contact</h5>
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="text-muted small text-uppercase mb-1">Contact Person</div>
+                        <div class="fw-medium" id="displayContactPerson">—</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-muted small text-uppercase mb-1">Relationship</div>
+                        <div class="fw-medium" id="displayEmergencyRel">—</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-muted small text-uppercase mb-1">Contact No.</div>
+                        <div class="fw-medium" id="displayEmergencyNo">—</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Button -->
+        <div class="d-flex justify-content-center mb-4">
+            <button class="btn btn-primary px-5" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                <i class="fa-solid fa-pen-to-square"></i> Edit Profile
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div class="modal fade" id="editProfileModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Profile</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+
+                    <h6 class="fw-bold text-primary mb-3">Profile Picture</h6>
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <img id="editProfilePreview" class="rounded border" width="100" height="100"
+                                 style="object-fit: cover;"
+                                 onerror="this.onerror=null; this.src='assets/img_placeholder.jpg'">
+                            <input type="file" class="form-control" style="max-width:260px;" accept="image/*" onchange="previewImage(event)">
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-primary mb-3">Personal Information</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="firstName" class="form-label">First Name</label>
+                            <input type="text" id="firstName" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="lastName" class="form-label">Last Name</label>
+                            <input type="text" id="lastName" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="gender" class="form-label">Gender</label>
+                            <select id="gender" class="form-select">
+                                <option value="">Select...</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Prefer not to say">Prefer not to say</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="dob" class="form-label">Date of Birth</label>
+                            <input type="date" id="dob" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="maritalStatus" class="form-label">Marital Status</label>
+                            <select id="maritalStatus" class="form-select">
+                                <option value="">Select...</option>
+                                <option value="Single">Single</option>
+                                <option value="Married">Married</option>
+                                <option value="Widowed">Widowed</option>
+                                <option value="Separated">Separated</option>
+                                <option value="Divorced">Divorced</option>
+                                <option value="Others">Others</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label for="address" class="form-label">Address</label>
+                            <input type="text" id="address" class="form-control" placeholder="Street, Barangay, City">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="contactNo" class="form-label">Contact No.</label>
+                            <input type="text" id="contactNo" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="text" id="email" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="bloodtype" class="form-label">Blood Type</label>
+                            <select id="bloodtype" class="form-select">
+                                <option value="">Select...</option>
+                                <option value="A+">A Positive (A+)</option>
+                                <option value="A-">A Negative (A-)</option>
+                                <option value="B+">B Positive (B+)</option>
+                                <option value="B-">B Negative (B-)</option>
+                                <option value="AB+">AB Positive (AB+)</option>
+                                <option value="AB-">AB Negative (AB-)</option>
+                                <option value="O+">O Positive (O+)</option>
+                                <option value="O-">O Negative (O-)</option>
+                                <option value="Unknown">Unknown</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-primary mb-3">Employment Information</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="employeeId" class="form-label">Employee ID</label>
+                            <input type="text" id="employeeId" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="position" class="form-label">Position</label>
+                            <input type="text" id="position" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="empType" class="form-label">Employment Type</label>
+                            <select id="empType" class="form-select">
+                                <option value="">Select...</option>
+                                <option value="Permanent">Permanent</option>
+                                <option value="Contractual (COS)">Contractual (COS)</option>
+                                <option value="Job Order">Job Order</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="eligibility" class="form-label">Eligibility</label>
+                            <input type="text" id="eligibility" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="dateOfJoining" class="form-label">Date of Joining</label>
+                            <input type="date" id="dateOfJoining" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="empStatus" class="form-label">Status</label>
+                            <input type="text" id="empStatus" class="form-control" readonly>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="educAttain" class="form-label">Educational Attainment</label>
+                            <select id="educAttain" class="form-select">
+                                <option value="">Select...</option>
+                                <option value="Basic Education">Basic Education</option>
+                                <option value="High School Graduate">High School Graduate</option>
+                                <option value="College Graduate">College Graduate</option>
+                                <option value="Master's Degree">Master's Degree</option>
+                                <option value="Doctoral Degree">Doctoral Degree</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-primary mb-3">Emergency Contact</h6>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label for="contactPerson" class="form-label">Contact Person</label>
+                            <input type="text" id="contactPerson" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="emergencyRel" class="form-label">Relationship</label>
+                            <input type="text" id="emergencyRel" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="emergencyNo" class="form-label">Contact No.</label>
+                            <input type="text" id="emergencyNo" class="form-control">
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" onclick="saveAndCompileProfile()">
+                        <i class="fa-solid fa-floppy-disk"></i> Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div class="modal fade" id="passwordModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Change Password</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="currentPassword" class="form-label">Current Password</label>
+                        <input type="password" id="currentPassword" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="newPassword" class="form-label">New Password</label>
+                        <input type="password" id="newPassword" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                        <input type="password" id="confirmPassword" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-warning" onclick="changePassword()">Update Password</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="supabase.js"></script>
+    <script src="crew-portal.js"></script>
+</body>
+</html>
