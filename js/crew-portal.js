@@ -124,6 +124,8 @@ document.addEventListener("DOMContentLoaded", async function () {
             status: emp.status || "Active",
             marital_status: emp.marital_status || "",
             educational_attainment: emp.educational_attainment || "",
+            educational_institution: emp.educational_institution || "",
+            educational_course: emp.educational_course || "",
             profile_picture: emp.profile_picture || "",
             contact_person: contact.contact_person || "",
             emergency_rel: contact.relationship || "",
@@ -153,6 +155,7 @@ function loadProfileView(data) {
     badge.innerText = data.status || "—";
     badge.className = "badge fs-6 mt-2";
     if (data.status === "Active") badge.classList.add("bg-success");
+    else if (data.status === "On Leave") badge.classList.add("bg-info", "text-dark");
     else if (data.status === "Resigned") badge.classList.add("bg-warning", "text-dark");
     else if (data.status === "Terminated") badge.classList.add("bg-danger");
     else badge.classList.add("bg-secondary");
@@ -174,6 +177,8 @@ function loadProfileView(data) {
     document.getElementById("displayDateJoined").innerText = data.date_of_joining || "—";
     document.getElementById("displayStatus").innerText = data.status || "—";
     document.getElementById("displayEducAttain").innerText = data.educational_attainment || "—";
+    document.getElementById("displayEducInstitution").innerText = data.educational_institution || "—";
+    document.getElementById("displayEducCourse").innerText = data.educational_course || "—";
 
     document.getElementById("displayContactPerson").innerText = data.contact_person || "—";
     document.getElementById("displayEmergencyRel").innerText = data.emergency_rel || "—";
@@ -200,6 +205,9 @@ document.getElementById("editProfileModal").addEventListener("show.bs.modal", fu
     document.getElementById("dateOfJoining").value = profileData.date_of_joining;
     document.getElementById("empStatus").value = profileData.status;
     document.getElementById("educAttain").value = profileData.educational_attainment;
+    document.getElementById("educInstitution").value = profileData.educational_institution || "";
+    document.getElementById("educCourse").value = profileData.educational_course || "";
+    toggleEduExtra();
 
     document.getElementById("contactPerson").value = profileData.contact_person;
     document.getElementById("emergencyRel").value = profileData.emergency_rel;
@@ -207,6 +215,16 @@ document.getElementById("editProfileModal").addEventListener("show.bs.modal", fu
 
     document.getElementById("editProfilePreview").src = profileData.profile_picture || "assets/images/img_placeholder.jpg";
 });
+
+function toggleEduExtra() {
+    const val = document.getElementById("educAttain").value;
+    const showInst = val === "High School Graduate" || val === "College Graduate" || val === "Master's Degree" || val === "Doctoral Degree";
+    const showCourse = val === "College Graduate" || val === "Master's Degree" || val === "Doctoral Degree";
+    document.querySelectorAll(".edu-extra-institution").forEach(el => el.style.display = showInst ? "block" : "none");
+    document.querySelectorAll(".edu-extra-course").forEach(el => el.style.display = showCourse ? "block" : "none");
+}
+
+document.getElementById("educAttain").addEventListener("change", toggleEduExtra);
 
 function previewImage(event) {
     const file = event.target.files[0];
@@ -288,6 +306,8 @@ async function saveAndCompileProfile() {
             marital_status: document.getElementById("maritalStatus").value,
             status: document.getElementById("empStatus").value,
             educational_attainment: document.getElementById("educAttain").value,
+            educational_institution: document.getElementById("educInstitution").value,
+            educational_course: document.getElementById("educCourse").value,
         };
 
         const contactData = {
@@ -358,6 +378,8 @@ async function saveAndCompileProfile() {
             status: empData.status,
             marital_status: empData.marital_status,
             educational_attainment: empData.educational_attainment,
+            educational_institution: empData.educational_institution,
+            educational_course: empData.educational_course,
             profile_picture: empData.profile_picture || profileData.profile_picture,
             contact_person: contactData.contact_person,
             emergency_rel: contactData.relationship,
@@ -374,6 +396,80 @@ async function saveAndCompileProfile() {
     } catch (err) {
         console.error("Save error:", err);
         alert("Database error: " + err.message);
+    }
+}
+
+function switchCrewTab(tab) {
+    document.querySelectorAll("#crewTabs .nav-link").forEach(el => el.classList.remove("active"));
+    document.querySelector(`#crewTabs .nav-link[data-tab="${tab}"]`).classList.add("active");
+    document.getElementById("tab-profile").classList.toggle("d-none", tab !== "profile");
+    document.getElementById("tab-leave").classList.toggle("d-none", tab !== "leave");
+    if (tab === "leave") loadLeaveHistory();
+}
+
+async function loadLeaveHistory() {
+    if (!currentEmployeeDbId) return;
+    try {
+        const leaves = await dbGet("leave_requests", {
+            filter: `employee_id=eq.${currentEmployeeDbId}&order=created_at.desc`
+        });
+        const tbody = document.getElementById("leaveHistoryBody");
+        if (!leaves || leaves.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">No leave applications found.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = leaves.map(l => {
+            const badgeCls = l.status === "Approved" ? "bg-success"
+                : l.status === "Rejected" ? "bg-danger"
+                : "bg-warning text-dark";
+            const submitted = new Date(l.created_at).toLocaleDateString();
+            return `<tr>
+                <td>${l.leave_type}</td>
+                <td>${l.start_date}</td>
+                <td>${l.end_date}</td>
+                <td>${l.reason || "—"}</td>
+                <td><span class="badge ${badgeCls}">${l.status}</span></td>
+                <td>${submitted}</td>
+            </tr>`;
+        }).join("");
+    } catch (err) {
+        console.error("Failed to load leave history:", err);
+    }
+}
+
+async function submitLeaveRequest() {
+    const leaveType = document.getElementById("leaveType").value;
+    const startDate = document.getElementById("leaveStart").value;
+    const endDate = document.getElementById("leaveEnd").value;
+    const reason = document.getElementById("leaveReason").value.trim();
+
+    if (!leaveType) return alert("Please select a leave type.");
+    if (!startDate) return alert("Please select a start date.");
+    if (!endDate) return alert("Please select an end date.");
+    if (startDate > endDate) return alert("End date must be after start date.");
+    if (!currentEmployeeDbId) return alert("Please save your profile first before applying for leave.");
+
+    try {
+        await dbInsert("leave_requests", {
+            employee_id: currentEmployeeDbId,
+            leave_type: leaveType,
+            start_date: startDate,
+            end_date: endDate,
+            reason: reason || null
+        });
+
+        document.getElementById("leaveType").value = "";
+        document.getElementById("leaveStart").value = "";
+        document.getElementById("leaveEnd").value = "";
+        document.getElementById("leaveReason").value = "";
+
+        const modal = bootstrap.Modal.getInstance(document.getElementById("leaveModal"));
+        if (modal) modal.hide();
+
+        loadLeaveHistory();
+        alert("Leave application submitted successfully.");
+    } catch (err) {
+        alert("Error submitting leave: " + err.message);
     }
 }
 
