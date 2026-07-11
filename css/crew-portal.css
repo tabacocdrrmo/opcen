@@ -12,6 +12,8 @@
 }
 
 @media (max-width: 576px) {
+    .navbar-brand { font-size: 14px; }
+    .navbar-brand img { width: 24px; height: 24px; }
     #tab-leave .table-responsive .table,
     #tab-leave .table-responsive thead,
     #tab-leave .table-responsive tbody,
