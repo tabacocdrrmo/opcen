@@ -805,14 +805,51 @@ footer {
     .brand-name p { font-size: 11px; }
     .logo-img-frame { width: 44px !important; }
     .logo-subtitle-custom { font-size: 8px; }
+    .hero { padding: 60px 20px; }
     .hero h2 { font-size: 28px; }
+    .hero p { font-size: 16px; }
     .chat-window { width: 300px; right: -10px; }
     section { padding: 40px 5%; }
     .section-title { font-size: 24px; }
-	#numbers div style, 
-    #numbers > div > div[style*="display: grid"] {
-        grid-template-columns: 1fr !important;
-        gap: 15px !important;
+}
+@media (max-width: 576px) {
+    header { padding: 15px 10px; }
+    .nav-links {
+        left: -10px;
+        width: calc(100vw - 20px);
+    }
+    #numbers > div > div > div {
+        max-width: 130px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .slideshow-container { height: 240px; }
+    .hazard-scroll-container { height: 300px; }
+    .windy-container { height: 260px; }
+    .board-container { height: 300px; }
+    .monitoring-section { padding: 20px 10px; }
+    .windy-container iframe {
+        display: block;
+        margin: 0 auto;
+    }
+    .hero { padding: 40px 16px; }
+    .hero h2 { font-size: 22px; }
+    .hero p { font-size: 14px; }
+    .hotline-number { font-size: 22px; }
+    .chat-widget { right: 10px; }
+    .chat-window {
+        width: calc(100vw - 30px);
+        right: -10px;
+        height: 400px;
+    }
+    .chat-button {
+        height: 44px;
+        padding: 0 14px;
+        font-size: 18px;
+    }
+    .prev-slide, .next-slide {
+        padding: 12px 10px;
+        font-size: 16px;
     }
 }
 .hotline-link, .hotline-fb-link {
@@ -834,3 +871,5 @@ select option {
     color: black;
     font-style: normal;
 }
+
+

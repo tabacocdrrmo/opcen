@@ -250,6 +250,64 @@ function processBotReply(userInput) {
     setTimeout(() => { appendMessage(response, 'bot'); }, 400);
 }
 
+
+/* Change images */
+
+const gallerySets = {
+    cud: ["CUD01.jpg","CUD02.jpg","CUD03.jpg","CUD04.jpg","CUD05.jpg","CUD06.jpg"].map(f => "assets/images/" + f),
+    oss: ["OSS01.jpg","OSS02.jpg","OSS03.jpg","OSS04.jpg","OSS05.jpg","OSS06.jpg"].map(f => "assets/images/" + f),
+    iro: ["IRO01.jpg","IRO02.jpg","IRO03.jpg","IRO04.jpg","IRO05.jpg","IRO06.jpg","IRO07.jpg","IRO08.jpg","IRO09.jpg","IRO10.jpg"].map(f => "assets/images/" + f)
+};
+let galleryIndex = 0;
+let galleryList = [];
+
+function openGallery(setName) {
+    isPaused = true;
+    galleryList = gallerySets[setName] || [];
+    if (!galleryList.length) return;
+    const container = document.getElementById("galleryThumbs");
+    container.innerHTML = galleryList.map((src, i) =>
+        '<img src="' + src + '" onclick="openFullscreenGallery(' + i + ')" style="width:100%;height:150px;object-fit:cover;border-radius:6px;cursor:pointer;border:2px solid rgba(255,255,255,0.15);transition:border .2s;" onmouseover="this.style.borderColor=\'#fff\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,0.15)\'" onerror="this.src=\'assets/images/img_placeholder.jpg\'">'
+    ).join("");
+    document.getElementById("galleryGridModal").style.display = "flex";
+}
+
+function openFullscreenGallery(index) {
+    galleryIndex = index;
+    showGalleryImage();
+    document.getElementById("galleryGridModal").style.display = "none";
+    document.getElementById("galleryModal").style.display = "flex";
+}
+
+function closeGalleryGrid(e) {
+    if (e && e.target !== e.currentTarget) return;
+    document.getElementById("galleryGridModal").style.display = "none";
+    isPaused = false;
+}
+
+function showGalleryImage() {
+    const img = document.getElementById("galleryImage");
+    img.src = galleryList[galleryIndex];
+    img.alt = "Gallery image " + (galleryIndex + 1);
+    document.getElementById("galleryCounter").innerText = (galleryIndex + 1) + " / " + galleryList.length;
+}
+
+function galleryNext() {
+    galleryIndex = (galleryIndex + 1) % galleryList.length;
+    showGalleryImage();
+}
+
+function galleryPrev() {
+    galleryIndex = (galleryIndex - 1 + galleryList.length) % galleryList.length;
+    showGalleryImage();
+}
+
+function closeGallery(e) {
+    if (e && e.target !== e.currentTarget) return;
+    document.getElementById("galleryModal").style.display = "none";
+    isPaused = false;
+}
+
 function zoomSlide(srcPath) {
     isPaused = true;
     const modal = document.getElementById("imageZoomModal");
