@@ -1,0 +1,48 @@
+.bg-onleave {
+    background-color: #e67e22 !important;
+    color: #fff;
+}
+
+#crewTabs .nav-link {
+    color: #000;
+}
+#crewTabs .nav-link.active {
+    background-color: #212529;
+    color: #fff;
+}
+
+@media (max-width: 576px) {
+    #tab-leave .table-responsive .table,
+    #tab-leave .table-responsive thead,
+    #tab-leave .table-responsive tbody,
+    #tab-leave .table-responsive th,
+    #tab-leave .table-responsive td,
+    #tab-leave .table-responsive tr {
+        display: block;
+    }
+    #tab-leave .table-responsive thead {
+        display: none;
+    }
+    #tab-leave .table-responsive tr {
+        padding: 12px;
+        margin-bottom: 10px;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        background: #fff;
+    }
+    #tab-leave .table-responsive td {
+        padding: 6px 0;
+        border: none;
+        text-align: right;
+        font-size: 0.85rem;
+    }
+    #tab-leave .table-responsive td::before {
+        content: attr(data-label);
+        float: left;
+        font-weight: 600;
+        color: #555;
+    }
+    #tab-leave .table-responsive td:last-child {
+        padding-bottom: 0;
+    }
+}
