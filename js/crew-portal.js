@@ -155,7 +155,7 @@ function loadProfileView(data) {
     badge.innerText = data.status || "—";
     badge.className = "badge fs-6 mt-2";
     if (data.status === "Active") badge.classList.add("bg-success");
-    else if (data.status === "On Leave") badge.classList.add("bg-info", "text-dark");
+    else if (data.status === "On Leave") badge.classList.add("bg-onleave");
     else if (data.status === "Resigned") badge.classList.add("bg-warning", "text-dark");
     else if (data.status === "Terminated") badge.classList.add("bg-danger");
     else badge.classList.add("bg-secondary");
@@ -424,12 +424,12 @@ async function loadLeaveHistory() {
                 : "bg-warning text-dark";
             const submitted = new Date(l.created_at).toLocaleDateString();
             return `<tr>
-                <td>${l.leave_type}</td>
-                <td>${l.start_date}</td>
-                <td>${l.end_date}</td>
-                <td>${l.reason || "—"}</td>
-                <td><span class="badge ${badgeCls}">${l.status}</span></td>
-                <td>${submitted}</td>
+                <td data-label="Leave Type">${l.leave_type}</td>
+                <td data-label="Start">${l.start_date}</td>
+                <td data-label="End">${l.end_date}</td>
+                <td data-label="Reason">${l.reason || "—"}</td>
+                <td data-label="Status"><span class="badge ${badgeCls}">${l.status}</span></td>
+                <td data-label="Submitted">${submitted}</td>
             </tr>`;
         }).join("");
     } catch (err) {
