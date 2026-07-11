@@ -479,15 +479,24 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="currentPassword" class="form-label">Current Password</label>
-                        <input type="password" id="currentPassword" class="form-control">
+                        <div class="input-group">
+                            <input type="password" id="currentPassword" class="form-control">
+                            <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('currentPassword', this)"><i class="fa-solid fa-eye"></i></button>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="newPassword" class="form-label">New Password</label>
-                        <input type="password" id="newPassword" class="form-control">
+                        <div class="input-group">
+                            <input type="password" id="newPassword" class="form-control">
+                            <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('newPassword', this)"><i class="fa-solid fa-eye"></i></button>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="confirmPassword" class="form-label">Confirm New Password</label>
-                        <input type="password" id="confirmPassword" class="form-control">
+                        <div class="input-group">
+                            <input type="password" id="confirmPassword" class="form-control">
+                            <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('confirmPassword', this)"><i class="fa-solid fa-eye"></i></button>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">

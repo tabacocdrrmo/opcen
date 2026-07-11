@@ -13,6 +13,18 @@ function getSession() {
     }
 }
 
+function togglePassword(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const icon = btn.querySelector("i");
+    if (input.type === "password") {
+        input.type = "text";
+        icon.className = "fa-solid fa-eye-slash";
+    } else {
+        input.type = "password";
+        icon.className = "fa-solid fa-eye";
+    }
+}
+
 function setSession(username, employeeDbId) {
     sessionStorage.setItem("crewSession", JSON.stringify({ username, employeeDbId }));
 }
@@ -141,6 +153,12 @@ function loadProfileView(data) {
     document.getElementById("displayEmergencyRel").innerText = data.emergency_rel || "—";
     document.getElementById("displayEmergencyNo").innerText = data.emergency_no || "—";
 }
+
+document.getElementById("leaveModal").addEventListener("show.bs.modal", function () {
+    const today = new Date().toISOString().split("T")[0];
+    document.getElementById("leaveStart").setAttribute("min", today);
+    document.getElementById("leaveEnd").setAttribute("min", today);
+});
 
 document.getElementById("editProfileModal").addEventListener("show.bs.modal", function () {
     if (!profileData) return;

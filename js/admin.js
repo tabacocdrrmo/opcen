@@ -395,11 +395,6 @@ async function openViewModal(empId) {
                 <div class="col-sm-4"><strong>Contact Person:</strong> ${val(ec.contact_person)}</div>
                 <div class="col-sm-4"><strong>Relationship:</strong> ${val(ec.relationship)}</div>
                 <div class="col-sm-4"><strong>Contact Number:</strong> ${val(ec.contact_number)}</div>
-                <div class="col-12"><hr class="my-2"></div>
-
-                <div class="col-12"><div class="fw-bold text-primary" style="font-size:0.95rem">Account</div></div>
-                <div class="col-sm-4"><strong>Username:</strong> ${val(emp.username)}</div>
-                <div class="col-sm-4"><strong>Role:</strong> ${val(emp.role)}</div>
             </div>
         `;
     } catch (err) {
