@@ -63,12 +63,12 @@
                 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
                     <h4 class="mb-0">Employee Management</h4>
                     <div class="d-flex gap-2">
-                        <button class="btn btn-outline-success btn-sm" onclick="exportEmployees()">
-                            <i class="fa-solid fa-download"></i> Export
-                        </button>
                         <div style="min-width: 240px;">
                             <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Search name, ID, position..." oninput="filterTable()">
                         </div>
+                        <button class="btn btn-outline-success btn-sm" onclick="exportEmployees()">
+                            <i class="fa-solid fa-download"></i> Export
+                        </button>
                     </div>
                 </div>
 
@@ -90,10 +90,10 @@
                         </div>
                     </div>
                     <div class="col-6 col-md-2">
-                        <div class="card border-info shadow-sm">
+                        <div class="card border-info shadow-sm" style="border-color: #e67e22 !important;">
                             <div class="card-body text-center py-3">
                                 <div class="text-muted small text-uppercase">On Leave</div>
-                                <div class="fw-bold fs-4 text-info" id="statOnLeave">0</div>
+                                <div class="fw-bold fs-4" id="statOnLeave" style="color: #e67e22;">0</div>
                             </div>
                         </div>
                     </div>

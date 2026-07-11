@@ -149,13 +149,13 @@ function renderTable() {
             : '<span class="badge bg-secondary">Staff</span>';
 
         return `<tr>
-            <td class="fw-medium">${escapeHtml(name)}</td>
-            <td>${escapeHtml(emp.employee_id)}</td>
-            <td class="d-none d-md-table-cell">${escapeHtml(emp.position)}</td>
-            <td class="d-none d-lg-table-cell">${escapeHtml(emp.employment_type)}</td>
-            <td>${statusBadge}</td>
-            <td class="d-none d-sm-table-cell">${roleBadge}</td>
-            <td class="text-end">
+            <td data-label="Name" class="fw-medium">${escapeHtml(name)}</td>
+            <td data-label="Employee ID">${escapeHtml(emp.employee_id)}</td>
+            <td data-label="Position" class="d-none d-md-table-cell">${escapeHtml(emp.position)}</td>
+            <td data-label="Emp. Type" class="d-none d-lg-table-cell">${escapeHtml(emp.employment_type)}</td>
+            <td data-label="Status">${statusBadge}</td>
+            <td data-label="Role" class="d-none d-sm-table-cell">${roleBadge}</td>
+            <td data-label="Actions" class="text-end">
                 <div class="d-flex gap-1 justify-content-end">
                     <button class="btn btn-outline-primary btn-sm py-0" onclick="openStatusModal(${emp.employeeId}, '${escapeHtml(name)}', '${emp.status}')" title="Change Status">
                         <i class="fa-solid fa-flag"></i>
@@ -557,7 +557,7 @@ function renderLeaveTable() {
 
         let actions = "";
         if (l.status === "Pending") {
-            actions = `<div class="d-flex gap-1">
+            actions = `<div class="d-flex gap-1 justify-content-end">
                 <button class="btn btn-success btn-sm py-0" onclick="approveLeave(${l.id})" title="Approve">
                     <i class="fa-solid fa-check"></i>
                 </button>
@@ -570,14 +570,14 @@ function renderLeaveTable() {
         }
 
         return `<tr>
-            <td class="fw-medium">${escapeHtml(name)}</td>
-            <td>${escapeHtml(empId)}</td>
-            <td>${escapeHtml(l.leave_type)}</td>
-            <td class="d-none d-sm-table-cell">${l.start_date}</td>
-            <td class="d-none d-sm-table-cell">${l.end_date}</td>
-            <td class="d-none d-md-table-cell">${escapeHtml(l.reason || "—")}</td>
-            <td><span class="badge ${badgeCls}">${l.status}</span></td>
-            <td class="text-end">${actions}</td>
+            <td data-label="Employee" class="fw-medium">${escapeHtml(name)}</td>
+            <td data-label="Employee ID">${escapeHtml(empId)}</td>
+            <td data-label="Leave Type">${escapeHtml(l.leave_type)}</td>
+            <td data-label="Start" class="d-none d-sm-table-cell">${l.start_date}</td>
+            <td data-label="End" class="d-none d-sm-table-cell">${l.end_date}</td>
+            <td data-label="Reason" class="d-none d-md-table-cell">${escapeHtml(l.reason || "—")}</td>
+            <td data-label="Status"><span class="badge ${badgeCls}">${l.status}</span></td>
+            <td data-label="Actions" class="text-end">${actions}</td>
         </tr>`;
     }).join("");
 }

@@ -57,3 +57,64 @@ body { overflow-x: hidden; }
         display: block;
     }
 }
+
+@media (max-width: 576px) {
+    .page-section .table-responsive table,
+    .page-section .table-responsive thead,
+    .page-section .table-responsive tbody,
+    .page-section .table-responsive th,
+    .page-section .table-responsive td,
+    .page-section .table-responsive tr {
+        display: block;
+    }
+    .page-section .table-responsive thead {
+        display: none;
+    }
+    .page-section .table-responsive tr {
+        padding: 12px;
+        margin-bottom: 10px;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        background: #fff;
+    }
+    .page-section .table-responsive td {
+        padding: 6px 0;
+        border: none;
+        text-align: right;
+        font-size: 0.85rem;
+    }
+    .page-section .table-responsive td::before {
+        content: attr(data-label);
+        float: left;
+        font-weight: 600;
+        color: #555;
+    }
+    .page-section .table-responsive td:last-child {
+        padding-bottom: 0;
+    }
+    #employeeTable .btn-sm.py-0,
+    #page-leave .btn-sm.py-0 {
+        min-width: 36px;
+        min-height: 32px;
+        font-size: 0.9rem;
+    }
+    .col-6 .card-body {
+        padding: 8px !important;
+    }
+    .col-6 .small.text-uppercase {
+        font-size: 9px !important;
+    }
+    .col-6 .fs-4 {
+        font-size: 1rem !important;
+    }
+    #page-employees .d-flex.gap-2,
+    #page-leave .d-flex.gap-2 {
+        width: 100%;
+    }
+    #page-employees .d-flex.gap-2 > div,
+    #page-leave .d-flex.gap-2 > input,
+    #page-leave .d-flex.gap-2 > select {
+        flex: 1;
+        min-width: 0 !important;
+    }
+}
