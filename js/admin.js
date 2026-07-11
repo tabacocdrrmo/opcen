@@ -1,36 +1,3 @@
-const DB_HEADERS = {
-    'apikey': SUPABASE_ANON_KEY,
-    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-    'Content-Type': 'application/json',
-    'Prefer': 'return=representation'
-};
-
-async function dbGet(table, { select = '*', filter = '' } = {}) {
-    let url = `${SUPABASE_URL}${table}?select=${encodeURIComponent(select)}`;
-    if (filter) url += `&${filter}`;
-    const res = await fetch(url, {
-        headers: { ...DB_HEADERS, 'Prefer': undefined }
-    });
-    if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`GET ${table} (${res.status}): ${text}`);
-    }
-    return res.json();
-}
-
-async function dbPatch(table, data, filter) {
-    const res = await fetch(`${SUPABASE_URL}${table}?${filter}`, {
-        method: 'PATCH',
-        headers: DB_HEADERS,
-        body: JSON.stringify(data)
-    });
-    if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`PATCH ${table} (${res.status}): ${text}`);
-    }
-    return res.json();
-}
-
 let employees = [];
 let filteredEmployees = [];
 let targetEmployeeId = null;
@@ -53,6 +20,7 @@ function clearSession() {
 }
 
 function handleLogout() {
+    supabaseClient.auth.signOut();
     clearSession();
     window.location.href = "index.html";
 }
@@ -67,12 +35,13 @@ document.addEventListener("DOMContentLoaded", async function () {
     document.getElementById("adminUserDisplay").innerText = session.username;
 
     try {
-        const accounts = await dbGet("accounts", {
-            select: "*,employees(*)",
-            filter: "order=id.asc"
-        });
+        const { data: accounts, error: acctErr } = await supabaseClient
+            .from("accounts")
+            .select("*,employees(*)")
+            .order("id", { ascending: true });
+        if (acctErr) throw acctErr;
 
-        employees = accounts
+        employees = (accounts || [])
             .filter(a => a.employees)
             .map(a => {
                 const e = a.employees;
@@ -243,7 +212,11 @@ async function confirmStatusChange() {
     if (!targetEmployeeId) return;
 
     try {
-        await dbPatch("employees", { status: newStatus }, `id=eq.${targetEmployeeId}`);
+        const { error: statusErr } = await supabaseClient
+            .from("employees")
+            .update({ status: newStatus })
+            .eq("id", targetEmployeeId);
+        if (statusErr) throw statusErr;
         const emp = employees.find(e => e.employeeId === targetEmployeeId);
         if (emp) emp.status = newStatus;
         refreshTable();
@@ -266,9 +239,14 @@ async function confirmRoleChange() {
     if (!targetAccountEmployeeId) return;
 
     try {
-        await dbPatch("accounts", { role: newRole }, `employee_id=eq.${targetAccountEmployeeId}`);
-        const emp = employees.find(e => e.employeeId === targetAccountEmployeeId);
-        if (emp) emp.role = newRole;
+        const empRecord = employees.find(e => e.employeeId === targetAccountEmployeeId);
+        if (!empRecord) return;
+        const { error: roleErr } = await supabaseClient
+            .from("accounts")
+            .update({ role: newRole })
+            .eq("employee_id", targetAccountEmployeeId);
+        if (roleErr) throw roleErr;
+        empRecord.role = newRole;
         refreshTable();
         bootstrap.Modal.getInstance(document.getElementById("roleModal")).hide();
     } catch (err) {
@@ -278,19 +256,17 @@ async function confirmRoleChange() {
 
 async function exportEmployees() {
     try {
-        const [allLeave, allAccounts, allEmergency] = await Promise.all([
-            dbGet("leave_requests", {
-                select: "employee_id,status",
-                filter: "status=eq.Approved"
-            }),
-            dbGet("accounts", {
-                select: "*,employees(*)",
-                filter: "order=id.asc"
-            }),
-            dbGet("emergency_contacts", {
-                select: "employee_id,contact_person,relationship,contact_number"
-            })
+        const [allLeaveRes, allAccountsRes, allEmergencyRes] = await Promise.all([
+            supabaseClient.from("leave_requests").select("employee_id,status").eq("status", "Approved"),
+            supabaseClient.from("accounts").select("*,employees(*)").order("id", { ascending: true }),
+            supabaseClient.from("emergency_contacts").select("employee_id,contact_person,relationship,contact_number")
         ]);
+        if (allLeaveRes.error) throw allLeaveRes.error;
+        if (allAccountsRes.error) throw allAccountsRes.error;
+        if (allEmergencyRes.error) throw allEmergencyRes.error;
+        const allLeave = allLeaveRes.data || [];
+        const allAccounts = allAccountsRes.data || [];
+        const allEmergency = allEmergencyRes.data || [];
 
         const approvedCounts = {};
         (allLeave || []).forEach(l => {
@@ -378,9 +354,10 @@ async function openViewModal(empId) {
         if (!emp) { body.innerHTML = '<div class="text-danger">Employee not found.</div>'; return; }
         window._currentViewEmployeeName = (emp.first_name + "_" + emp.last_name).replace(/\s+/g,"_").toLowerCase() || "employee";
 
-        const emergency = await dbGet("emergency_contacts", {
-            filter: `employee_id=eq.${empId}`
-        });
+        const { data: emergency } = await supabaseClient
+            .from("emergency_contacts")
+            .select("*")
+            .eq("employee_id", empId);
         const ec = emergency && emergency.length > 0 ? emergency[0] : {};
 
         const val = v => escapeHtml(v ?? "—");
@@ -481,10 +458,11 @@ const leavePageSize = 20;
 
 async function loadLeaveRequests() {
     try {
-        const data = await dbGet("leave_requests", {
-            select: "*,employees(first_name,last_name,employee_id)",
-            filter: "order=created_at.desc"
-        });
+        const { data, error } = await supabaseClient
+            .from("leave_requests")
+            .select("*,employees(first_name,last_name,employee_id)")
+            .order("created_at", { ascending: false });
+        if (error) throw error;
         leaveRequests = data || [];
         filterLeaveTable();
     } catch (err) {
@@ -587,9 +565,17 @@ async function approveLeave(id) {
     try {
         const req = leaveRequests.find(l => l.id === id);
         if (req) {
-            await dbPatch("employees", { status: "On Leave" }, `id=eq.${req.employee_id}`);
+            const { error: empErr } = await supabaseClient
+                .from("employees")
+                .update({ status: "On Leave" })
+                .eq("id", req.employee_id);
+            if (empErr) throw empErr;
         }
-        await dbPatch("leave_requests", { status: "Approved", updated_at: new Date().toISOString() }, `id=eq.${id}`);
+        const { error: leaveErr } = await supabaseClient
+            .from("leave_requests")
+            .update({ status: "Approved", updated_at: new Date().toISOString() })
+            .eq("id", id);
+        if (leaveErr) throw leaveErr;
         if (req) req.status = "Approved";
         filterLeaveTable();
     } catch (err) {
@@ -600,13 +586,18 @@ async function approveLeave(id) {
 async function restoreExpiredLeaves() {
     const today = new Date().toISOString().split("T")[0];
     try {
-        const expired = await dbGet("leave_requests", {
-            select: "employee_id",
-            filter: `status=eq.Approved&end_date=lt.${today}`
-        });
-        const empIds = [...new Set(expired.map(r => r.employee_id))];
+        const { data: expired } = await supabaseClient
+            .from("leave_requests")
+            .select("employee_id")
+            .eq("status", "Approved")
+            .lt("end_date", today);
+        const empIds = [...new Set((expired || []).map(r => r.employee_id))];
         for (const empId of empIds) {
-            await dbPatch("employees", { status: "Active" }, `id=eq.${empId}`);
+            const { error: restoreErr } = await supabaseClient
+                .from("employees")
+                .update({ status: "Active" })
+                .eq("id", empId);
+            if (restoreErr) console.error("Restore error for emp", empId, restoreErr);
         }
         if (empIds.length) {
             employees.forEach(e => {
@@ -621,7 +612,11 @@ async function restoreExpiredLeaves() {
 async function rejectLeave(id) {
     if (!confirm("Reject this leave request?")) return;
     try {
-        await dbPatch("leave_requests", { status: "Rejected", updated_at: new Date().toISOString() }, `id=eq.${id}`);
+        const { error: rejectErr } = await supabaseClient
+            .from("leave_requests")
+            .update({ status: "Rejected", updated_at: new Date().toISOString() })
+            .eq("id", id);
+        if (rejectErr) throw rejectErr;
         const req = leaveRequests.find(l => l.id === id);
         if (req) req.status = "Rejected";
         filterLeaveTable();

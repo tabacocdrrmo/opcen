@@ -1,49 +1,3 @@
-const DB_HEADERS = {
-    'apikey': SUPABASE_ANON_KEY,
-    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-    'Content-Type': 'application/json',
-    'Prefer': 'return=representation'
-};
-
-async function dbGet(table, { select = '*', filter = '' } = {}) {
-    let url = `${SUPABASE_URL}${table}?select=${encodeURIComponent(select)}`;
-    if (filter) url += `&${filter}`;
-    const res = await fetch(url, {
-        headers: { ...DB_HEADERS, 'Prefer': undefined }
-    });
-    if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`GET ${table} (${res.status}): ${text}`);
-    }
-    return res.json();
-}
-
-async function dbInsert(table, data) {
-    const res = await fetch(`${SUPABASE_URL}${table}`, {
-        method: 'POST',
-        headers: DB_HEADERS,
-        body: JSON.stringify(data)
-    });
-    if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`INSERT ${table} (${res.status}): ${text}`);
-    }
-    return res.json();
-}
-
-async function dbUpdate(table, data, filter) {
-    const res = await fetch(`${SUPABASE_URL}${table}?${filter}`, {
-        method: 'PATCH',
-        headers: DB_HEADERS,
-        body: JSON.stringify(data)
-    });
-    if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`UPDATE ${table} (${res.status}): ${text}`);
-    }
-    return res.json();
-}
-
 let currentActiveUser = null;
 let currentEmployeeDbId = null;
 let profileData = null;
@@ -82,28 +36,31 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (link) link.classList.remove("d-none");
     }
 
-    try {
-        const accounts = await dbGet("accounts", {
-            select: "*,employees(*)",
-            filter: `employee_id=eq.${session.employeeDbId}`
-        });
+    emailjs.init("PunzKpQ532XeW-W_m");
 
-        if (accounts.length === 0) {
+    try {
+        const { data: acct, error: acctErr } = await supabaseClient
+            .from("accounts")
+            .select("*,employees(*)")
+            .eq("employee_id", session.employeeDbId)
+            .single();
+
+        if (acctErr || !acct) {
             alert("Account not found. Please log in again.");
             clearSession();
             window.location.href = "index.html";
             return;
         }
 
-        const acct = accounts[0];
         const emp = acct.employees;
 
         let contact = {};
         try {
-            const contacts = await dbGet("emergency_contacts", {
-                filter: `employee_id=eq.${acct.employee_id}`
-            });
-            if (contacts.length > 0) contact = contacts[0];
+            const { data: contacts } = await supabaseClient
+                .from("emergency_contacts")
+                .select("*")
+                .eq("employee_id", acct.employee_id);
+            if (contacts && contacts.length > 0) contact = contacts[0];
         } catch (_) {}
 
         profileData = {
@@ -246,15 +203,21 @@ async function changePassword() {
     if (!currentEmployeeDbId) return alert("Save your profile first before changing the password.");
 
     try {
-        const accounts = await dbGet("accounts", {
-            select: "password_hash",
-            filter: `employee_id=eq.${currentEmployeeDbId}`
+        const { data: authSession } = await supabaseClient.auth.getSession();
+        const userEmail = authSession?.session?.user?.email;
+        if (!userEmail) return alert("Not authenticated.");
+
+        const { error: signInErr } = await supabaseClient.auth.signInWithPassword({
+            email: userEmail,
+            password: currentPass
         });
+        if (signInErr) return alert("Current password is incorrect.");
 
-        if (accounts.length === 0) return alert("Account not found.");
-        if (accounts[0].password_hash !== currentPass) return alert("Current password is incorrect.");
+        const { error: updateErr } = await supabaseClient.auth.updateUser({
+            password: newPass
+        });
+        if (updateErr) throw updateErr;
 
-        await dbUpdate("accounts", { password_hash: newPass }, `employee_id=eq.${currentEmployeeDbId}`);
         alert("Password updated successfully.");
         document.getElementById("currentPassword").value = "";
         document.getElementById("newPassword").value = "";
@@ -269,22 +232,14 @@ async function changePassword() {
 async function uploadProfileImage(file, employeeId) {
     const ext = file.name.split('.').pop().toLowerCase() || 'jpg';
     const fileName = `${employeeId}_${Date.now()}.${ext}`;
-    const storageUrl = SUPABASE_URL.replace('/rest/v1/', '/storage/v1/');
-    const formData = new FormData();
-    formData.append('file', file);
-    const res = await fetch(`${storageUrl}object/profile-pictures/${fileName}`, {
-        method: 'POST',
-        headers: {
-            'apikey': SUPABASE_ANON_KEY,
-            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-        },
-        body: formData
-    });
-    if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`Upload failed (${res.status}): ${text}`);
-    }
-    return `${storageUrl}object/public/profile-pictures/${fileName}`;
+    const { data, error } = await supabaseClient.storage
+        .from('profile-pictures')
+        .upload(fileName, file, { upsert: true });
+    if (error) throw new Error(`Upload failed: ${error.message}`);
+    const { data: urlData } = supabaseClient.storage
+        .from('profile-pictures')
+        .getPublicUrl(fileName);
+    return urlData.publicUrl;
 }
 
 async function saveAndCompileProfile() {
@@ -319,39 +274,63 @@ async function saveAndCompileProfile() {
         let empId = currentEmployeeDbId;
 
         if (empId) {
-            await dbUpdate("employees", empData, `id=eq.${empId}`);
+            const { error: empErr } = await supabaseClient
+                .from("employees")
+                .update(empData)
+                .eq("id", empId);
+            if (empErr) throw empErr;
 
-            const existing = await dbGet("emergency_contacts", {
-                filter: `employee_id=eq.${empId}`
-            });
+            const { data: existing } = await supabaseClient
+                .from("emergency_contacts")
+                .select("id")
+                .eq("employee_id", empId);
 
-            if (existing.length > 0) {
-                await dbUpdate("emergency_contacts", contactData, `employee_id=eq.${empId}`);
+            if (existing && existing.length > 0) {
+                const { error: contactErr } = await supabaseClient
+                    .from("emergency_contacts")
+                    .update(contactData)
+                    .eq("employee_id", empId);
+                if (contactErr) throw contactErr;
             } else if (contactData.contact_person) {
-                await dbInsert("emergency_contacts", { ...contactData, employee_id: empId });
+                const { error: contactErr } = await supabaseClient
+                    .from("emergency_contacts")
+                    .insert({ ...contactData, employee_id: empId });
+                if (contactErr) throw contactErr;
             }
         } else {
-            const inserted = await dbInsert("employees", empData);
-            if (!inserted || inserted.length === 0) throw new Error("Failed to create employee record.");
+            const { data: inserted, error: empErr } = await supabaseClient
+                .from("employees")
+                .insert(empData)
+                .select();
+            if (empErr || !inserted || inserted.length === 0) throw new Error(empErr?.message || "Failed to create employee record.");
             empId = inserted[0].id;
             currentEmployeeDbId = empId;
+
+            const { data: authData } = await supabaseClient.auth.getSession();
+            const { error: acctErr } = await supabaseClient
+                .from("accounts")
+                .update({ employee_id: empId })
+                .eq("auth_user_id", authData.session?.user?.id);
+            if (acctErr) throw acctErr;
+
             setSession(currentActiveUser, empId);
 
-            await dbInsert("accounts", {
-                employee_id: empId,
-                username: currentActiveUser,
-                password_hash: "ChangeMe123!"
-            });
-
             if (contactData.contact_person) {
-                await dbInsert("emergency_contacts", { ...contactData, employee_id: empId });
+                const { error: contactErr } = await supabaseClient
+                    .from("emergency_contacts")
+                    .insert({ ...contactData, employee_id: empId });
+                if (contactErr) throw contactErr;
             }
         }
 
         if (pendingProfileFile) {
             try {
                 const imageUrl = await uploadProfileImage(pendingProfileFile, empId);
-                await dbUpdate("employees", { profile_picture: imageUrl }, `id=eq.${empId}`);
+                const { error: picErr } = await supabaseClient
+                    .from("employees")
+                    .update({ profile_picture: imageUrl })
+                    .eq("id", empId);
+                if (picErr) throw picErr;
                 empData.profile_picture = imageUrl;
             } catch (uploadErr) {
                 console.error("Image upload failed:", uploadErr);
@@ -410,9 +389,12 @@ function switchCrewTab(tab) {
 async function loadLeaveHistory() {
     if (!currentEmployeeDbId) return;
     try {
-        const leaves = await dbGet("leave_requests", {
-            filter: `employee_id=eq.${currentEmployeeDbId}&order=created_at.desc`
-        });
+        const { data: leaves, error: leavesErr } = await supabaseClient
+            .from("leave_requests")
+            .select("*")
+            .eq("employee_id", currentEmployeeDbId)
+            .order("created_at", { ascending: false });
+        if (leavesErr) throw leavesErr;
         const tbody = document.getElementById("leaveHistoryBody");
         if (!leaves || leaves.length === 0) {
             tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">No leave applications found.</td></tr>';
@@ -450,13 +432,28 @@ async function submitLeaveRequest() {
     if (!currentEmployeeDbId) return alert("Please save your profile first before applying for leave.");
 
     try {
-        await dbInsert("leave_requests", {
-            employee_id: currentEmployeeDbId,
+        const { error: leaveErr } = await supabaseClient
+            .from("leave_requests")
+            .insert({
+                employee_id: currentEmployeeDbId,
+                leave_type: leaveType,
+                start_date: startDate,
+                end_date: endDate,
+                reason: reason || null
+            });
+        if (leaveErr) throw leaveErr;
+
+        const empName = profileData
+            ? (profileData.first_name + " " + profileData.last_name).trim() || currentActiveUser
+            : currentActiveUser;
+
+        emailjs.send("service_mieljzd", "template_nrb6uos", {
+            employee: empName,
             leave_type: leaveType,
             start_date: startDate,
             end_date: endDate,
-            reason: reason || null
-        });
+            reason: reason || "N/A"
+        }).catch(e => console.warn("Email notification failed:", e));
 
         document.getElementById("leaveType").value = "";
         document.getElementById("leaveStart").value = "";
@@ -474,6 +471,7 @@ async function submitLeaveRequest() {
 }
 
 function handleLogout() {
+    supabaseClient.auth.signOut();
     clearSession();
     window.location.href = "index.html";
 }

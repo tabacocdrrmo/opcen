@@ -49,51 +49,11 @@ document.addEventListener("click", function(event) {
     }
 });
 
-// SUPABASE REST API HELPERS
-const DB_HEADERS = {
-    'apikey': SUPABASE_ANON_KEY,
-    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-    'Content-Type': 'application/json',
-    'Prefer': 'return=representation'
-};
-
-async function dbGet(table, { select = '*', filter = '' } = {}) {
-    let url = `${SUPABASE_URL}${table}?select=${encodeURIComponent(select)}`;
-    if (filter) url += `&${filter}`;
-    const res = await fetch(url, {
-        headers: { ...DB_HEADERS, 'Prefer': undefined }
-    });
-    if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`GET ${table} (${res.status}): ${text}`);
-    }
-    return res.json();
-}
-
-async function dbInsert(table, data) {
-    const res = await fetch(`${SUPABASE_URL}${table}`, {
-        method: 'POST',
-        headers: DB_HEADERS,
-        body: JSON.stringify(data)
-    });
-    if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`INSERT ${table} (${res.status}): ${text}`);
-    }
-    return res.json();
-}
-
-async function dbUpdate(table, data, filter) {
-    const res = await fetch(`${SUPABASE_URL}${table}?${filter}`, {
-        method: 'PATCH',
-        headers: DB_HEADERS,
-        body: JSON.stringify(data)
-    });
-    if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`UPDATE ${table} (${res.status}): ${text}`);
-    }
-    return res.json();
+function usernameToEmail(username) {
+    return username
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-zA-Z0-9._-]/g, '_')
+        .toLowerCase() + '@placeholder.com';
 }
 
 // ==========================================
@@ -115,20 +75,20 @@ async function handleLogin() {
     if (!userIn) return alert("Please enter a username.");
 
     try {
-        const accounts = await dbGet("accounts", {
-            select: "*,employees(*)",
-            filter: `username=eq.${userIn}`
+        const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
+            email: usernameToEmail(userIn),
+            password: passIn
         });
 
-        if (accounts.length === 0) {
-            return alert("Account not found. Contact an administrator.");
-        }
+        if (authError) return alert("Invalid credentials.");
 
-        const acct = accounts[0];
+        const { data: acct, error: acctError } = await supabaseClient
+            .from('accounts')
+            .select('*, employees(*)')
+            .eq('auth_user_id', authData.user.id)
+            .single();
 
-        if (acct.password_hash !== passIn) {
-            return alert("Invalid credentials.");
-        }
+        if (acctError || !acct) return alert("Account not found. Contact an administrator.");
 
         sessionStorage.setItem("crewSession", JSON.stringify({
             username: userIn,
@@ -140,7 +100,7 @@ async function handleLogin() {
         window.location.href = redirect;
     } catch (err) {
         console.error("Login error:", err);
-        alert("Database connection error: " + err.message);
+        alert("Login failed: " + err.message);
     }
 }
 
