@@ -169,30 +169,63 @@ function showSlides(n) {
 
 const hazardContainer = document.getElementById("hazardScrollContainer");
 const prepSliderFrame = document.getElementById("prepSliderFrame");
-let isPaused = false;
+let hazardRAFId = null;
+let hazardLastTime = 0;
+const HAZARD_SPEED = 60;
 
 prepSliderFrame.innerHTML += prepSliderFrame.innerHTML;
 
-function smoothContinuousScroll() {
-    if (!isPaused) {
-        prepSliderFrame.scrollLeft += 1;
-        if (prepSliderFrame.scrollLeft >= prepSliderFrame.scrollWidth / 2) {
-            prepSliderFrame.scrollLeft = 0;
-        }
+function smoothContinuousScroll(timestamp) {
+    if (hazardRAFId === null) return;
+    if (!hazardLastTime) hazardLastTime = timestamp;
+    const delta = (timestamp - hazardLastTime) / 1000;
+    hazardLastTime = timestamp;
+    prepSliderFrame.scrollLeft += HAZARD_SPEED * delta;
+    if (prepSliderFrame.scrollLeft >= prepSliderFrame.scrollWidth / 2) {
+        prepSliderFrame.scrollLeft -= prepSliderFrame.scrollWidth / 2;
     }
-    requestAnimationFrame(smoothContinuousScroll);
+    hazardRAFId = requestAnimationFrame(smoothContinuousScroll);
+}
+
+function startHazardScroll() {
+    if (hazardRAFId !== null) return;
+    hazardLastTime = 0;
+    hazardRAFId = requestAnimationFrame(smoothContinuousScroll);
+}
+
+function stopHazardScroll() {
+    if (hazardRAFId !== null) {
+        cancelAnimationFrame(hazardRAFId);
+        hazardRAFId = null;
+    }
 }
 
 function scrollPrepSlides(direction) {
     prepSliderFrame.scrollLeft += (direction * 300);
 }
 
-hazardContainer.addEventListener("mouseenter", () => { isPaused = true; });
-hazardContainer.addEventListener("mouseleave", () => { isPaused = false; });
-hazardContainer.addEventListener("touchstart", () => { isPaused = true; }, { passive: true });
-hazardContainer.addEventListener("touchend", () => { isPaused = false; }, { passive: true });
+hazardContainer.addEventListener("mouseenter", stopHazardScroll);
+hazardContainer.addEventListener("mouseleave", startHazardScroll);
+hazardContainer.addEventListener("touchstart", stopHazardScroll, { passive: true });
+hazardContainer.addEventListener("touchend", startHazardScroll, { passive: true });
 
-requestAnimationFrame(smoothContinuousScroll);
+const hazardObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) startHazardScroll();
+        else stopHazardScroll();
+    });
+}, { threshold: 0 });
+hazardObserver.observe(hazardContainer);
+
+document.addEventListener("visibilitychange", () => {
+    if (document.hidden) stopHazardScroll();
+    else {
+        const rect = hazardContainer.getBoundingClientRect();
+        if (rect.top < window.innerHeight && rect.bottom > 0) startHazardScroll();
+    }
+});
+
+startHazardScroll();
 
 function switchTab(event, tabId) {
     let i, contents, tabs;
@@ -262,7 +295,7 @@ let galleryIndex = 0;
 let galleryList = [];
 
 function openGallery(setName) {
-    isPaused = true;
+    stopHazardScroll();
     galleryList = gallerySets[setName] || [];
     if (!galleryList.length) return;
     const container = document.getElementById("galleryThumbs");
@@ -282,7 +315,8 @@ function openFullscreenGallery(index) {
 function closeGalleryGrid(e) {
     if (e && e.target !== e.currentTarget) return;
     document.getElementById("galleryGridModal").style.display = "none";
-    isPaused = false;
+    const rect = hazardContainer.getBoundingClientRect();
+    if (rect.top < window.innerHeight && rect.bottom > 0 && !document.hidden) startHazardScroll();
 }
 
 function showGalleryImage() {
@@ -305,11 +339,12 @@ function galleryPrev() {
 function closeGallery(e) {
     if (e && e.target !== e.currentTarget) return;
     document.getElementById("galleryModal").style.display = "none";
-    isPaused = false;
+    const rect = hazardContainer.getBoundingClientRect();
+    if (rect.top < window.innerHeight && rect.bottom > 0 && !document.hidden) startHazardScroll();
 }
 
 function zoomSlide(srcPath) {
-    isPaused = true;
+    stopHazardScroll();
     const modal = document.getElementById("imageZoomModal");
     const image = document.getElementById("zoomedImage");
     const btn = document.getElementById("downloadSlideBtn");
@@ -319,7 +354,8 @@ function zoomSlide(srcPath) {
 }
 function closeZoomModal() {
     document.getElementById("imageZoomModal").style.display = "none";
-    isPaused = false;
+    const rect = hazardContainer.getBoundingClientRect();
+    if (rect.top < window.innerHeight && rect.bottom > 0 && !document.hidden) startHazardScroll();
 }
 
 document.addEventListener("DOMContentLoaded", function () {
