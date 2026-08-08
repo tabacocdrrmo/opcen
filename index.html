@@ -366,7 +366,10 @@
                 </div>
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" placeholder="••••••••">
+                    <div class="password-wrapper">
+                        <input type="password" id="password" placeholder="••••••••">
+                        <button type="button" class="password-toggle" onclick="togglePassword('password', this)" aria-label="Show password"><i class="fa-solid fa-eye"></i></button>
+                    </div>
                 </div>
                 <button class="btn-portal" onclick="handleLogin()">Sign In</button>
             </div>
