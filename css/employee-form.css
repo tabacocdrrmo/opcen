@@ -1,0 +1,226 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Times New Roman', Times, serif;
+    background: #e9ecef;
+    color: #000;
+}
+
+/* --- Toolbar (screen only) --- */
+.toolbar {
+    background: #212529;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: flex-end;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.toolbar .btn {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    margin-left: 8px;
+}
+
+.btn-primary { background: #1980d9; color: #fff; }
+.btn-primary:hover { background: #166fbe; }
+.btn-secondary { background: #6c757d; color: #fff; }
+.btn-secondary:hover { background: #5a6268; }
+
+/* --- Document --- */
+.document {
+    max-width: 800px;
+    margin: 20px auto;
+    background: #fff;
+    padding: 48px 56px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+}
+
+/* --- Header --- */
+.doc-header {
+    position: relative;
+    border-bottom: 3px double #000;
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.doc-logo {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 84px;
+    height: 84px;
+    object-fit: contain;
+}
+
+.doc-header-text {
+    text-align: center;
+}
+
+.gov-line {
+    font-size: 13px;
+    letter-spacing: 0.5px;
+}
+
+.agency-name {
+    font-size: 15px;
+    font-weight: bold;
+    margin-top: 4px;
+}
+
+.doc-title-block {
+    text-align: center;
+    margin-bottom: 18px;
+}
+
+.doc-title {
+    font-size: 19px;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.doc-contact {
+    font-size: 12px;
+    margin-top: 6px;
+}
+
+/* --- Sections --- */
+.doc-section {
+    margin-bottom: 18px;
+}
+
+.section-title {
+    background: #f0f0f0;
+    border: 1px solid #000;
+    padding: 5px 10px;
+    font-weight: bold;
+    font-size: 15px;
+}
+
+/* --- Profile photo --- */
+.personal-wrap {
+    position: relative;
+}
+
+.personal-wrap .detail-table {
+    margin-right: 125px;
+}
+
+.photo-box {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 120px;
+    height: 133px;
+    border: 1px solid #000;
+    text-align: center;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    box-sizing: border-box;
+}
+
+.photo-box img {
+    width: 100%;
+    height: calc(100% - 20px);
+    object-fit: cover;
+    display: block;
+}
+
+.photo-label {
+    font-size: 11px;
+    margin-top: 6px;
+}
+
+.detail-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #000;
+    font-size: 14px;
+}
+
+.detail-table td {
+    border: 1px solid #000;
+    padding: 8px 10px;
+    vertical-align: top;
+}
+
+.detail-table .lbl {
+    background: #f7f7f7;
+    font-weight: bold;
+    width: 160px;
+}
+
+.detail-table tr td:nth-child(1) {
+    width: 110px;
+}
+
+.detail-table tr td:nth-child(3) {
+    width: 110px;
+}
+
+.detail-table .val {
+    word-break: break-word;
+}
+
+/* --- Disclaimer --- */
+.disclaimer {
+    border: 1px solid #000;
+    padding: 12px 14px;
+    font-size: 12.5px;
+    line-height: 1.55;
+    text-align: justify;
+    margin-bottom: 14px;
+}
+
+/* --- Print stamp --- */
+.print-stamp {
+    text-align: center;
+    font-size: 11px;
+    color: #555;
+}
+
+/* --- Print styles --- */
+@page {
+    size: A4;
+    margin: 15mm;
+}
+
+@media print {
+    body {
+        background: #fff;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+
+    .document {
+        max-width: none;
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+    }
+
+    .toolbar {
+        display: none;
+    }
+
+    .detail-table .val {
+        word-break: normal;
+    }
+}

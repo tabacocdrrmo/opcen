@@ -2,6 +2,8 @@ let employees = [];
 let filteredEmployees = [];
 let targetEmployeeId = null;
 let targetAccountEmployeeId = null;
+let currentViewEmployee = null;
+let currentViewEmergency = {};
 let currentPage = 1;
 const pageSize = 15;
 
@@ -352,13 +354,15 @@ async function openViewModal(empId) {
     try {
         const emp = employees.find(e => e.employeeId === empId);
         if (!emp) { body.innerHTML = '<div class="text-danger">Employee not found.</div>'; return; }
-        window._currentViewEmployeeName = (emp.first_name + "_" + emp.last_name).replace(/\s+/g,"_").toLowerCase() || "employee";
 
         const { data: emergency } = await supabaseClient
             .from("emergency_contacts")
             .select("*")
             .eq("employee_id", empId);
         const ec = emergency && emergency.length > 0 ? emergency[0] : {};
+
+        currentViewEmployee = emp;
+        currentViewEmergency = ec;
 
         const val = v => escapeHtml(v ?? "—");
 
@@ -402,20 +406,34 @@ async function openViewModal(empId) {
     }
 }
 
-function exportPdf() {
-    const element = document.getElementById("viewModalContent");
-    if (!element) return;
-    const now = new Date();
-    const ts = now.getFullYear() + "-" + String(now.getMonth()+1).padStart(2,"0") + "-" + String(now.getDate()).padStart(2,"0") + "_" + String(now.getHours()).padStart(2,"0") + "-" + String(now.getMinutes()).padStart(2,"0") + "-" + String(now.getSeconds()).padStart(2,"0");
-    const name = window._currentViewEmployeeName || "employee";
-    const opt = {
-        margin: [0.5, 0.5, 0.5, 0.5],
-        filename: ts + "_" + name + "_record.pdf",
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: "in", format: "letter", orientation: "portrait" }
-    };
-    html2pdf().set(opt).from(element).save();
+function openEmployeeForm() {
+    if (!currentViewEmployee) return alert("No employee selected.");
+    sessionStorage.setItem("employeeFormData", JSON.stringify({
+        employee_id: currentViewEmployee.employee_id || "",
+        first_name: currentViewEmployee.first_name || "",
+        last_name: currentViewEmployee.last_name || "",
+        gender: currentViewEmployee.gender || "",
+        date_of_birth: currentViewEmployee.date_of_birth || "",
+        marital_status: currentViewEmployee.marital_status || "",
+        blood_type: currentViewEmployee.blood_type || "",
+        address: currentViewEmployee.address || "",
+        contact_number: currentViewEmployee.contact_number || "",
+        email: currentViewEmployee.email || "",
+        position: currentViewEmployee.position || "",
+        employment_type: currentViewEmployee.employment_type || "",
+        eligibility: currentViewEmployee.eligibility || "",
+        date_of_joining: currentViewEmployee.date_of_joining || "",
+        status: currentViewEmployee.status || "Active",
+        educational_attainment: currentViewEmployee.educational_attainment || "",
+        educational_institution: currentViewEmployee.educational_institution || "",
+        educational_course: currentViewEmployee.educational_course || "",
+        profile_picture: currentViewEmployee.profile_picture || "",
+        username: currentViewEmployee.username || "",
+        contact_person: currentViewEmergency.contact_person || "",
+        emergency_rel: currentViewEmergency.relationship || "",
+        emergency_no: currentViewEmergency.contact_number || ""
+    }));
+    window.open("employee-form.html", "_blank");
 }
 
 function escapeHtml(str) {

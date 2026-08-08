@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Information Record - CDRRMO Tabaco City</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/employee-form.css">
+</head>
+<body>
+
+    <div class="no-print toolbar">
+        <div>
+            <button class="btn btn-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> Print</button>
+            <button class="btn btn-secondary" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Back</button>
+        </div>
+    </div>
+
+    <div class="document" id="employeeFormDocument">
+        <!-- Header -->
+        <div class="doc-header">
+            <img src="assets/images/logo.png" alt="CDRRMO Logo" class="doc-logo"
+                 onerror="this.style.display='none'">
+            <div class="doc-header-text">
+                <div class="gov-line">Republic of the Philippines</div>
+                <div class="gov-line">City Government of Tabaco City</div>
+                <div class="agency-name">CITY DISASTER RISK REDUCTION AND MANAGEMENT OFFICE</div>
+                <div class="doc-contact">0909 224 5858 | 0999 475 8582 | 0939 782 9833</div>
+            </div>
+        </div>
+
+        <div class="doc-title-block">
+            <div class="doc-title">EMPLOYEE INFORMATION RECORD</div>
+        </div>
+
+        <!-- I. Personal Information -->
+        <div class="doc-section">
+            <div class="section-title">I. Personal Information</div>
+            <div class="personal-wrap">
+                <table class="detail-table">
+                <tr>
+                    <td class="lbl">Full Name</td>
+                    <td class="val" colspan="3" id="dFullName">—</td>
+                </tr>
+                <tr>
+                    <td class="lbl">Gender</td>
+                    <td class="val" id="dGender">—</td>
+                    <td class="lbl">Date of Birth</td>
+                    <td class="val" id="dDob">—</td>
+                </tr>
+                <tr>
+                    <td class="lbl">Marital Status</td>
+                    <td class="val" id="dMarital">—</td>
+                    <td class="lbl">Blood Type</td>
+                    <td class="val" id="dBlood">—</td>
+                </tr>
+                <tr>
+                    <td class="lbl">Address</td>
+                    <td class="val" colspan="3" id="dAddress">—</td>
+                </tr>
+                <tr>
+                    <td class="lbl">Contact No.</td>
+                    <td class="val" id="dContact">—</td>
+                    <td class="lbl">Email Address</td>
+                    <td class="val" id="dEmail">—</td>
+                </tr>
+                </table>
+                <div class="photo-box">
+                    <img id="dPhoto" alt="Profile Picture" onerror="this.style.display='none'">
+                    <div class="photo-label">Photo</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- II. Employment Details -->
+        <div class="doc-section">
+            <div class="section-title">II. Employment Details</div>
+            <table class="detail-table">
+                <tr>
+                    <td class="lbl">Position</td>
+                    <td class="val" colspan="3" id="dPosition">—</td>
+                </tr>
+                <tr>
+                    <td class="lbl">Employment Type</td>
+                    <td class="val" id="dEmpType">—</td>
+                    <td class="lbl">Eligibility</td>
+                    <td class="val" id="dEligibility">—</td>
+                </tr>
+                <tr>
+                    <td class="lbl">Date of Joining</td>
+                    <td class="val" id="dJoined">—</td>
+                    <td class="lbl">Educational Attainment</td>
+                    <td class="val" id="dEducAttain">—</td>
+                </tr>
+                <tr>
+                    <td class="lbl">Institution / University</td>
+                    <td class="val" id="dEducInst">—</td>
+                    <td class="lbl">Course / Major</td>
+                    <td class="val" id="dEducCourse">—</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- III. Emergency Contact -->
+        <div class="doc-section">
+            <div class="section-title">III. Emergency Contact</div>
+            <table class="detail-table">
+                <tr>
+                    <td class="lbl">Contact Person</td>
+                    <td class="val" id="dContactPerson">—</td>
+                    <td class="lbl">Relationship</td>
+                    <td class="val" id="dContactRel">—</td>
+                </tr>
+                <tr>
+                    <td class="lbl">Contact No.</td>
+                    <td class="val" colspan="3" id="dContactNo2">—</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="disclaimer">
+            <strong>DISCLAIMER:</strong>
+            This document contains confidential information belonging to the City Disaster Risk Reduction and
+            Management Office (CDRRMO) of Tabaco City. It is intended solely for official administrative use.
+            Unauthorized use, reproduction, or disclosure of the information contained herein is strictly prohibited
+            and may be subject to applicable laws, rules, and regulations. All personal data shall be processed in
+            accordance with the Data Privacy Act of 2012 (RA 10173).
+        </div>
+
+        <div class="print-stamp">
+            Generated: <span id="dGenerated">—</span>
+        </div>
+    </div>
+
+    <script src="js/employee-form.js"></script>
+</body>
+</html>

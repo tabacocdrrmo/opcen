@@ -396,6 +396,12 @@ async function saveAndCompileProfile() {
     }
 }
 
+function openEmployeeForm() {
+    if (!profileData) return alert("Save your profile first before viewing the form.");
+    sessionStorage.setItem("employeeFormData", JSON.stringify(profileData));
+    window.open("employee-form.html", "_blank");
+}
+
 function switchCrewTab(tab) {
     document.querySelectorAll("#crewTabs .nav-link").forEach(el => el.classList.remove("active"));
     document.querySelector(`#crewTabs .nav-link[data-tab="${tab}"]`).classList.add("active");
