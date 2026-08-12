@@ -80,6 +80,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             employee_id: emp.employee_id || "",
             position: emp.position || "",
             first_name: emp.first_name || "",
+            middle_name: emp.middle_name || "",
             last_name: emp.last_name || "",
             gender: emp.gender || "",
             date_of_birth: emp.date_of_birth || "",
@@ -115,7 +116,7 @@ function loadProfileView(data) {
     document.getElementById("accountEmail").innerText = data.email;
 
     document.getElementById("profilePreview").src = data.profile_picture || "assets/images/img_placeholder.jpg";
-    document.getElementById("displayFullName").innerText = (data.first_name + " " + data.last_name).trim() || "—";
+    document.getElementById("displayFullName").innerText = [data.first_name, data.middle_name, data.last_name].filter(Boolean).join(" ") || "—";
     document.getElementById("displayPosition").innerText = data.position || "—";
     document.getElementById("displayEmployeeId").innerText = data.employee_id || "—";
     document.getElementById("displayEmpType").innerText = data.employment_type || "—";
@@ -130,6 +131,7 @@ function loadProfileView(data) {
     else badge.classList.add("bg-secondary");
 
     document.getElementById("displayFirstName").innerText = data.first_name || "—";
+    document.getElementById("displayMiddleName").innerText = data.middle_name || "—";
     document.getElementById("displayLastName").innerText = data.last_name || "—";
     document.getElementById("displayGender").innerText = data.gender || "—";
     document.getElementById("displayDob").innerText = data.date_of_birth || "—";
@@ -164,6 +166,7 @@ document.getElementById("editProfileModal").addEventListener("show.bs.modal", fu
     if (!profileData) return;
 
     document.getElementById("firstName").value = profileData.first_name;
+    document.getElementById("middleName").value = profileData.middle_name;
     document.getElementById("lastName").value = profileData.last_name;
     document.getElementById("gender").value = profileData.gender;
     document.getElementById("dob").value = profileData.date_of_birth;
@@ -262,11 +265,17 @@ async function uploadProfileImage(file, employeeId) {
 
 async function saveAndCompileProfile() {
     try {
+        const firstName = document.getElementById("firstName").value.trim();
+        const middleName = document.getElementById("middleName").value.trim();
+        const lastName = document.getElementById("lastName").value.trim();
+        if (!firstName || !middleName || !lastName) return alert("Please enter your first, middle, and last name.");
+
         const empData = {
             employee_id: document.getElementById("employeeId").value,
             position: document.getElementById("position").value,
-            first_name: document.getElementById("firstName").value,
-            last_name: document.getElementById("lastName").value,
+            first_name: firstName,
+            middle_name: middleName,
+            last_name: lastName,
             gender: document.getElementById("gender").value,
             date_of_birth: document.getElementById("dob").value || null,
             address: document.getElementById("address").value,
@@ -362,6 +371,7 @@ async function saveAndCompileProfile() {
             employee_id: empData.employee_id,
             position: empData.position,
             first_name: empData.first_name,
+            middle_name: empData.middle_name,
             last_name: empData.last_name,
             gender: empData.gender,
             date_of_birth: empData.date_of_birth,
@@ -429,17 +439,37 @@ function formatResponderDate(callDate) {
     return out;
 }
 
+function normalizeName(s) {
+    return (s || "").toLowerCase().replace(/\s+/g, " ").replace(/\./g, "").trim();
+}
+
+function getEmployeeNameVariants(data) {
+    if (!data) return new Set();
+    const first = (data.first_name || "").trim();
+    const last = (data.last_name || "").trim();
+    const middle = (data.middle_name || "").trim();
+    const variants = new Set();
+    if (first && last) {
+        variants.add(normalizeName([first, last].join(" ")));
+        if (middle) {
+            variants.add(normalizeName([first, middle, last].join(" ")));
+            const initial = middle[0];
+            variants.add(normalizeName([first, initial + ".", last].join(" ")));
+            variants.add(normalizeName([first, initial, last].join(" ")));
+        }
+    }
+    return variants;
+}
+
 async function loadResponderLog() {
     const tbody = document.getElementById("responderLogBody");
     tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">Loading responder log...</td></tr>';
     try {
-        const fullName = profileData
-            ? (profileData.first_name + " " + profileData.last_name).trim()
-            : null;
+        const nameVariants = getEmployeeNameVariants(profileData);
         const res = await fetch(RESPONDER_LOG_URL);
         const data = await res.json();
         responderLogRows = (data.rows || []).filter(r =>
-            !fullName || (r.name || "").trim().toLowerCase() === fullName.toLowerCase()
+            nameVariants.size === 0 || nameVariants.has(normalizeName(r.name || ""))
         );
 
         const natureFilter = document.getElementById("responderNatureFilter");
@@ -573,7 +603,7 @@ async function submitLeaveRequest() {
         if (leaveErr) throw leaveErr;
 
         const empName = profileData
-            ? (profileData.first_name + " " + profileData.last_name).trim() || currentActiveUser
+            ? [profileData.first_name, profileData.middle_name, profileData.last_name].filter(Boolean).join(" ").trim() || currentActiveUser
             : currentActiveUser;
 
         emailjs.send("service_mieljzd", "template_nrb6uos", {

@@ -194,6 +194,64 @@ body {
     color: #555;
 }
 
+/* --- Mobile / small screen --- */
+@media screen and (max-width: 640px) {
+    .toolbar {
+        justify-content: center;
+    }
+
+    .document {
+        margin: 0;
+        padding: 24px 16px;
+        box-shadow: none;
+    }
+
+    .doc-logo {
+        position: static;
+        transform: none;
+        display: block;
+        margin: 0 auto 8px;
+        width: 64px;
+        height: 64px;
+    }
+
+    .doc-header {
+        text-align: center;
+    }
+
+    .doc-title {
+        font-size: 16px;
+    }
+
+    .personal-wrap .detail-table {
+        margin-right: 0;
+    }
+
+    .photo-box {
+        position: static;
+        width: 120px;
+        height: 133px;
+        margin: 0 auto 12px;
+    }
+
+    .detail-table {
+        font-size: 13px;
+    }
+
+    .detail-table td {
+        padding: 6px 8px;
+    }
+
+    .detail-table .lbl {
+        width: auto;
+    }
+
+    .detail-table tr td:nth-child(1),
+    .detail-table tr td:nth-child(3) {
+        width: auto;
+    }
+}
+
 /* --- Print styles --- */
 @page {
     size: A4;

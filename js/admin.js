@@ -49,7 +49,7 @@ function getFilteredData() {
     const q = document.getElementById("searchInput").value.toLowerCase().trim();
     if (!q) return employees;
     return employees.filter(e =>
-        (e.first_name + " " + e.last_name).toLowerCase().includes(q) ||
+        [e.first_name, e.middle_name, e.last_name].filter(Boolean).join(" ").toLowerCase().includes(q) ||
         e.employee_id.toLowerCase().includes(q) ||
         e.position.toLowerCase().includes(q) ||
         e.employment_type.toLowerCase().includes(q)
@@ -63,6 +63,13 @@ function refreshTable() {
     renderPagination();
 }
 
+function tableName(emp) {
+    const parts = [emp.first_name];
+    if (emp.middle_name) parts.push(emp.middle_name[0] + ".");
+    if (emp.last_name) parts.push(emp.last_name);
+    return parts.join(" ") || "—";
+}
+
 function renderTable() {
     const tbody = document.getElementById("tableBody");
     const start = (currentPage - 1) * pageSize;
@@ -74,7 +81,7 @@ function renderTable() {
     }
 
     tbody.innerHTML = page.map(emp => {
-        const name = (emp.first_name + " " + emp.last_name).trim() || "—";
+        const name = tableName(emp);
         const statusBadge = statusBadgeHtml(emp.status);
         const roleBadge = emp.role === "admin"
             ? '<span class="badge bg-warning text-dark">Admin</span>'
@@ -254,9 +261,10 @@ function previewEmpImage(event) {
     if (img) img.src = URL.createObjectURL(file);
 }
 
-async function uploadEmpImage(file, employeeId) {
+async function uploadEmpImage(file, namePrefix) {
     const ext = file.name.split('.').pop().toLowerCase() || 'jpg';
-    const fileName = `${employeeId}_${Date.now()}.${ext}`;
+    const safePrefix = String(namePrefix).replace(/[^\w-]/g, "_");
+    const fileName = `${safePrefix}_${Date.now()}.${ext}`;
     const { error: uploadErr } = await supabaseClient.storage
         .from('profile-pictures')
         .upload(fileName, file, { upsert: true });
@@ -281,7 +289,7 @@ function resetEmployeeForm() {
     editingEmployeeId = null;
     pendingEmpImage = null;
     document.getElementById("empPicPreview").src = "assets/images/img_placeholder.jpg";
-    ["empUsername","empPassword","empFirstName","empLastName","empDob","empAddress","empContact","empEmail",
+    ["empUsername","empPassword","empFirstName","empMiddleName","empLastName","empDob","empAddress","empContact","empEmail",
      "empEmployeeId","empPosition","empEligibility","empDateOfJoining","empEducInstitution","empEducCourse",
      "empContactPerson","empEmergencyRel","empEmergencyNo"].forEach(id => {
         const el = document.getElementById(id);
@@ -315,6 +323,7 @@ async function openEditEmployeeModal(empId) {
     document.getElementById("empUsername").value = emp.username || "";
     document.getElementById("empRole").value = emp.role || "staff";
     document.getElementById("empFirstName").value = emp.first_name || "";
+    document.getElementById("empMiddleName").value = emp.middle_name || "";
     document.getElementById("empLastName").value = emp.last_name || "";
     document.getElementById("empGender").value = emp.gender || "";
     document.getElementById("empDob").value = emp.date_of_birth || "";
@@ -355,6 +364,7 @@ function collectEmployeeForm() {
     return {
         employee_id: document.getElementById("empEmployeeId").value.trim(),
         first_name: document.getElementById("empFirstName").value.trim(),
+        middle_name: document.getElementById("empMiddleName").value.trim(),
         last_name: document.getElementById("empLastName").value.trim(),
         gender: document.getElementById("empGender").value,
         date_of_birth: document.getElementById("empDob").value || null,
@@ -374,6 +384,12 @@ function collectEmployeeForm() {
     };
 }
 
+async function rollbackEmployee(empId) {
+    try {
+        await supabaseClient.from("employees").delete().eq("id", empId);
+    } catch (_) {}
+}
+
 async function saveEmployee() {
     const empData = collectEmployeeForm();
     const username = document.getElementById("empUsername").value.trim();
@@ -384,7 +400,7 @@ async function saveEmployee() {
         contact_number: document.getElementById("empEmergencyNo").value.trim()
     };
 
-    if (!empData.first_name || !empData.last_name) return alert("Please enter the employee's first and last name.");
+    if (!empData.first_name || !empData.middle_name || !empData.last_name) return alert("Please enter the employee's first, middle, and last name.");
     if (!username) return alert("Please enter a username for the account.");
 
     const btn = document.querySelector('#employeeFormModal .btn-primary');
@@ -392,6 +408,28 @@ async function saveEmployee() {
 
     try {
         let empId = editingEmployeeId;
+
+        if (!empId) {
+            const { data: existingEmp } = await supabaseClient
+                .from("employees")
+                .select("id")
+                .eq("employee_id", empData.employee_id)
+                .maybeSingle();
+            if (existingEmp) return alert(`An employee with Employee ID "${empData.employee_id}" already exists.`);
+
+            const { data: existingAcct } = await supabaseClient
+                .from("accounts")
+                .select("id")
+                .eq("username", username)
+                .maybeSingle();
+            if (existingAcct) return alert(`The username "${username}" is already taken.`);
+        }
+
+        if (pendingEmpImage) {
+            const imagePrefix = empId ? empId : (empData.employee_id || "emp");
+            const imageUrl = await uploadEmpImage(pendingEmpImage, imagePrefix);
+            empData.profile_picture = imageUrl;
+        }
 
         if (empId) {
             const { error: empErr } = await supabaseClient
@@ -423,21 +461,18 @@ async function saveEmployee() {
                 email: usernameToEmail(username),
                 password
             });
-            if (signUpErr) throw signUpErr;
+            if (signUpErr) {
+                await rollbackEmployee(empId);
+                throw signUpErr;
+            }
 
             const { error: acctErr } = await supabaseClient
                 .from("accounts")
                 .insert({ auth_user_id: authData.user?.id, username, employee_id: empId, role });
-            if (acctErr) throw acctErr;
-        }
-
-        if (pendingEmpImage) {
-            const imageUrl = await uploadEmpImage(pendingEmpImage, empId);
-            const { error: picErr } = await supabaseClient
-                .from("employees")
-                .update({ profile_picture: imageUrl })
-                .eq("id", empId);
-            if (picErr) throw picErr;
+            if (acctErr) {
+                await rollbackEmployee(empId);
+                throw acctErr;
+            }
         }
 
         const { data: existing } = await supabaseClient
@@ -473,7 +508,7 @@ async function saveEmployee() {
 async function deleteEmployee(empId) {
     const emp = employees.find(e => e.employeeId === empId);
     if (!emp) return;
-    const name = (emp.first_name + " " + emp.last_name).trim() || "This employee";
+    const name = [emp.first_name, emp.middle_name, emp.last_name].filter(Boolean).join(" ") || "This employee";
     if (!confirm(`Delete ${name}? This will set their status to "Terminated".`)) return;
     try {
         const { error: delErr } = await supabaseClient
@@ -506,6 +541,7 @@ async function reloadEmployees() {
                 employeeId: e.id,
                 employee_id: e.employee_id || "",
                 first_name: e.first_name || "",
+                middle_name: e.middle_name || "",
                 last_name: e.last_name || "",
                 gender: e.gender || "",
                 date_of_birth: e.date_of_birth || "",
@@ -564,6 +600,7 @@ async function exportEmployees() {
                 return {
                     employee_id: e.employee_id || "",
                     first_name: e.first_name || "",
+                    middle_name: e.middle_name || "",
                     last_name: e.last_name || "",
                     gender: e.gender || "",
                     date_of_birth: e.date_of_birth || "",
@@ -590,7 +627,7 @@ async function exportEmployees() {
             });
 
         const fields = [
-            "employee_id","first_name","last_name","gender","date_of_birth","marital_status","blood_type",
+            "employee_id","first_name","middle_name","last_name","gender","date_of_birth","marital_status","blood_type",
             "address","contact_number","email",
             "position","employment_type","status","eligibility","date_of_joining","educational_attainment","educational_institution","educational_course",
             "role","username",
@@ -598,7 +635,7 @@ async function exportEmployees() {
             "approved_leaves"
         ];
         const headers = [
-            "Employee ID","First Name","Last Name","Gender","Date of Birth","Marital Status","Blood Type",
+            "Employee ID","First Name","Middle Name","Last Name","Gender","Date of Birth","Marital Status","Blood Type",
             "Address","Contact Number","Email",
             "Position","Employment Type","Status","Eligibility","Date of Joining","Educational Attainment","Institution / University","Course / Major",
             "Role","Username",
@@ -649,6 +686,7 @@ async function openViewModal(empId) {
                 </div>
                 <div class="col-12"><div class="fw-bold text-primary" style="font-size:0.95rem">Personal Information</div></div>
                 <div class="col-sm-6"><strong>First Name:</strong> ${val(emp.first_name)}</div>
+                <div class="col-sm-6"><strong>Middle Name:</strong> ${val(emp.middle_name)}</div>
                 <div class="col-sm-6"><strong>Last Name:</strong> ${val(emp.last_name)}</div>
                 <div class="col-sm-6"><strong>Gender:</strong> ${val(emp.gender)}</div>
                 <div class="col-sm-6"><strong>Date of Birth:</strong> ${val(emp.date_of_birth)}</div>
@@ -687,6 +725,7 @@ function openEmployeeForm() {
     sessionStorage.setItem("employeeFormData", JSON.stringify({
         employee_id: currentViewEmployee.employee_id || "",
         first_name: currentViewEmployee.first_name || "",
+        middle_name: currentViewEmployee.middle_name || "",
         last_name: currentViewEmployee.last_name || "",
         gender: currentViewEmployee.gender || "",
         date_of_birth: currentViewEmployee.date_of_birth || "",
@@ -749,7 +788,7 @@ async function loadLeaveRequests() {
     try {
         const { data, error } = await supabaseClient
             .from("leave_requests")
-            .select("*,employees(first_name,last_name,employee_id)")
+            .select("*,employees(first_name,middle_name,last_name,employee_id)")
             .order("created_at", { ascending: false });
         if (error) throw error;
         leaveRequests = data || [];
@@ -767,7 +806,7 @@ function filterLeaveTable() {
     const status = document.getElementById("leaveStatusFilter").value;
     filteredLeaveRequests = leaveRequests.filter(l => {
         const emp = l.employees || {};
-        const name = (emp.first_name + " " + emp.last_name).toLowerCase();
+        const name = [emp.first_name, emp.middle_name, emp.last_name].filter(Boolean).join(" ").toLowerCase();
         if (q && !name.includes(q)) return false;
         if (status && l.status !== status) return false;
         return true;
@@ -816,7 +855,7 @@ function renderLeaveTable() {
     const pageData = data.slice(start, start + leavePageSize);
     tbody.innerHTML = pageData.map(l => {
         const emp = l.employees || {};
-        const name = (emp.first_name + " " + emp.last_name).trim() || "—";
+        const name = tableName(emp);
         const empId = emp.employee_id || "—";
         const badgeCls = l.status === "Approved" ? "bg-success"
             : l.status === "Rejected" ? "bg-danger"

@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
-    const fullName = [data.first_name, data.last_name].filter(Boolean).join(" ") || "—";
+    const fullName = [data.first_name, data.middle_name, data.last_name].filter(Boolean).join(" ") || "—";
     const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 
     const photoEl = document.getElementById("dPhoto");
