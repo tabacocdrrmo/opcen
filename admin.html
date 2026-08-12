@@ -66,6 +66,9 @@
                         <div style="min-width: 240px;">
                             <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Search name, ID, position..." oninput="filterTable()">
                         </div>
+                        <button class="btn btn-primary btn-sm" onclick="openAddEmployeeModal()">
+                            <i class="fa-solid fa-user-plus"></i> Add Employee
+                        </button>
                         <button class="btn btn-outline-success btn-sm" onclick="exportEmployees()">
                             <i class="fa-solid fa-download"></i> Export
                         </button>
@@ -126,7 +129,7 @@
                                     <col style="width: 110px;">
                                     <col style="width: 68px;">
                                     <col style="width: 55px;">
-                                    <col style="width: 65px;">
+                                    <col style="width: 130px;">
                                 </colgroup>
                                 <thead class="table-dark">
                                     <tr>
@@ -151,11 +154,37 @@
 
             <!-- ========== Accounts Page ========== -->
             <div id="page-accounts" class="page-section d-none">
-                <h4>Account Management</h4>
-                <div class="card shadow-sm">
-                    <div class="card-body text-center text-muted py-5">
-                        <i class="fa-solid fa-user-lock fa-3x mb-3" style="opacity:.3;"></i>
-                        <p class="mb-0">Account management coming soon.<br>Password resets, account activation, and more.</p>
+                <h4 class="mb-3">Account Management</h4>
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fa-solid fa-key text-warning me-2"></i>Reset Password</h5>
+                                <p class="text-muted small">Set a new temporary password for an employee who forgot theirs. Tell them the new password after saving.</p>
+                                <div class="mb-3">
+                                    <label for="resetUsername" class="form-label">Username</label>
+                                    <input type="text" id="resetUsername" class="form-control" placeholder="e.g. responder1">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="resetPassword" class="form-label">New Password</label>
+                                    <div class="input-group">
+                                        <input type="password" id="resetPassword" class="form-control" placeholder="At least 6 characters">
+                                        <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordInput('resetPassword', this)"><i class="fa-solid fa-eye"></i></button>
+                                    </div>
+                                </div>
+                                <button class="btn btn-warning" id="resetAccountBtn" onclick="resetAccountPassword()">
+                                    <i class="fa-solid fa-rotate-right"></i> Reset Password
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="card shadow-sm">
+                            <div class="card-body text-center text-muted py-5">
+                                <i class="fa-solid fa-user-lock fa-3x mb-3" style="opacity:.3;"></i>
+                                <p class="mb-0">More account tools coming soon.<br>Account activation and deactivation.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -249,29 +278,6 @@
         </div>
     </div>
 
-    <!-- Change Role Modal -->
-    <div class="modal fade" id="roleModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Change Role</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p class="mb-3">Update role for <strong id="roleEmployeeName">—</strong></p>
-                    <select id="roleSelect" class="form-select form-select-sm" style="font-size: 0.8rem;">
-                        <option value="staff">Staff</option>
-                        <option value="admin">Admin</option>
-                    </select>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary btn-sm" onclick="confirmRoleChange()">Save</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- View Employee Modal -->
     <div class="modal fade" id="viewModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
@@ -288,6 +294,196 @@
                         <i class="fa-solid fa-file-pdf"></i> Export to PDF
                     </button>
                     <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add / Edit Employee Modal -->
+    <div class="modal fade" id="employeeFormModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="employeeFormTitle">Add Employee</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+
+                    <h6 class="fw-bold text-primary mb-3">Profile Picture</h6>
+                    <div class="mb-4">
+                        <div class="d-flex align-items-center gap-3">
+                            <img id="empPicPreview" class="rounded border" width="100" height="100"
+                                 style="object-fit: cover;"
+                                 onerror="this.onerror=null; this.src='assets/images/img_placeholder.jpg'">
+                            <input type="file" class="form-control" style="max-width:260px;" accept="image/*" onchange="previewEmpImage(event)">
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-primary mb-3">Account Information</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label for="empUsername" class="form-label">Username</label>
+                            <input type="text" id="empUsername" class="form-control" placeholder="e.g. responder1">
+                        </div>
+                        <div class="col-md-4" id="empPasswordWrap">
+                            <label for="empPassword" class="form-label">Password</label>
+                            <div class="input-group">
+                                <input type="password" id="empPassword" class="form-control">
+                                <button class="btn btn-outline-secondary" type="button" onclick="toggleEmpPassword()"><i class="fa-solid fa-eye"></i></button>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="empRole" class="form-label">Role</label>
+                            <select id="empRole" class="form-select">
+                                <option value="staff">Staff</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-primary mb-3">Personal Information</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="empFirstName" class="form-label">First Name</label>
+                            <input type="text" id="empFirstName" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="empLastName" class="form-label">Last Name</label>
+                            <input type="text" id="empLastName" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="empGender" class="form-label">Gender</label>
+                            <select id="empGender" class="form-select">
+                                <option value="">Select...</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Prefer not to say">Prefer not to say</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="empDob" class="form-label">Date of Birth</label>
+                            <input type="date" id="empDob" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="empMarital" class="form-label">Marital Status</label>
+                            <select id="empMarital" class="form-select">
+                                <option value="">Select...</option>
+                                <option value="Single">Single</option>
+                                <option value="Married">Married</option>
+                                <option value="Widowed">Widowed</option>
+                                <option value="Separated">Separated</option>
+                                <option value="Divorced">Divorced</option>
+                                <option value="Others">Others</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label for="empAddress" class="form-label">Address</label>
+                            <input type="text" id="empAddress" class="form-control" placeholder="Street, Barangay, City">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="empContact" class="form-label">Contact No.</label>
+                            <input type="text" id="empContact" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="empEmail" class="form-label">Email Address</label>
+                            <input type="text" id="empEmail" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="empBloodtype" class="form-label">Blood Type</label>
+                            <select id="empBloodtype" class="form-select">
+                                <option value="">Select...</option>
+                                <option value="A+">A Positive (A+)</option>
+                                <option value="A-">A Negative (A-)</option>
+                                <option value="B+">B Positive (B+)</option>
+                                <option value="B-">B Negative (B-)</option>
+                                <option value="AB+">AB Positive (AB+)</option>
+                                <option value="AB-">AB Negative (AB-)</option>
+                                <option value="O+">O Positive (O+)</option>
+                                <option value="O-">O Negative (O-)</option>
+                                <option value="Unknown">Unknown</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-primary mb-3">Employment Information</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="empEmployeeId" class="form-label">Employee ID</label>
+                            <input type="text" id="empEmployeeId" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="empPosition" class="form-label">Position</label>
+                            <input type="text" id="empPosition" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="empEmpType" class="form-label">Employment Type</label>
+                            <select id="empEmpType" class="form-select">
+                                <option value="">Select...</option>
+                                <option value="Permanent">Permanent</option>
+                                <option value="Contractual (COS)">Contractual (COS)</option>
+                                <option value="Job Order">Job Order</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="empEligibility" class="form-label">Eligibility</label>
+                            <input type="text" id="empEligibility" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="empDateOfJoining" class="form-label">Date of Joining</label>
+                            <input type="date" id="empDateOfJoining" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="empStatus" class="form-label">Status</label>
+                            <select id="empStatus" class="form-select">
+                                <option value="Active">Active</option>
+                                <option value="On Leave">On Leave</option>
+                                <option value="Resigned">Resigned</option>
+                                <option value="Terminated">Terminated</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="empEducAttain" class="form-label">Educational Attainment</label>
+                            <select id="empEducAttain" class="form-select">
+                                <option value="">Select...</option>
+                                <option value="Basic Education">Basic Education</option>
+                                <option value="High School Graduate">High School Graduate</option>
+                                <option value="College Graduate">College Graduate</option>
+                                <option value="Master's Degree">Master's Degree</option>
+                                <option value="Doctoral Degree">Doctoral Degree</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 edu-extra-institution" style="display:none;">
+                            <label for="empEducInstitution" class="form-label">Institution / University</label>
+                            <input type="text" id="empEducInstitution" class="form-control">
+                        </div>
+                        <div class="col-md-4 edu-extra-course" style="display:none;">
+                            <label for="empEducCourse" class="form-label">Course / Major</label>
+                            <input type="text" id="empEducCourse" class="form-control">
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-primary mb-3">Emergency Contact</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label for="empContactPerson" class="form-label">Contact Person</label>
+                            <input type="text" id="empContactPerson" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="empEmergencyRel" class="form-label">Relationship</label>
+                            <input type="text" id="empEmergencyRel" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="empEmergencyNo" class="form-label">Contact No.</label>
+                            <input type="text" id="empEmergencyNo" class="form-control">
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="saveEmployee()">
+                        <i class="fa-solid fa-floppy-disk"></i> Save Employee
+                    </button>
                 </div>
             </div>
         </div>

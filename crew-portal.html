@@ -86,6 +86,9 @@
                 <a class="nav-link active" href="#" data-tab="profile" onclick="switchCrewTab('profile'); return false;">Profile</a>
             </li>
             <li class="nav-item">
+                <a class="nav-link" href="#" data-tab="responder" onclick="switchCrewTab('responder'); return false;">Activity Log</a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link" href="#" data-tab="leave" onclick="switchCrewTab('leave'); return false;">Leave Records</a>
             </li>
         </ul>
@@ -212,6 +215,90 @@
             <button class="btn btn-primary px-5" data-bs-toggle="modal" data-bs-target="#editProfileModal">
                 <i class="fa-solid fa-pen-to-square"></i> Edit Profile
             </button>
+        </div>
+
+        </div>
+
+        <div id="tab-responder" class="d-none">
+
+        <!-- Responder Log Summary -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="card shadow-sm text-center">
+                    <div class="card-body py-3">
+                        <div class="fs-3 fw-bold" id="respStatSitreps">—</div>
+                        <div class="text-muted small text-uppercase">SITREPs</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card shadow-sm text-center">
+                    <div class="card-body py-3">
+                        <div class="fs-3 fw-bold" id="respStatPcr">—</div>
+                        <div class="text-muted small text-uppercase">PCR Made</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Responder Log -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title mb-0">Activity Log</h5>
+                </div>
+                <div class="row g-2 mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label small text-muted mb-1" for="responderSearch">Search</label>
+                        <input type="text" id="responderSearch" class="form-control form-control-sm" placeholder="Search SITREP, incident, name, role..." oninput="renderResponderLog()">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small text-muted mb-1" for="responderNatureFilter">Incident Type</label>
+                        <select id="responderNatureFilter" class="form-select form-select-sm" onchange="renderResponderLog()">
+                            <option value="">All Incident Types</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small text-muted mb-1" for="responderDateFrom">From</label>
+                        <input type="date" id="responderDateFrom" class="form-control form-control-sm" title="Call date from" onchange="renderResponderLog()">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small text-muted mb-1" for="responderDateTo">To</label>
+                        <input type="date" id="responderDateTo" class="form-control form-control-sm" title="Call date to" onchange="renderResponderLog()">
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label small text-muted mb-1 d-none d-md-block">&nbsp;</label>
+                        <button class="btn btn-outline-secondary btn-sm w-100" title="Reset filters" onclick="resetResponderFilters()">
+                            <i class="fa-solid fa-rotate"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0 align-middle" style="table-layout: fixed; font-size: 0.85rem;">
+                        <colgroup>
+                            <col style="width: 100px;">
+                            <col style="width: 140px;">
+                            <col style="width: 95px;">
+                            <col>
+                            <col>
+                            <col style="width: 80px;">
+                        </colgroup>
+                        <thead class="table-light">
+                            <tr>
+                                <th>SITREP #</th>
+                                <th>Recorded At</th>
+                                <th>Call Date</th>
+                                <th>Nature of Incident</th>
+                                <th>Name</th>
+                                <th>Role</th>
+                            </tr>
+                        </thead>
+                        <tbody id="responderLogBody">
+                            <tr><td colspan="6" class="text-center text-muted py-3">Loading responder log...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
         </div>

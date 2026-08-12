@@ -1,7 +1,6 @@
 let employees = [];
 let filteredEmployees = [];
 let targetEmployeeId = null;
-let targetAccountEmployeeId = null;
 let currentViewEmployee = null;
 let currentViewEmergency = {};
 let currentPage = 1;
@@ -37,46 +36,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     document.getElementById("adminUserDisplay").innerText = session.username;
 
     try {
-        const { data: accounts, error: acctErr } = await supabaseClient
-            .from("accounts")
-            .select("*,employees(*)")
-            .order("id", { ascending: true });
-        if (acctErr) throw acctErr;
-
-        employees = (accounts || [])
-            .filter(a => a.employees)
-            .map(a => {
-                const e = a.employees;
-                return {
-                    accountId: a.id,
-                    employeeId: e.id,
-                    employee_id: e.employee_id || "",
-                    first_name: e.first_name || "",
-                    last_name: e.last_name || "",
-                    gender: e.gender || "",
-                    date_of_birth: e.date_of_birth || "",
-                    marital_status: e.marital_status || "",
-                    blood_type: e.blood_type || "",
-                    address: e.address || "",
-                    contact_number: e.contact_number || "",
-                    email: e.email || "",
-                    position: e.position || "",
-                    employment_type: e.employment_type || "",
-                    status: e.status || "Active",
-                    eligibility: e.eligibility || "",
-                    date_of_joining: e.date_of_joining || "",
-                    educational_attainment: e.educational_attainment || "",
-                    profile_picture: e.profile_picture || "",
-                    educational_institution: e.educational_institution || "",
-                    educational_course: e.educational_course || "",
-                    role: a.role || "staff",
-                    username: a.username
-                };
-            });
-
+        await reloadEmployees();
         await restoreExpiredLeaves();
-        refreshTable();
-        updateStats(employees);
     } catch (err) {
         console.error("Load error:", err);
         document.getElementById("tableBody").innerHTML =
@@ -131,11 +92,14 @@ function renderTable() {
                     <button class="btn btn-outline-primary btn-sm py-0" onclick="openStatusModal(${emp.employeeId}, '${escapeHtml(name)}', '${emp.status}')" title="Change Status">
                         <i class="fa-solid fa-flag"></i>
                     </button>
-                    <button class="btn btn-outline-warning btn-sm py-0" onclick="openRoleModal(${emp.employeeId}, '${escapeHtml(name)}', '${emp.role}')" title="Change Role">
-                        <i class="fa-solid fa-shield"></i>
-                    </button>
                     <button class="btn btn-outline-info btn-sm py-0" onclick="openViewModal(${emp.employeeId})" title="View Details">
                         <i class="fa-solid fa-eye"></i>
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm py-0" onclick="openEditEmployeeModal(${emp.employeeId})" title="Edit Details">
+                        <i class="fa-solid fa-pen"></i>
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm py-0" onclick="deleteEmployee(${emp.employeeId})" title="Delete">
+                        <i class="fa-solid fa-trash"></i>
                     </button>
                 </div>
             </td>
@@ -229,31 +193,343 @@ async function confirmStatusChange() {
     }
 }
 
-function openRoleModal(empId, name, currentRole) {
-    targetAccountEmployeeId = empId;
-    document.getElementById("roleEmployeeName").innerText = name;
-    document.getElementById("roleSelect").value = currentRole;
-    new bootstrap.Modal(document.getElementById("roleModal")).show();
+let editingEmployeeId = null;
+let pendingEmpImage = null;
+
+function usernameToEmail(username) {
+    return username
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-zA-Z0-9._-]/g, '_')
+        .toLowerCase() + '@placeholder.com';
 }
 
-async function confirmRoleChange() {
-    const newRole = document.getElementById("roleSelect").value;
-    if (!targetAccountEmployeeId) return;
+function togglePasswordInput(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (input.type === "password") {
+        input.type = "text";
+    } else {
+        input.type = "password";
+    }
+}
+
+async function resetAccountPassword() {
+    const username = document.getElementById("resetUsername").value.trim();
+    const password = document.getElementById("resetPassword").value;
+    if (!username) return alert("Please enter the username.");
+    if (!password) return alert("Please enter a new password.");
+    if (password.length < 6) return alert("Password must be at least 6 characters.");
+    if (!confirm(`Reset the password for "${username}"? The employee will need the new password to log in.`)) return;
+
+    const btn = document.getElementById("resetAccountBtn");
+    if (btn) btn.disabled = true;
+    try {
+        const { data, error } = await supabaseClient.functions.invoke("reset-password", {
+            body: { username, password }
+        });
+        if (error) throw error;
+        if (!data?.ok) throw new Error(data?.error || "Reset failed.");
+        alert(`Password reset for "${username}". Share the new password with them.`);
+        document.getElementById("resetPassword").value = "";
+    } catch (err) {
+        alert("Error resetting password: " + (err.message || err));
+    } finally {
+        if (btn) btn.disabled = false;
+    }
+}
+
+function toggleEmpPassword() {
+    const input = document.getElementById("empPassword");
+    if (input.type === "password") {
+        input.type = "text";
+    } else {
+        input.type = "password";
+    }
+}
+
+function previewEmpImage(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    pendingEmpImage = file;
+    const img = document.getElementById("empPicPreview");
+    if (img) img.src = URL.createObjectURL(file);
+}
+
+async function uploadEmpImage(file, employeeId) {
+    const ext = file.name.split('.').pop().toLowerCase() || 'jpg';
+    const fileName = `${employeeId}_${Date.now()}.${ext}`;
+    const { error: uploadErr } = await supabaseClient.storage
+        .from('profile-pictures')
+        .upload(fileName, file, { upsert: true });
+    if (uploadErr) throw new Error(`Upload failed: ${uploadErr.message}`);
+    const { data: urlData } = supabaseClient.storage
+        .from('profile-pictures')
+        .getPublicUrl(fileName);
+    return urlData.publicUrl;
+}
+
+function toggleEmpEduExtra() {
+    const val = document.getElementById("empEducAttain").value;
+    const showInst = val === "High School Graduate" || val === "College Graduate" || val === "Master's Degree" || val === "Doctoral Degree";
+    const showCourse = val === "College Graduate" || val === "Master's Degree" || val === "Doctoral Degree";
+    document.querySelectorAll(".edu-extra-institution").forEach(el => el.style.display = showInst ? "block" : "none");
+    document.querySelectorAll(".edu-extra-course").forEach(el => el.style.display = showCourse ? "block" : "none");
+}
+
+document.getElementById("empEducAttain").addEventListener("change", toggleEmpEduExtra);
+
+function resetEmployeeForm() {
+    editingEmployeeId = null;
+    pendingEmpImage = null;
+    document.getElementById("empPicPreview").src = "assets/images/img_placeholder.jpg";
+    ["empUsername","empPassword","empFirstName","empLastName","empDob","empAddress","empContact","empEmail",
+     "empEmployeeId","empPosition","empEligibility","empDateOfJoining","empEducInstitution","empEducCourse",
+     "empContactPerson","empEmergencyRel","empEmergencyNo"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = "";
+    });
+    ["empRole","empGender","empMarital","empBloodtype","empEmpType","empStatus","empEducAttain"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = "";
+    });
+    document.getElementById("empStatus").value = "Active";
+    toggleEmpEduExtra();
+}
+
+function openAddEmployeeModal() {
+    resetEmployeeForm();
+    document.getElementById("employeeFormTitle").innerText = "Add Employee";
+    document.getElementById("empPasswordWrap").style.display = "";
+    new bootstrap.Modal(document.getElementById("employeeFormModal")).show();
+}
+
+async function openEditEmployeeModal(empId) {
+    const emp = employees.find(e => e.employeeId === empId);
+    if (!emp) return alert("Employee not found.");
+
+    resetEmployeeForm();
+    editingEmployeeId = empId;
+
+    document.getElementById("employeeFormTitle").innerText = "Edit Employee";
+    document.getElementById("empPasswordWrap").style.display = "none";
+
+    document.getElementById("empUsername").value = emp.username || "";
+    document.getElementById("empRole").value = emp.role || "staff";
+    document.getElementById("empFirstName").value = emp.first_name || "";
+    document.getElementById("empLastName").value = emp.last_name || "";
+    document.getElementById("empGender").value = emp.gender || "";
+    document.getElementById("empDob").value = emp.date_of_birth || "";
+    document.getElementById("empMarital").value = emp.marital_status || "";
+    document.getElementById("empAddress").value = emp.address || "";
+    document.getElementById("empContact").value = emp.contact_number || "";
+    document.getElementById("empEmail").value = emp.email || "";
+    document.getElementById("empBloodtype").value = emp.blood_type || "";
+    document.getElementById("empEmployeeId").value = emp.employee_id || "";
+    document.getElementById("empPosition").value = emp.position || "";
+    document.getElementById("empEmpType").value = emp.employment_type || "";
+    document.getElementById("empEligibility").value = emp.eligibility || "";
+    document.getElementById("empDateOfJoining").value = emp.date_of_joining || "";
+    document.getElementById("empStatus").value = emp.status || "Active";
+    document.getElementById("empEducAttain").value = emp.educational_attainment || "";
+    document.getElementById("empEducInstitution").value = emp.educational_institution || "";
+    document.getElementById("empEducCourse").value = emp.educational_course || "";
+    document.getElementById("empPicPreview").src = emp.profile_picture || "assets/images/img_placeholder.jpg";
+    toggleEmpEduExtra();
 
     try {
-        const empRecord = employees.find(e => e.employeeId === targetAccountEmployeeId);
-        if (!empRecord) return;
-        const { error: roleErr } = await supabaseClient
-            .from("accounts")
-            .update({ role: newRole })
-            .eq("employee_id", targetAccountEmployeeId);
-        if (roleErr) throw roleErr;
-        empRecord.role = newRole;
-        refreshTable();
-        bootstrap.Modal.getInstance(document.getElementById("roleModal")).hide();
+        const { data: contacts } = await supabaseClient
+            .from("emergency_contacts")
+            .select("*")
+            .eq("employee_id", empId);
+        const ec = contacts && contacts.length > 0 ? contacts[0] : {};
+        document.getElementById("empContactPerson").value = ec.contact_person || "";
+        document.getElementById("empEmergencyRel").value = ec.relationship || "";
+        document.getElementById("empEmergencyNo").value = ec.contact_number || "";
     } catch (err) {
-        alert("Error updating role: " + err.message);
+        console.error("Error loading emergency contact:", err);
     }
+
+    new bootstrap.Modal(document.getElementById("employeeFormModal")).show();
+}
+
+function collectEmployeeForm() {
+    return {
+        employee_id: document.getElementById("empEmployeeId").value.trim(),
+        first_name: document.getElementById("empFirstName").value.trim(),
+        last_name: document.getElementById("empLastName").value.trim(),
+        gender: document.getElementById("empGender").value,
+        date_of_birth: document.getElementById("empDob").value || null,
+        marital_status: document.getElementById("empMarital").value,
+        blood_type: document.getElementById("empBloodtype").value || null,
+        address: document.getElementById("empAddress").value.trim(),
+        contact_number: document.getElementById("empContact").value.trim(),
+        email: document.getElementById("empEmail").value.trim(),
+        position: document.getElementById("empPosition").value.trim(),
+        employment_type: document.getElementById("empEmpType").value,
+        eligibility: document.getElementById("empEligibility").value.trim(),
+        date_of_joining: document.getElementById("empDateOfJoining").value || null,
+        status: document.getElementById("empStatus").value,
+        educational_attainment: document.getElementById("empEducAttain").value,
+        educational_institution: document.getElementById("empEducInstitution").value.trim(),
+        educational_course: document.getElementById("empEducCourse").value.trim()
+    };
+}
+
+async function saveEmployee() {
+    const empData = collectEmployeeForm();
+    const username = document.getElementById("empUsername").value.trim();
+    const role = document.getElementById("empRole").value;
+    const contactData = {
+        contact_person: document.getElementById("empContactPerson").value.trim(),
+        relationship: document.getElementById("empEmergencyRel").value.trim(),
+        contact_number: document.getElementById("empEmergencyNo").value.trim()
+    };
+
+    if (!empData.first_name || !empData.last_name) return alert("Please enter the employee's first and last name.");
+    if (!username) return alert("Please enter a username for the account.");
+
+    const btn = document.querySelector('#employeeFormModal .btn-primary');
+    if (btn) btn.disabled = true;
+
+    try {
+        let empId = editingEmployeeId;
+
+        if (empId) {
+            const { error: empErr } = await supabaseClient
+                .from("employees")
+                .update(empData)
+                .eq("id", empId);
+            if (empErr) throw empErr;
+
+            const empRecord = employees.find(e => e.employeeId === empId);
+            if (empRecord && empRecord.accountId) {
+                const { error: acctErr } = await supabaseClient
+                    .from("accounts")
+                    .update({ username, role })
+                    .eq("id", empRecord.accountId);
+                if (acctErr) throw acctErr;
+            }
+        } else {
+            const { data: inserted, error: empErr } = await supabaseClient
+                .from("employees")
+                .insert(empData)
+                .select();
+            if (empErr || !inserted || inserted.length === 0) throw new Error(empErr?.message || "Failed to create employee record.");
+            empId = inserted[0].id;
+
+            const password = document.getElementById("empPassword").value;
+            if (!password) throw new Error("Please set a password for the new account.");
+
+            const { data: authData, error: signUpErr } = await supabaseClient.auth.signUp({
+                email: usernameToEmail(username),
+                password
+            });
+            if (signUpErr) throw signUpErr;
+
+            const { error: acctErr } = await supabaseClient
+                .from("accounts")
+                .insert({ auth_user_id: authData.user?.id, username, employee_id: empId, role });
+            if (acctErr) throw acctErr;
+        }
+
+        if (pendingEmpImage) {
+            const imageUrl = await uploadEmpImage(pendingEmpImage, empId);
+            const { error: picErr } = await supabaseClient
+                .from("employees")
+                .update({ profile_picture: imageUrl })
+                .eq("id", empId);
+            if (picErr) throw picErr;
+        }
+
+        const { data: existing } = await supabaseClient
+            .from("emergency_contacts")
+            .select("id")
+            .eq("employee_id", empId);
+
+        if (existing && existing.length > 0) {
+            const { error: contactErr } = await supabaseClient
+                .from("emergency_contacts")
+                .update(contactData)
+                .eq("employee_id", empId);
+            if (contactErr) throw contactErr;
+        } else if (contactData.contact_person) {
+            const { error: contactErr } = await supabaseClient
+                .from("emergency_contacts")
+                .insert({ ...contactData, employee_id: empId });
+            if (contactErr) throw contactErr;
+        }
+
+        const modal = bootstrap.Modal.getInstance(document.getElementById("employeeFormModal"));
+        if (modal) modal.hide();
+
+        await reloadEmployees();
+        alert(editingEmployeeId ? "Employee updated successfully." : "Employee and account created successfully.");
+    } catch (err) {
+        alert("Error saving employee: " + err.message);
+    } finally {
+        if (btn) btn.disabled = false;
+    }
+}
+
+async function deleteEmployee(empId) {
+    const emp = employees.find(e => e.employeeId === empId);
+    if (!emp) return;
+    const name = (emp.first_name + " " + emp.last_name).trim() || "This employee";
+    if (!confirm(`Delete ${name}? This will set their status to "Terminated".`)) return;
+    try {
+        const { error: delErr } = await supabaseClient
+            .from("employees")
+            .update({ status: "Terminated" })
+            .eq("id", empId);
+        if (delErr) throw delErr;
+        emp.status = "Terminated";
+        refreshTable();
+        updateStats(employees);
+        alert(`${name} marked as Terminated.`);
+    } catch (err) {
+        alert("Error deleting employee: " + err.message);
+    }
+}
+
+async function reloadEmployees() {
+    const { data: accounts, error: acctErr } = await supabaseClient
+        .from("accounts")
+        .select("*,employees(*)")
+        .order("id", { ascending: true });
+    if (acctErr) throw acctErr;
+
+    employees = (accounts || [])
+        .filter(a => a.employees)
+        .map(a => {
+            const e = a.employees;
+            return {
+                accountId: a.id,
+                employeeId: e.id,
+                employee_id: e.employee_id || "",
+                first_name: e.first_name || "",
+                last_name: e.last_name || "",
+                gender: e.gender || "",
+                date_of_birth: e.date_of_birth || "",
+                marital_status: e.marital_status || "",
+                blood_type: e.blood_type || "",
+                address: e.address || "",
+                contact_number: e.contact_number || "",
+                email: e.email || "",
+                position: e.position || "",
+                employment_type: e.employment_type || "",
+                status: e.status || "Active",
+                eligibility: e.eligibility || "",
+                date_of_joining: e.date_of_joining || "",
+                educational_attainment: e.educational_attainment || "",
+                profile_picture: e.profile_picture || "",
+                educational_institution: e.educational_institution || "",
+                educational_course: e.educational_course || "",
+                role: a.role || "staff",
+                username: a.username
+            };
+        });
+
+    refreshTable();
+    updateStats(employees);
 }
 
 async function exportEmployees() {

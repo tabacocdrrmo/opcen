@@ -407,7 +407,112 @@ function switchCrewTab(tab) {
     document.querySelector(`#crewTabs .nav-link[data-tab="${tab}"]`).classList.add("active");
     document.getElementById("tab-profile").classList.toggle("d-none", tab !== "profile");
     document.getElementById("tab-leave").classList.toggle("d-none", tab !== "leave");
+    document.getElementById("tab-responder").classList.toggle("d-none", tab !== "responder");
     if (tab === "leave") loadLeaveHistory();
+    if (tab === "responder") loadResponderLog();
+}
+
+const RESPONDER_LOG_URL = "https://script.google.com/macros/s/AKfycbxdqINB7ihQHev_2sRXlO6iH0P4QouoCFm4KhoAwQ69iBVgbY9HybkXFV1BCffA5uSI/exec";
+
+function escapeHtml(str) {
+    return String(str ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+let responderLogRows = [];
+
+function formatResponderDate(callDate) {
+    let out = callDate || "";
+    if (out) {
+        const d = new Date(out);
+        out = isNaN(d.getTime()) ? out : d.toLocaleDateString();
+    }
+    return out;
+}
+
+async function loadResponderLog() {
+    const tbody = document.getElementById("responderLogBody");
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">Loading responder log...</td></tr>';
+    try {
+        const fullName = profileData
+            ? (profileData.first_name + " " + profileData.last_name).trim()
+            : null;
+        const res = await fetch(RESPONDER_LOG_URL);
+        const data = await res.json();
+        responderLogRows = (data.rows || []).filter(r =>
+            !fullName || (r.name || "").trim().toLowerCase() === fullName.toLowerCase()
+        );
+
+        const natureFilter = document.getElementById("responderNatureFilter");
+        natureFilter.innerHTML = '<option value="">All Incident Types</option>';
+        const natures = new Set(responderLogRows.map(r => (r.nature || "").trim()).filter(Boolean));
+        [...natures].sort().forEach(n => {
+            natureFilter.insertAdjacentHTML("beforeend", `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`);
+        });
+
+        if (!data.ok || responderLogRows.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">No responder log entries found for your account.</td></tr>';
+            document.getElementById("respStatSitreps").innerText = "0";
+            document.getElementById("respStatPcr").innerText = "—";
+            return;
+        }
+
+        const uniqueSitreps = new Set(responderLogRows.map(r => (r.sitrepNo || "").trim()).filter(Boolean)).size;
+        document.getElementById("respStatSitreps").innerText = uniqueSitreps;
+        document.getElementById("respStatPcr").innerText = "—";
+
+        renderResponderLog();
+    } catch (err) {
+        console.error("Failed to load responder log:", err);
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger py-3">Failed to load responder log.</td></tr>';
+    }
+}
+
+function renderResponderLog() {
+    const tbody = document.getElementById("responderLogBody");
+    const query = document.getElementById("responderSearch").value.trim().toLowerCase();
+    const nature = document.getElementById("responderNatureFilter").value;
+    const dateFrom = document.getElementById("responderDateFrom").value;
+    const dateTo = document.getElementById("responderDateTo").value;
+
+    const filtered = responderLogRows.filter(r => {
+        if (nature && (r.nature || "").trim() !== nature) return false;
+        if (dateFrom || dateTo) {
+            const d = new Date(r.callDate);
+            const day = isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 10);
+            if (dateFrom && (!day || day < dateFrom)) return false;
+            if (dateTo && (!day || day > dateTo)) return false;
+        }
+        if (query) {
+            const hay = [
+                r.sitrepNo, r.recordedAt, formatResponderDate(r.callDate),
+                r.nature, r.name, r.role
+            ].join(" ").toLowerCase();
+            if (!hay.includes(query)) return false;
+        }
+        return true;
+    });
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">No entries match your filters.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = filtered.map(r => `<tr>
+        <td data-label="SITREP #">${escapeHtml(r.sitrepNo)}</td>
+        <td data-label="Recorded At">${escapeHtml(r.recordedAt)}</td>
+        <td data-label="Call Date">${escapeHtml(formatResponderDate(r.callDate))}</td>
+        <td data-label="Nature of Incident">${escapeHtml(r.nature)}</td>
+        <td data-label="Name">${escapeHtml(r.name)}</td>
+        <td data-label="Role">${escapeHtml(r.role)}</td>
+    </tr>`).join("");
+}
+
+function resetResponderFilters() {
+    document.getElementById("responderSearch").value = "";
+    document.getElementById("responderNatureFilter").value = "";
+    document.getElementById("responderDateFrom").value = "";
+    document.getElementById("responderDateTo").value = "";
+    renderResponderLog();
 }
 
 async function loadLeaveHistory() {
