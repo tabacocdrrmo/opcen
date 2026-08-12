@@ -446,6 +446,18 @@ async function saveEmployee() {
                     .eq("id", empRecord.accountId);
                 if (acctErr) throw acctErr;
             }
+
+            if (empRecord && empRecord.authUserId) {
+                const oldEmail = usernameToEmail(empRecord.username || "");
+                const newEmail = usernameToEmail(username);
+                if (newEmail && newEmail !== oldEmail) {
+                    const { data: updData, error: updErr } = await supabaseClient.functions.invoke("update-user", {
+                        body: { authUserId: empRecord.authUserId, email: newEmail }
+                    });
+                    if (updErr) throw updErr;
+                    if (!updData?.ok) throw new Error(updData?.error || "Failed to update login email.");
+                }
+            }
         } else {
             const { data: inserted, error: empErr } = await supabaseClient
                 .from("employees")
@@ -456,6 +468,9 @@ async function saveEmployee() {
 
             const password = document.getElementById("empPassword").value;
             if (!password) throw new Error("Please set a password for the new account.");
+
+            const { data: adminSessionData } = await supabaseClient.auth.getSession();
+            const adminSession = adminSessionData?.session;
 
             const { data: authData, error: signUpErr } = await supabaseClient.auth.signUp({
                 email: usernameToEmail(username),
@@ -472,6 +487,10 @@ async function saveEmployee() {
             if (acctErr) {
                 await rollbackEmployee(empId);
                 throw acctErr;
+            }
+
+            if (adminSession) {
+                await supabaseClient.auth.setSession(adminSession);
             }
         }
 
@@ -538,6 +557,7 @@ async function reloadEmployees() {
             const e = a.employees;
             return {
                 accountId: a.id,
+                authUserId: a.auth_user_id,
                 employeeId: e.id,
                 employee_id: e.employee_id || "",
                 first_name: e.first_name || "",

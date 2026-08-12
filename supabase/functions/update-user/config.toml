@@ -1,0 +1,4 @@
+{
+  "name": "update-user",
+  "verify_jwt": true
+}
