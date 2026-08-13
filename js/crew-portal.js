@@ -103,6 +103,8 @@ document.addEventListener("DOMContentLoaded", async function () {
         };
 
         loadProfileView(profileData);
+
+        loadResponderLog();
     } catch (err) {
         console.error("Load error:", err);
         alert("Failed to load profile: " + err.message);
@@ -422,13 +424,21 @@ function switchCrewTab(tab) {
     if (tab === "responder") loadResponderLog();
 }
 
-const RESPONDER_LOG_URL = "https://script.google.com/macros/s/AKfycbxdqINB7ihQHev_2sRXlO6iH0P4QouoCFm4KhoAwQ69iBVgbY9HybkXFV1BCffA5uSI/exec";
+const RESPONDER_LOG_URL = "https://script.google.com/macros/s/AKfycbzJi6ZsCBaFq91LTd3rhroMPAxcd6eFeQS1dEtqmdmnuJxqLwMj0EUjJFEZpg3SpzPS/exec";
+const SITREP_MAIN_URL = RESPONDER_LOG_URL + "?action=sitreps";
 
 function escapeHtml(str) {
     return String(str ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 
 let responderLogRows = [];
+let sitrepRows = null;
+let logCache = null;
+let logLoading = false;
+let pcrFilterActive = false;
+let pcrSitreps = null;
+
+const normId = s => String(s || "").trim().toLowerCase();
 
 function formatResponderDate(callDate) {
     let out = callDate || "";
@@ -441,6 +451,18 @@ function formatResponderDate(callDate) {
 
 function normalizeName(s) {
     return (s || "").toLowerCase().replace(/\s+/g, " ").replace(/\./g, "").trim();
+}
+
+// Lenient fallback: matches when both the employee's first and last name appear
+// as tokens in the PCR By cell, regardless of middle name / initial differences.
+function nameMatchesEmployee(name, data) {
+    const n = normalizeName(name);
+    if (!n || !data) return false;
+    const first = normalizeName(data.first_name);
+    const last = normalizeName(data.last_name);
+    if (!first || !last) return false;
+    const tokens = n.split(" ").filter(Boolean);
+    return tokens.includes(first) && tokens.includes(last);
 }
 
 function getEmployeeNameVariants(data) {
@@ -461,16 +483,71 @@ function getEmployeeNameVariants(data) {
     return variants;
 }
 
+// Apps Script /exec endpoints can fail on a cold start / first request (a 302
+// session-setup redirect that sometimes errors). Retry a few times before
+// giving up so transient failures don't surface as hard errors.
+async function fetchJson(url, attempts = 3) {
+    let lastErr;
+    for (let i = 0; i < attempts; i++) {
+        try {
+            const res = await fetch(url);
+            const data = await res.json();
+            if (data && typeof data === "object") return data;
+            throw new Error("Unexpected response from server");
+        } catch (err) {
+            lastErr = err;
+            if (i < attempts - 1) await new Promise(r => setTimeout(r, 800 * (i + 1)));
+        }
+    }
+    throw lastErr;
+}
+
+async function loadSitrepRows() {
+    if (sitrepRows) return sitrepRows;
+    const data = await fetchJson(SITREP_MAIN_URL);
+    if (!data.ok) throw new Error(data.error || "Failed to load sitreps");
+    sitrepRows = data.rows || [];
+    return sitrepRows;
+}
+
+async function countPcrMade(nameVariants, sitrepNumbers) {
+    if (!nameVariants || nameVariants.size === 0) return 0;
+    try {
+        const rows = await loadSitrepRows();
+        let count = 0;
+        rows.forEach(r => {
+            if (sitrepNumbers && !sitrepNumbers.has(normId(r["SITREP #"]))) return;
+            String(r["PCR By"] || "").split(";").forEach(s => {
+                if (nameVariants.has(normalizeName(s)) || nameMatchesEmployee(s, profileData)) count++;
+            });
+        });
+        return count;
+    } catch (err) {
+        console.error("Failed to count PCRs:", err);
+        return null;
+    }
+}
+
 async function loadResponderLog() {
     const tbody = document.getElementById("responderLogBody");
+
+    // Session cache: render instantly (counts are refreshed by renderResponderLog).
+    if (logCache) {
+        responderLogRows = logCache;
+        renderResponderLog();
+        return;
+    }
+
     tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">Loading responder log...</td></tr>';
+    if (logLoading) return;
+    logLoading = true;
     try {
         const nameVariants = getEmployeeNameVariants(profileData);
-        const res = await fetch(RESPONDER_LOG_URL);
-        const data = await res.json();
+        const data = await fetchJson(RESPONDER_LOG_URL);
         responderLogRows = (data.rows || []).filter(r =>
             nameVariants.size === 0 || nameVariants.has(normalizeName(r.name || ""))
         );
+        logCache = responderLogRows;
 
         const natureFilter = document.getElementById("responderNatureFilter");
         natureFilter.innerHTML = '<option value="">All Incident Types</option>';
@@ -482,29 +559,31 @@ async function loadResponderLog() {
         if (!data.ok || responderLogRows.length === 0) {
             tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">No responder log entries found for your account.</td></tr>';
             document.getElementById("respStatSitreps").innerText = "0";
-            document.getElementById("respStatPcr").innerText = "—";
+            document.getElementById("respStatPcr").innerText = "0";
             return;
         }
 
-        const uniqueSitreps = new Set(responderLogRows.map(r => (r.sitrepNo || "").trim()).filter(Boolean)).size;
-        document.getElementById("respStatSitreps").innerText = uniqueSitreps;
-        document.getElementById("respStatPcr").innerText = "—";
-
+        // renderResponderLog updates both stat cards; the sitreps request it
+        // triggers runs only after this log request completes, so the two Apps
+        // Script calls never hit the cold start at the same time.
         renderResponderLog();
     } catch (err) {
         console.error("Failed to load responder log:", err);
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger py-3">Failed to load responder log.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger py-3">Failed to load responder log. ' +
+            '<button type="button" class="btn btn-sm btn-outline-danger ms-2" onclick="loadResponderLog()"><i class="fa-solid fa-rotate"></i> Retry</button></td></tr>';
+    } finally {
+        logLoading = false;
     }
 }
 
-function renderResponderLog() {
-    const tbody = document.getElementById("responderLogBody");
+function getFilteredResponderLog() {
     const query = document.getElementById("responderSearch").value.trim().toLowerCase();
     const nature = document.getElementById("responderNatureFilter").value;
     const dateFrom = document.getElementById("responderDateFrom").value;
     const dateTo = document.getElementById("responderDateTo").value;
 
-    const filtered = responderLogRows.filter(r => {
+    return responderLogRows.filter(r => {
+        if (pcrFilterActive && pcrSitreps && !pcrSitreps.has(normId(r.sitrepNo))) return false;
         if (nature && (r.nature || "").trim() !== nature) return false;
         if (dateFrom || dateTo) {
             const d = new Date(r.callDate);
@@ -521,13 +600,19 @@ function renderResponderLog() {
         }
         return true;
     });
+}
+
+function renderResponderLog() {
+    const tbody = document.getElementById("responderLogBody");
+    const filtered = getFilteredResponderLog();
+    updateResponderStats(filtered);
 
     if (filtered.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">No entries match your filters.</td></tr>';
         return;
     }
 
-    tbody.innerHTML = filtered.map(r => `<tr>
+    tbody.innerHTML = filtered.map(r => `<tr class="clickable-row" onclick="showSitrepDetail('${escapeHtml(r.sitrepNo)}')" title="View full SITREP detail">
         <td data-label="SITREP #">${escapeHtml(r.sitrepNo)}</td>
         <td data-label="Recorded At">${escapeHtml(r.recordedAt)}</td>
         <td data-label="Call Date">${escapeHtml(formatResponderDate(r.callDate))}</td>
@@ -537,11 +622,231 @@ function renderResponderLog() {
     </tr>`).join("");
 }
 
+let pcrStatToken = 0;
+
+function updateResponderStats(filtered) {
+    const sitreps = new Set(filtered.map(r => normId(r.sitrepNo)).filter(Boolean));
+    document.getElementById("respStatSitreps").innerText = sitreps.size;
+
+    const token = ++pcrStatToken;
+    countPcrMade(getEmployeeNameVariants(profileData), sitreps).then(c => {
+        if (token !== pcrStatToken) return;
+        document.getElementById("respStatPcr").innerText = c === null ? "—" : c;
+    });
+
+    if (!pcrSitreps) {
+        buildPcrSitreps(getEmployeeNameVariants(profileData)).then(s => {
+            if (s) {
+                pcrSitreps = s;
+                if (pcrFilterActive) renderResponderLog();
+            }
+        });
+    }
+}
+
+async function buildPcrSitreps(nameVariants) {
+    try {
+        const rows = await loadSitrepRows();
+        const set = new Set();
+        rows.forEach(r => {
+            const matched = String(r["PCR By"] || "").split(";").some(s =>
+                nameVariants.has(normalizeName(s)) || nameMatchesEmployee(s, profileData)
+            );
+            if (matched) set.add(normId(r["SITREP #"]));
+        });
+        return set;
+    } catch (err) {
+        console.error("Failed to build PCR sitreps:", err);
+        return null;
+    }
+}
+
+async function togglePcrFilter() {
+    if (!pcrSitreps) {
+        const s = await buildPcrSitreps(getEmployeeNameVariants(profileData));
+        if (!s) return;
+        pcrSitreps = s;
+    }
+    pcrFilterActive = !pcrFilterActive;
+    document.getElementById("respPcrCard").classList.toggle("pcr-filter-active", pcrFilterActive);
+    const note = document.getElementById("pcrFilterNote");
+    if (note) note.classList.toggle("d-none", !pcrFilterActive);
+    renderResponderLog();
+}
+
+function fmt(v) {
+    if (typeof v === "string") {
+        const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(v);
+        if (m && m[1] === "1899") return m[4] + ":" + m[5];
+    }
+    if (!(v instanceof Date) || isNaN(v)) return v;
+    const p = n => String(n).padStart(2, "0");
+    if (v.getFullYear() >= 2000) return `${v.getFullYear()}-${p(v.getMonth() + 1)}-${p(v.getDate())}`;
+    return `${p(v.getHours())}:${p(v.getMinutes())}`;
+}
+
+function splitSlots(s) {
+    return String(s ?? "").split(";").map(x => x.trim());
+}
+
+function splitJoined(s) {
+    return String(s ?? "").split(/;\s*|,\s*|\n/).map(x => x.trim()).filter(Boolean);
+}
+
+function photoFallback(img) {
+    const wrap = img && img.parentElement;
+    const link = img && img.getAttribute("data-link");
+    if (wrap) {
+        wrap.innerHTML = `<span class="small text-break"><i class="fa-solid fa-image me-1"></i><a href="${escapeHtml(link)}" target="_blank" rel="noopener">${escapeHtml(link)}</a></span>`;
+    }
+}
+
+function photoThumbnails(photos, id) {
+    const links = String(photos || "").split(/\n+/).map(x => x.trim()).filter(Boolean);
+    if (!links.length) return "";
+    const thumbs = links.map(link => {
+        const m = /\/d\/([^/?]+)/.exec(link);
+        const src = m ? "https://drive.google.com/uc?export=view&id=" + m[1] : link;
+        return `<a href="${escapeHtml(link)}" target="_blank" rel="noopener" class="me-2 mb-2">
+            <img src="${escapeHtml(src)}" alt="Incident photo" class="img-thumbnail"
+                 style="width:140px;height:105px;object-fit:cover;"
+                 data-link="${escapeHtml(link)}" onerror="photoFallback(this)"></a>`;
+    }).join("");
+    return `
+        <div class="card shadow-sm border-0 mb-3">
+            <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+                <button type="button" class="btn btn-link p-0 text-decoration-none text-dark fw-bold d-flex align-items-center"
+                        data-bs-toggle="collapse" data-bs-target="#${id}" aria-expanded="false">
+                    <i class="fa-solid fa-camera me-2 text-dark"></i>Photos
+                    <i class="fa-solid fa-chevron-down text-muted small ms-2"></i>
+                </button>
+            </div>
+            <div class="collapse" id="${id}">
+                <div class="card-body py-3">
+                    <div class="d-flex flex-wrap">${thumbs}</div>
+                </div>
+            </div>
+        </div>`;
+}
+
+function renderSitrepDetail(row) {
+    const e = escapeHtml;
+    const patients = splitSlots(row["Patient"]);
+    const ages = splitSlots(row["Age"]);
+    const addresses = splitSlots(row["Address"]);
+    const injuries = splitSlots(row["Injuries"]);
+    const statuses = splitSlots(row["Victim Status"]);
+    const impressions = splitSlots(row["Initial Impression"]);
+    const dispositions = splitSlots(row["Disposition"]);
+    const pcrBy = splitSlots(row["PCR By"]);
+
+    const patientRows = patients.map((p, i) => `
+        <tr>
+            <td>${i + 1}</td>
+            <td>${e(p)}</td>
+            <td>${e(ages[i] || "")}</td>
+            <td>${e(addresses[i] || "")}</td>
+            <td>${e(injuries[i] || "")}</td>
+            <td>${e(statuses[i] || "")}</td>
+            <td>${e(impressions[i] || "")}</td>
+            <td>${e(dispositions[i] || "")}</td>
+            <td>${e(pcrBy[i] || "")}</td>
+        </tr>`).join("");
+
+    const br = arr => arr.map(e).join("<br>");
+    const tile = (label, value, wide) =>
+        `<div class="col-6 ${wide ? "col-md-12" : "col-md-4"}">
+            <div class="border rounded-3 p-2 h-100">
+                <div class="small text-muted text-uppercase fw-semibold mb-1">${label}</div>
+                <div class="small text-break">${value || "—"}</div>
+            </div>
+        </div>`;
+    let sectionId = 0;
+    const nextId = () => "sdSec" + (sectionId++);
+    const section = (icon, title, inner) => {
+        const id = nextId();
+        return `
+        <div class="card shadow-sm border-0 mb-3">
+            <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+                <button type="button" class="btn btn-link p-0 text-decoration-none text-dark fw-bold d-flex align-items-center"
+                        data-bs-toggle="collapse" data-bs-target="#${id}" aria-expanded="false">
+                    <i class="${icon} me-2 text-dark"></i>${title}
+                    <i class="fa-solid fa-chevron-down text-muted small ms-2"></i>
+                </button>
+            </div>
+            <div class="collapse" id="${id}">
+                <div class="card-body py-3"><div class="row g-2">${inner}</div></div>
+            </div>
+        </div>`;
+    };
+
+    return `
+        ${section("fa-solid fa-circle-info", "Incident Details",
+            tile("Nature of Incident", e(row["Nature of Incident"])) +
+            tile("Assigned Team", e(row["Assigned Team"])) +
+            tile("Shift-In-Charge", e(row["Shift-In-Charge (SIC)"])) +
+            tile("Operator in Charge", e(row["Operator in Charge"])) +
+            tile("Dispatched Resource(s)", splitJoined(row["Dispatched Resources"]).map(e).join(", "), true) +
+            tile("Involved Vehicle Type", splitJoined(row["Involved Vehicle Type"]).map(e).join(", "), true) +
+            tile("Incident Caller / Informant", e(row["Incident Caller / Informant"])) +
+            tile("Contact No.", e(row["Contact No."])))}
+        ${section("fa-solid fa-clock", "Call & Response Times",
+            tile("Call Date", e(fmt(row["Call Date"]))) +
+            tile("Call Time", e(fmt(row["Call Time"]))) +
+            tile("Dispatched Time", e(fmt(row["Dispatched Time"]))) +
+            tile("Arrival at Scene", e(fmt(row["Arrival at Scene"]))) +
+            tile("Take Off from Scene", e(fmt(row["Take Off from Scene"]))) +
+            tile("Arrival at Hospital", e(fmt(row["Arrival at Hospital"]))))}
+        ${section("fa-solid fa-location-dot", "Location",
+            tile("Place / Landmark", e(row["Barangay"])) +
+            tile("Municipality", e(row["Municipality"])))}
+        ${section("fa-solid fa-kit-medical", "Response & Remarks",
+            tile("First Aid Provided", e(row["First Aid Provided"]), true) +
+            tile("Remarks", e(row["Remarks"]), true) +
+            tile("Driver(s)", br(splitJoined(row["Drivers"])), true) +
+            tile("Responder(s)", br(splitJoined(row["Responders"])), true))}
+        ${patients.length ? section("fa-solid fa-people-roof", "Patients / Victims", `
+                <div class="table-responsive">
+                    <table class="table table-sm small table-bordered align-middle mb-0 patients-table">
+                        <thead class="table-light">
+                            <tr><th>No.</th><th>Patient / Victim</th><th>Age</th><th>Address</th><th>Injuries</th><th>Status</th><th>Impression</th><th>Disposition</th><th>PCR By</th></tr>
+                        </thead>
+                        <tbody>${patientRows}</tbody>
+                    </table>
+                </div>`) : ""}
+        ${photoThumbnails(row["Photos"], nextId())}`;
+}
+
+async function showSitrepDetail(sitrepNo) {
+    const modalEl = document.getElementById("sitrepDetailModal");
+    const title = document.getElementById("sitrepDetailTitle");
+    const body = document.getElementById("sitrepDetailBody");
+    if (!modalEl || !body) return;
+    title.innerText = "SITREP Detail";
+    body.innerHTML = '<p class="text-muted text-center py-4">Loading sitrep detail...</p>';
+    try {
+        const rows = await loadSitrepRows();
+        const row = rows.find(r => String(r["SITREP #"] || "").trim() === String(sitrepNo).trim());
+        if (!row) throw new Error("SITREP not found.");
+        title.innerText = "SITREP No. " + String(row["SITREP #"]);
+        body.innerHTML = renderSitrepDetail(row);
+    } catch (err) {
+        body.innerHTML = '<p class="text-danger text-center py-4">Failed to load sitrep detail: ' + escapeHtml(err.message || err) + '</p>';
+    }
+    bootstrap.Modal.getOrCreateInstance(modalEl).show();
+}
+
 function resetResponderFilters() {
     document.getElementById("responderSearch").value = "";
     document.getElementById("responderNatureFilter").value = "";
     document.getElementById("responderDateFrom").value = "";
     document.getElementById("responderDateTo").value = "";
+    if (pcrFilterActive) {
+        pcrFilterActive = false;
+        document.getElementById("respPcrCard").classList.remove("pcr-filter-active");
+        const note = document.getElementById("pcrFilterNote");
+        if (note) note.classList.add("d-none");
+    }
     renderResponderLog();
 }
 
