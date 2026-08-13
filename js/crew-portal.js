@@ -424,9 +424,6 @@ function switchCrewTab(tab) {
     if (tab === "responder") loadResponderLog();
 }
 
-const RESPONDER_LOG_URL = "https://script.google.com/macros/s/AKfycbzJi6ZsCBaFq91LTd3rhroMPAxcd6eFeQS1dEtqmdmnuJxqLwMj0EUjJFEZpg3SpzPS/exec";
-const SITREP_MAIN_URL = RESPONDER_LOG_URL + "?action=sitreps";
-
 function escapeHtml(str) {
     return String(str ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
@@ -483,30 +480,22 @@ function getEmployeeNameVariants(data) {
     return variants;
 }
 
-// Apps Script /exec endpoints can fail on a cold start / first request (a 302
-// session-setup redirect that sometimes errors). Retry a few times before
-// giving up so transient failures don't surface as hard errors.
-async function fetchJson(url, attempts = 3) {
-    let lastErr;
-    for (let i = 0; i < attempts; i++) {
-        try {
-            const res = await fetch(url);
-            const data = await res.json();
-            if (data && typeof data === "object") return data;
-            throw new Error("Unexpected response from server");
-        } catch (err) {
-            lastErr = err;
-            if (i < attempts - 1) await new Promise(r => setTimeout(r, 800 * (i + 1)));
-        }
-    }
-    throw lastErr;
+// All Apps Script access goes through the responder-data edge function, which
+// validates the caller's session and returns only their own data. No Apps
+// Script URL lives in this file.
+async function invokeResponderData(action, extra = {}) {
+    const { data, error } = await supabaseClient.functions.invoke("responder-data", {
+        body: { action, ...extra }
+    });
+    if (error) throw new Error(error.message || "Failed to load data");
+    return data;
 }
 
 async function loadSitrepRows() {
     if (sitrepRows) return sitrepRows;
-    const data = await fetchJson(SITREP_MAIN_URL);
+    const data = await invokeResponderData("data");
     if (!data.ok) throw new Error(data.error || "Failed to load sitreps");
-    sitrepRows = data.rows || [];
+    sitrepRows = data.sitreps || [];
     return sitrepRows;
 }
 
@@ -543,10 +532,11 @@ async function loadResponderLog() {
     logLoading = true;
     try {
         const nameVariants = getEmployeeNameVariants(profileData);
-        const data = await fetchJson(RESPONDER_LOG_URL);
-        responderLogRows = (data.rows || []).filter(r =>
+        const data = await invokeResponderData("data");
+        responderLogRows = (data.log || []).filter(r =>
             nameVariants.size === 0 || nameVariants.has(normalizeName(r.name || ""))
         );
+        if (!sitrepRows) sitrepRows = data.sitreps || [];
         logCache = responderLogRows;
 
         const natureFilter = document.getElementById("responderNatureFilter");
@@ -563,9 +553,9 @@ async function loadResponderLog() {
             return;
         }
 
-        // renderResponderLog updates both stat cards; the sitreps request it
-        // triggers runs only after this log request completes, so the two Apps
-        // Script calls never hit the cold start at the same time.
+        // renderResponderLog updates both stat cards. The log and sitreps data
+        // both arrive in the single edge-function response above (the edge
+        // function fetches them sequentially, avoiding concurrent cold starts).
         renderResponderLog();
     } catch (err) {
         console.error("Failed to load responder log:", err);
@@ -701,17 +691,42 @@ function photoFallback(img) {
     }
 }
 
+async function fetchPhoto(id) {
+    try {
+        const data = await invokeResponderData("photo", { id });
+        if (!data || !data.ok || !data.data) return null;
+        return "data:" + data.type + ";base64," + data.data;
+    } catch (err) {
+        console.error("Failed to load photo:", err);
+        return null;
+    }
+}
+
 function photoThumbnails(photos, id) {
     const links = String(photos || "").split(/\n+/).map(x => x.trim()).filter(Boolean);
     if (!links.length) return "";
     const thumbs = links.map(link => {
         const m = /\/d\/([^/?]+)/.exec(link);
-        const src = m ? "https://drive.google.com/uc?export=view&id=" + m[1] : link;
-        return `<a href="${escapeHtml(link)}" target="_blank" rel="noopener" class="me-2 mb-2">
-            <img src="${escapeHtml(src)}" alt="Incident photo" class="img-thumbnail"
-                 style="width:140px;height:105px;object-fit:cover;"
-                 data-link="${escapeHtml(link)}" onerror="photoFallback(this)"></a>`;
+        const photoId = m ? m[1] : "";
+        return `<span class="me-2 mb-2">
+            <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Incident photo"
+                 class="img-thumbnail" style="width:140px;height:105px;object-fit:cover;background:#f1f3f5;"
+                 data-link="${escapeHtml(link)}" data-photo-id="${escapeHtml(photoId)}"
+                 onload="this.style.background=''" onerror="photoFallback(this)"></span>`;
     }).join("");
+    // Photos live in a private Drive folder, so each thumbnail is fetched
+    // through the authenticated responder-data edge function after render.
+    setTimeout(() => {
+        const container = document.getElementById(id);
+        if (!container) return;
+        container.querySelectorAll("img[data-photo-id]").forEach(img => {
+            const pid = img.getAttribute("data-photo-id");
+            if (!pid) { photoFallback(img); return; }
+            fetchPhoto(pid).then(dataUrl => {
+                if (dataUrl) img.src = dataUrl; else photoFallback(img);
+            });
+        });
+    }, 0);
     return `
         <div class="card shadow-sm border-0 mb-3">
             <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
