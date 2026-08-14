@@ -434,6 +434,8 @@ let logCache = null;
 let logLoading = false;
 let pcrFilterActive = false;
 let pcrSitreps = null;
+let logPage = 1;
+const LOG_PAGE_SIZE = 10;
 
 const normId = s => String(s || "").trim().toLowerCase();
 
@@ -548,6 +550,8 @@ async function loadResponderLog() {
 
         if (!data.ok || responderLogRows.length === 0) {
             tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">No responder log entries found for your account.</td></tr>';
+            const pagination = document.getElementById("responderLogPagination");
+            if (pagination) pagination.innerHTML = "";
             document.getElementById("respStatSitreps").innerText = "0";
             document.getElementById("respStatPcr").innerText = "0";
             return;
@@ -592,17 +596,40 @@ function getFilteredResponderLog() {
     });
 }
 
+// Sort value for a responder-log row. Uses the SITREP # sequence (e.g. 2026-001)
+// so "newest" means the most recent report regardless of sheet order.
+function logSortValue(r) {
+    const m = /^(\d{4})-(\d+)$/.exec(String(r.sitrepNo || "").trim());
+    return m ? Number(m[1]) * 100000 + Number(m[2]) : 0;
+}
+
 function renderResponderLog() {
     const tbody = document.getElementById("responderLogBody");
-    const filtered = getFilteredResponderLog();
+    const filtered = getFilteredResponderLog().sort((a, b) => logSortValue(b) - logSortValue(a));
     updateResponderStats(filtered);
+
+    const totalPages = Math.max(1, Math.ceil(filtered.length / LOG_PAGE_SIZE));
+    logPage = Math.min(logPage, totalPages);
+
+    const pagination = document.getElementById("responderLogPagination");
+    if (pagination) {
+        pagination.innerHTML = `
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="changeLogPage(-1)" ${logPage <= 1 ? "disabled" : ""}>
+                <i class="fa-solid fa-chevron-left"></i> Prev
+            </button>
+            <span class="text-muted">Page ${logPage} of ${totalPages} (${filtered.length} records)</span>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="changeLogPage(1)" ${logPage >= totalPages ? "disabled" : ""}>
+                Next <i class="fa-solid fa-chevron-right"></i>
+            </button>`;
+    }
 
     if (filtered.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">No entries match your filters.</td></tr>';
         return;
     }
 
-    tbody.innerHTML = filtered.map(r => `<tr class="clickable-row" onclick="showSitrepDetail('${escapeHtml(r.sitrepNo)}')" title="View full SITREP detail">
+    const start = (logPage - 1) * LOG_PAGE_SIZE;
+    tbody.innerHTML = filtered.slice(start, start + LOG_PAGE_SIZE).map(r => `<tr class="clickable-row" onclick="showSitrepDetail('${escapeHtml(r.sitrepNo)}')" title="View full SITREP detail">
         <td data-label="SITREP #">${escapeHtml(r.sitrepNo)}</td>
         <td data-label="Recorded At">${escapeHtml(r.recordedAt)}</td>
         <td data-label="Call Date">${escapeHtml(formatResponderDate(r.callDate))}</td>
@@ -610,6 +637,11 @@ function renderResponderLog() {
         <td data-label="Name">${escapeHtml(r.name)}</td>
         <td data-label="Role">${escapeHtml(r.role)}</td>
     </tr>`).join("");
+}
+
+function changeLogPage(delta) {
+    logPage += delta;
+    renderResponderLog();
 }
 
 let pcrStatToken = 0;
@@ -862,6 +894,7 @@ function resetResponderFilters() {
         const note = document.getElementById("pcrFilterNote");
         if (note) note.classList.add("d-none");
     }
+    logPage = 1;
     renderResponderLog();
 }
 
