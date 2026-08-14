@@ -209,6 +209,10 @@ document.getElementById("educAttain").addEventListener("change", toggleEduExtra)
 function previewImage(event) {
     const file = event.target.files[0];
     if (!file) return;
+    if (!String(file.type || "").startsWith("image/")) {
+        pendingProfileFile = null;
+        return alert("Please select an image file.");
+    }
     pendingProfileFile = file;
     const img = document.getElementById("editProfilePreview");
     if (img) img.src = URL.createObjectURL(file);
@@ -253,12 +257,13 @@ async function changePassword() {
 }
 
 async function uploadProfileImage(file, employeeId) {
-    const ext = file.name.split('.').pop().toLowerCase() || 'jpg';
-    const fileName = `${employeeId}_${Date.now()}.${ext}`;
-    const { data, error } = await supabaseClient.storage
+    const { blob, error } = await prepareProfileImage(file);
+    if (error) throw new Error(error);
+    const fileName = `${employeeId}_${Date.now()}.jpg`;
+    const { error: uploadErr } = await supabaseClient.storage
         .from('profile-pictures')
-        .upload(fileName, file, { upsert: true });
-    if (error) throw new Error(`Upload failed: ${error.message}`);
+        .upload(fileName, blob, { upsert: true, contentType: "image/jpeg" });
+    if (uploadErr) throw new Error(`Upload failed: ${uploadErr.message}`);
     const { data: urlData } = supabaseClient.storage
         .from('profile-pictures')
         .getPublicUrl(fileName);

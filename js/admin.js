@@ -258,18 +258,23 @@ function toggleEmpPassword() {
 function previewEmpImage(event) {
     const file = event.target.files[0];
     if (!file) return;
+    if (!String(file.type || "").startsWith("image/")) {
+        pendingEmpImage = null;
+        return alert("Please select an image file.");
+    }
     pendingEmpImage = file;
     const img = document.getElementById("empPicPreview");
     if (img) img.src = URL.createObjectURL(file);
 }
 
 async function uploadEmpImage(file, namePrefix) {
-    const ext = file.name.split('.').pop().toLowerCase() || 'jpg';
+    const { blob, error } = await prepareProfileImage(file);
+    if (error) throw new Error(error);
     const safePrefix = String(namePrefix).replace(/[^\w-]/g, "_");
-    const fileName = `${safePrefix}_${Date.now()}.${ext}`;
+    const fileName = `${safePrefix}_${Date.now()}.jpg`;
     const { error: uploadErr } = await supabaseClient.storage
         .from('profile-pictures')
-        .upload(fileName, file, { upsert: true });
+        .upload(fileName, blob, { upsert: true, contentType: "image/jpeg" });
     if (uploadErr) throw new Error(`Upload failed: ${uploadErr.message}`);
     const { data: urlData } = supabaseClient.storage
         .from('profile-pictures')
