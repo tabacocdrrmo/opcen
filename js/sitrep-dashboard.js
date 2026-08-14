@@ -194,6 +194,14 @@ function tagSitrep(row) {
     return tags;
 }
 
+async function ensureFreshSession() {
+    const { data: sess } = await supabaseClient.auth.getSession();
+    const s = sess && sess.session;
+    if (s && s.expires_at && Date.now() / 1000 > s.expires_at - 120) {
+        try { await supabaseClient.auth.refreshSession(); } catch (_) {}
+    }
+}
+
 async function loadSitrepDashboard(force) {
     if (!force && sitrepLoaded) {
         renderSitrepDashboard();
@@ -201,10 +209,18 @@ async function loadSitrepDashboard(force) {
     }
     const body = document.getElementById("sitrepTableBody");
     try {
+        await ensureFreshSession();
         const { data, error } = await supabaseClient.functions.invoke("sitrep-data", {
             body: { action: "sitreps" }
         });
-        if (error) throw error;
+        if (error) {
+            const status = (error.context && error.context.status) || 0;
+            if (status === 401 || status === 403) {
+                if (typeof handleLogout === "function") { handleLogout(); } else { window.location.href = "index.html"; }
+                return;
+            }
+            throw error;
+        }
         if (!data || !data.ok) throw new Error((data && data.error) || "Failed to load sitreps");
         sitrepRows = data.rows || [];
         sitrepLoaded = true;
@@ -688,8 +704,8 @@ function renderSitrepTable() {
     const start = (sitrepPage - 1) * SITREP_PAGE_SIZE;
     body.innerHTML = rows.slice(start, start + SITREP_PAGE_SIZE).map(r => {
         const causes = tagSitrep(r);
-        return `<tr>
-            <td>${esc(r["SITREP #"])}</td>
+        return `<tr data-no="${esc(r["SITREP #"])}" style="cursor:pointer;" title="Click to view SITREP details">
+            <td class="fw-medium">${esc(r["SITREP #"])}</td>
             <td>${esc(r["Call Date"])}</td>
             <td class="d-none d-md-table-cell">${esc(r["Recorded At"])}</td>
             <td>${esc(r["Nature of Incident"])}</td>
@@ -751,7 +767,144 @@ function csvCell(v) {
     return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
 }
 
+// ---- SITREP detail (report-style modal, mirrors the SITREP View page) ----
+function splitSlots(s) {
+    return String(s ?? "").split(/;\s*|\n/).map(x => x.trim());
+}
+
+function sitrepFmt(v) {
+    if (typeof v === "string") {
+        const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(v);
+        if (m && m[1] === "1899") return m[4] + ":" + m[5];
+    }
+    if (!(v instanceof Date) || isNaN(v)) return v;
+    const p = n => String(n).padStart(2, "0");
+    if (v.getFullYear() >= 2000) return `${v.getFullYear()}-${p(v.getMonth() + 1)}-${p(v.getDate())}`;
+    return `${p(v.getHours())}:${p(v.getMinutes())}`;
+}
+
+async function sitrepPhotoDataUrl(url) {
+    if (/^data:/i.test(url)) return Promise.resolve(url);
+    const idMatch = /\/d\/([^/]+)/.exec(url || "") ||
+        /thumbnail\?id=([^&\s]+)/.exec(url || "") ||
+        /[\?&]id=([^&\s]+)/.exec(url || "");
+    const id = idMatch && idMatch[1];
+    if (!id) return Promise.resolve(null);
+    try {
+        await ensureFreshSession();
+        const { data } = await supabaseClient.functions.invoke("sitrep-data", {
+            body: { action: "photo", id }
+        });
+        if (!data || !data.ok || !data.data) return null;
+        return "data:" + data.type + ";base64," + data.data;
+    } catch (err) {
+        console.log("[sitrep photo] FAIL", String(err));
+        return null;
+    }
+}
+
+function renderSitrepReport(row) {
+    const patients = splitSlots(row["Patient"]);
+    const ages = splitSlots(row["Age"]);
+    const addresses = splitSlots(row["Address"]);
+    const injuries = splitSlots(row["Injuries"]);
+    const statuses = splitSlots(row["Victim Status"]);
+    const impressions = splitSlots(row["Initial Impression"]);
+    const dispositions = splitSlots(row["Disposition"]);
+    const pcrBy = splitSlots(row["PCR By"]);
+    const br = arr => arr.map(esc).join("<br>");
+
+    const patientRows = patients.map((p, i) => `
+        <tr>
+            <td>${i + 1}</td>
+            <td>${esc(p)}</td>
+            <td>${esc(ages[i] || "")}</td>
+            <td>${esc(addresses[i] || "")}</td>
+            <td>${esc(injuries[i] || "")}</td>
+            <td>${esc(statuses[i] || "")}</td>
+            <td>${esc(impressions[i] || "")}</td>
+            <td>${esc(dispositions[i] || "")}</td>
+            <td>${esc(pcrBy[i] || "")}</td>
+        </tr>`).join("");
+
+    const photos = String(row["Photos"] || "").split("\n").map(s => s.trim()).filter(Boolean);
+    const photoSection = photos.length ? `
+        <h3 class="report-title attachments-title">Attachments</h3>
+        <div class="report-photos">
+            ${photos.map((u, i) => `
+                <a href="${esc(u)}" target="_blank" rel="noopener">
+                    <img class="saved-photo" data-photo="${esc(u)}" alt="Photo ${i + 1}">
+                </a>`).join("")}
+        </div>` : "";
+
+    return `
+        ${row["SITREP #"] ? `<div class="report-title" style="text-align:right;font-size:13px;margin-bottom:4px;">SITREP No. ${esc(row["SITREP #"])}</div>` : ""}
+        <table class="report-table report-table-main">
+            <tr><th>Nature of Incident</th><td>${esc(row["Nature of Incident"])}</td>
+                <th>Assigned Team</th><td>${esc(row["Assigned Team"])}</td></tr>
+            <tr><th>Shift-In-Charge</th><td>${esc(row["Shift-In-Charge (SIC)"])}</td>
+                <th>Operator in Charge</th><td>${esc(row["Operator in Charge"])}</td></tr>
+            <tr><th>Dispatched Resource(s)</th><td colspan="3">${splitJoined(row["Dispatched Resources"]).map(esc).join(", ")}</td></tr>
+            <tr><th>Incident Caller / Informant</th><td>${esc(row["Incident Caller / Informant"])}</td>
+                <th>Contact No.</th><td>${esc(row["Contact No."])}</td></tr>
+            <tr><th>Call Date</th><td>${esc(sitrepFmt(row["Call Date"]))}</td>
+                <th>Call Time</th><td>${esc(sitrepFmt(row["Call Time"]))}</td></tr>
+            <tr><th>Dispatched Time</th><td>${esc(sitrepFmt(row["Dispatched Time"]))}</td>
+                <th>Arrival at Scene</th><td>${esc(sitrepFmt(row["Arrival at Scene"]))}</td></tr>
+            <tr><th>Take Off from Scene</th><td>${esc(sitrepFmt(row["Take Off from Scene"]))}</td>
+                <th>Arrival at Hospital</th><td>${esc(sitrepFmt(row["Arrival at Hospital"]))}</td></tr>
+            <tr><th>Place / Landmark</th><td>${esc(row["Barangay"])}</td>
+                <th>Municipality</th><td>${esc(row["Municipality"])}</td></tr>
+            <tr><th>Patients / Victims</th><td colspan="3">
+                <div class="patients-wrap">
+                <table class="report-table patients-table">
+                    <tr><th style="width:5%">No.</th><th style="width:13%">Patient / Victim</th><th style="width:6%">Age</th><th style="width:14%">Address</th><th style="width:13%">Injuries Description</th><th style="width:11%">Status of Victim</th><th style="width:15%">Initial Impression</th><th style="width:14%">Disposition</th><th style="width:9%">PCR By</th></tr>
+                    ${patientRows}
+                </table>
+                </div>
+            </td></tr>
+            <tr><th>Involved Vehicle Type</th><td colspan="3">${splitJoined(row["Involved Vehicle Type"]).map(esc).join(", ")}</td></tr>
+            <tr><th>First Aid Provided</th><td colspan="3">${esc(row["First Aid Provided"])}</td></tr>
+            <tr><th>Remarks</th><td colspan="3">${esc(row["Remarks"])}</td></tr>
+            <tr><th>Driver(s)</th><td>${br(splitJoined(row["Drivers"]))}</td>
+                <th>Responder(s)</th><td>${br(splitJoined(row["Responders"]))}</td></tr>
+        </table>
+        ${photoSection}`;
+}
+
+function loadSitrepReportPhotos(scope) {
+    if (!scope) return;
+    scope.querySelectorAll(".report-photos img.saved-photo").forEach(img => {
+        sitrepPhotoDataUrl(img.dataset.photo).then(dataUrl => {
+            if (!dataUrl) return;
+            img.src = dataUrl;
+            const link = img.closest("a");
+            if (link) link.href = dataUrl;
+        });
+    });
+}
+
+function showSitrepDetail(sitrepNo) {
+    const row = getSitrepTableRows().find(r => String(r["SITREP #"]) === String(sitrepNo));
+    if (!row) return;
+    const box = document.getElementById("sitrepReportContent");
+    if (!box) return;
+    box.innerHTML = renderSitrepReport(row);
+    loadSitrepReportPhotos(box);
+    const modal = document.getElementById("sitrepDetailModal");
+    if (modal && typeof bootstrap !== "undefined") {
+        bootstrap.Modal.getOrCreateInstance(modal).show();
+    }
+}
+
 document.addEventListener("DOMContentLoaded", function () {
+    const tbody = document.getElementById("sitrepTableBody");
+    if (tbody) {
+        tbody.addEventListener("click", function (e) {
+            const tr = e.target.closest("tr[data-no]");
+            if (tr) showSitrepDetail(tr.getAttribute("data-no"));
+        });
+    }
     ["sitrepDateFrom", "sitrepDateTo", "sitrepTeamFilter", "sitrepNatureFilter", "sitrepBarangayFilter", "sitrepCauseFilter"].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.addEventListener("change", function () {

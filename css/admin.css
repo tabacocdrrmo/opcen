@@ -137,3 +137,206 @@ body { overflow-x: hidden; }
         min-width: 0 !important;
     }
 }
+
+/* ---- SITREP report-style detail modal (faithful port of SITREP View page) ---- */
+#sitrepDetailModal .sitrep-report-box {
+    position: relative;
+    background: #fff;
+    width: 1050px;
+    max-width: 100%;
+    margin: auto;
+    padding: 22px;
+    box-shadow: 0 3px 15px rgba(0, 0, 0, .3);
+}
+#sitrepDetailModal .report-header {
+    position: relative;
+    display: none;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 18px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #000;
+}
+#sitrepDetailModal .doc-logo {
+    width: 72px;
+    height: 72px;
+    flex: 0 0 72px;
+    object-fit: contain;
+}
+#sitrepDetailModal .doc-header-text {
+    position: absolute;
+    left: 0;
+    right: 0;
+    text-align: center;
+    line-height: 1.35;
+    pointer-events: none;
+}
+#sitrepDetailModal .gov-line {
+    font-size: 12px;
+}
+#sitrepDetailModal .agency-name {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: .5px;
+}
+#sitrepDetailModal .doc-contact {
+    font-size: 12px;
+}
+#sitrepDetailModal .report-title {
+    text-align: center;
+    margin: 0 0 15px;
+    font-size: 16px;
+}
+#sitrepDetailModal .report-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+#sitrepDetailModal .report-table-main {
+    table-layout: fixed;
+}
+#sitrepDetailModal .patients-table {
+    table-layout: fixed;
+}
+#sitrepDetailModal .patients-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+#sitrepDetailModal .report-table th,
+#sitrepDetailModal .report-table td {
+    border: 1px solid #777;
+    padding: 5px;
+    vertical-align: top;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+#sitrepDetailModal .report-table td {
+    min-width: 0;
+    max-width: 100%;
+}
+#sitrepDetailModal .report-table th {
+    background: #eee;
+    width: 22%;
+    text-align: left;
+}
+#sitrepDetailModal .report-photos {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin: 4px 0;
+}
+#sitrepDetailModal .attachments-title {
+    margin-top: 20px;
+}
+#sitrepDetailModal .report-photos a {
+    display: block;
+    width: 120px;
+    height: 90px;
+    border: 1px solid #bbb;
+    overflow: hidden;
+    background: #f5f5f5;
+}
+#sitrepDetailModal .report-photos img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+@media print {
+    @page {
+        margin: 10mm;
+    }
+
+    body {
+        background: #fff;
+        padding: 0;
+    }
+
+    body > *:not(#sitrepDetailModal) {
+        display: none !important;
+    }
+
+    #sitrepDetailModal {
+        position: absolute !important;
+        inset: 0 !important;
+        background: #fff !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        z-index: auto !important;
+    }
+
+    #sitrepDetailModal .modal-dialog,
+    #sitrepDetailModal .modal-content {
+        margin: 0 !important;
+        max-width: none !important;
+        width: auto !important;
+        box-shadow: none !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+    }
+
+    #sitrepDetailModal .modal-dialog-scrollable {
+        height: auto !important;
+    }
+
+    #sitrepDetailModal .modal-dialog-scrollable .modal-content {
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    #sitrepDetailModal .modal-body {
+        overflow: visible !important;
+        padding: 0 !important;
+    }
+
+    body.modal-open {
+        overflow: visible !important;
+        padding: 0 !important;
+    }
+
+    #sitrepDetailModal .modal-header,
+    #sitrepDetailModal .modal-footer {
+        display: none !important;
+    }
+
+    #sitrepDetailModal .sitrep-report-box {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        border: 0 !important;
+    }
+
+    #sitrepDetailModal .report-header {
+        display: flex !important;
+    }
+
+    #sitrepDetailModal .report-table {
+        font-size: 11px;
+    }
+
+    #sitrepDetailModal .report-table th {
+        width: 17%;
+    }
+
+    #sitrepDetailModal .report-photos {
+        gap: 12px;
+    }
+
+    #sitrepDetailModal .report-photos a {
+        width: 240px;
+        height: 180px;
+    }
+
+    #sitrepDetailModal .report-photos img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+}
