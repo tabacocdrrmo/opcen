@@ -85,7 +85,9 @@ function renderTable() {
         const statusBadge = statusBadgeHtml(emp.status);
         const roleBadge = emp.role === "admin"
             ? '<span class="badge bg-warning text-dark">Admin</span>'
-            : '<span class="badge bg-secondary">Staff</span>';
+            : emp.role === "operator"
+                ? '<span class="badge bg-info text-dark">Operator</span>'
+                : '<span class="badge bg-secondary">Staff</span>';
 
         return `<tr>
             <td data-label="Name" class="fw-medium">${escapeHtml(name)}</td>

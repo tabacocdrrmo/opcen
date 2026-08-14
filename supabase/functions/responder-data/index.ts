@@ -20,6 +20,10 @@ function nameMatches(name: string, first: string, last: string): boolean {
 // The Apps Script endpoint is flaky on cold start / first request, so retry with
 // a backoff and a per-attempt timeout.
 async function fetchAppsScript(url: string, attempts = 4): Promise<any> {
+  const token = Deno.env.get("SITREP_API_TOKEN");
+  if (token) {
+    url += (url.includes("?") ? "&" : "?") + "token=" + encodeURIComponent(token);
+  }
   let lastErr: unknown;
   for (let i = 0; i < attempts; i++) {
     const ctl = new AbortController();

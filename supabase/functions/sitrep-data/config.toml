@@ -1,0 +1,5 @@
+{
+  "name": "sitrep-data",
+  "verify_jwt": true,
+  "timeout": 180
+}
