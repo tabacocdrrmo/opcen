@@ -795,6 +795,7 @@ function switchPage(page) {
     if (link) link.classList.add("active");
 
     if (page === "leave") loadLeaveRequests();
+    if (page === "sitrep-insights") loadSitrepDashboard();
 
     if (window.innerWidth < 768) toggleSidebar(false);
 }
@@ -802,6 +803,11 @@ function switchPage(page) {
 function toggleSidebar(force) {
     const sidebar = document.getElementById("sidebar");
     const backdrop = document.getElementById("sidebarBackdrop");
+    if (window.innerWidth >= 768) {
+        const collapsed = force !== undefined ? !!force : !sidebar.classList.contains("collapsed");
+        sidebar.classList.toggle("collapsed", collapsed);
+        return;
+    }
     const isShowing = sidebar.classList.toggle("show", force ?? undefined);
     backdrop.classList.toggle("show", force ?? undefined);
 }

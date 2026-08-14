@@ -3,6 +3,25 @@ body { overflow-x: hidden; }
     width: 240px;
     min-height: calc(100vh - 56px);
     flex-shrink: 0;
+    transition: width .25s ease;
+}
+.sidebar.collapsed {
+    width: 62px;
+}
+.sidebar.collapsed .sidebar-heading {
+    padding: 16px 0 8px;
+    text-align: center;
+}
+.sidebar.collapsed .sidebar-heading span,
+.sidebar.collapsed .nav-link span {
+    display: none;
+}
+.sidebar.collapsed .nav-link {
+    padding: 12px 0;
+    text-align: center;
+}
+.sidebar.collapsed .nav-link i {
+    width: auto;
 }
 .sidebar .nav-link {
     border-radius: 0;

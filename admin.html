@@ -13,7 +13,7 @@
     <!-- Top Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark" style="min-height: 56px;">
         <div class="container-fluid px-3">
-            <button class="btn btn-outline-light btn-sm d-md-none me-2" onclick="toggleSidebar()">
+            <button class="btn btn-outline-light btn-sm me-2" onclick="toggleSidebar()" title="Toggle sidebar">
                 <i class="fa-solid fa-bars"></i>
             </button>
             <a class="navbar-brand py-0" href="index.html">
@@ -40,18 +40,21 @@
 
         <!-- Sidebar -->
         <aside class="sidebar bg-dark" id="sidebar">
-            <div class="sidebar-heading">Main Menu</div>
+            <div class="sidebar-heading"><span>Main Menu</span></div>
             <a href="#" class="nav-link" data-page="employees" onclick="switchPage('employees')">
-                <i class="fa-solid fa-users"></i> Employees
+                <i class="fa-solid fa-users"></i><span> Employees</span>
+            </a>
+            <a href="#" class="nav-link" data-page="sitrep-insights" onclick="switchPage('sitrep-insights')">
+                <i class="fa-solid fa-chart-line"></i><span> SITREP Insights</span>
             </a>
             <a href="#" class="nav-link" data-page="leave" onclick="switchPage('leave')">
-                <i class="fa-solid fa-calendar-alt"></i> Leave Requests
+                <i class="fa-solid fa-calendar-alt"></i><span> Leave Requests</span>
             </a>
             <a href="#" class="nav-link" data-page="accounts" onclick="switchPage('accounts')">
-                <i class="fa-solid fa-user-lock"></i> Accounts
+                <i class="fa-solid fa-user-lock"></i><span> Accounts</span>
             </a>
             <a href="#" class="nav-link" data-page="settings" onclick="switchPage('settings')">
-                <i class="fa-solid fa-gear"></i> Settings
+                <i class="fa-solid fa-gear"></i><span> Settings</span>
             </a>
         </aside>
 
@@ -246,6 +249,205 @@
                     <div class="card-body text-center text-muted py-5">
                         <i class="fa-solid fa-gear fa-3x mb-3" style="opacity:.3;"></i>
                         <p class="mb-0">System settings coming soon.<br>Configuration and preferences.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== SITREP Insights Page ========== -->
+            <div id="page-sitrep-insights" class="page-section d-none">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0">SITREP Insights</h4>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-secondary btn-sm" onclick="loadSitrepDashboard(true)">
+                            <i class="fa-solid fa-rotate"></i> Refresh
+                        </button>
+                        <button class="btn btn-outline-success btn-sm" onclick="exportSitrepCsv()">
+                            <i class="fa-solid fa-download"></i> Export CSV
+                        </button>
+                    </div>
+                </div>
+
+                <div class="row g-2 g-md-3 mb-4">
+                    <div class="col-6 col-md-4">
+                        <div class="card border-primary shadow-sm">
+                            <div class="card-body text-center py-3">
+                                <div class="text-muted small text-uppercase">Total SITREPs</div>
+                                <div class="fw-bold fs-4 text-primary" id="sitrepStatTotal">0</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <div class="card border-info shadow-sm">
+                            <div class="card-body text-center py-3">
+                                <div class="text-muted small text-uppercase">This Month</div>
+                                <div class="fw-bold fs-4 text-info" id="sitrepStatMonth">0</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <div class="card border-danger shadow-sm">
+                            <div class="card-body text-center py-3">
+                                <div class="text-muted small text-uppercase">Fatalities</div>
+                                <div class="fw-bold fs-4 text-danger" id="sitrepStatFatal">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-2 mb-3">
+                    <div class="col-lg-8">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+                                <span class="fw-bold small text-uppercase text-muted">Filters</span>
+                                <button type="button" class="btn btn-link p-0 text-muted" data-bs-toggle="collapse" data-bs-target="#sitrepFiltersCollapse" aria-expanded="false" onclick="toggleSitrepChevron(this)">
+                                    <i class="fa-solid fa-chevron-down"></i>
+                                </button>
+                            </div>
+                            <div class="collapse" id="sitrepFiltersCollapse">
+                                <div class="card-body py-3">
+                                    <div class="row g-2 align-items-end">
+                                        <div class="col-6 col-md-3">
+                                            <label class="form-label small text-muted mb-1" for="sitrepDateFrom">From</label>
+                                            <input type="date" id="sitrepDateFrom" class="form-control form-control-sm">
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <label class="form-label small text-muted mb-1" for="sitrepDateTo">To</label>
+                                            <input type="date" id="sitrepDateTo" class="form-control form-control-sm">
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <label class="form-label small text-muted mb-1" for="sitrepTeamFilter">Team</label>
+                                            <select id="sitrepTeamFilter" class="form-select form-select-sm"><option value="">All Teams</option></select>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <label class="form-label small text-muted mb-1" for="sitrepNatureFilter">Nature</label>
+                                            <select id="sitrepNatureFilter" class="form-select form-select-sm"><option value="">All Natures</option></select>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <label class="form-label small text-muted mb-1" for="sitrepBarangayFilter">Place of Incident</label>
+                                            <select id="sitrepBarangayFilter" class="form-select form-select-sm"><option value="">All Places</option></select>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <label class="form-label small text-muted mb-1" for="sitrepCauseFilter">Cause</label>
+                                            <select id="sitrepCauseFilter" class="form-select form-select-sm"><option value="">All Causes</option></select>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <button class="btn btn-outline-secondary btn-sm w-100" onclick="resetSitrepFilters()">Clear Filters</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body py-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="card-title text-uppercase text-muted small mb-0">Top 5 Causes</h6>
+                                    <span class="badge bg-primary" id="topCausesNatureBadge">All Natures</span>
+                                </div>
+                                <div id="topCausesList" class="list-group list-group-flush"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-2 mb-3">
+                    <div class="col-md-6 col-xl-4">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body py-2">
+                                <h6 class="card-title text-uppercase text-muted small mb-1">Incidents by Cause</h6>
+                                <div style="position:relative;height:180px;"><canvas id="causeChart"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-xl-4">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body py-2">
+                                <h6 class="card-title text-uppercase text-muted small mb-1">Incidents by Nature</h6>
+                                <div style="position:relative;height:180px;"><canvas id="natureChart"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-xl-4">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body py-2">
+                                <h6 class="card-title text-uppercase text-muted small mb-1">Place of Incident Hotspots</h6>
+                                <div style="position:relative;height:180px;"><canvas id="barangayChart"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-xl-4">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body py-2">
+                                <h6 class="card-title text-uppercase text-muted small mb-1">Incidents by Hour of Day</h6>
+                                <div style="position:relative;height:180px;"><canvas id="hourChart"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-xl-4">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body py-2">
+                                <h6 class="card-title text-uppercase text-muted small mb-1">Incidents by Weekday</h6>
+                                <div style="position:relative;height:180px;"><canvas id="weekdayChart"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-xl-4">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body py-2">
+                                <h6 class="card-title text-uppercase text-muted small mb-1">Monthly Trend</h6>
+                                <div style="position:relative;height:180px;"><canvas id="monthlyChart"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="fw-bold small text-uppercase text-muted">Records</span>
+                            <span class="small text-muted" id="sitrepTableCauseChip"></span>
+                            <span class="small text-muted" id="sitrepRecordCount"></span>
+                        </div>
+                        <button type="button" class="btn btn-link p-0 text-muted" data-bs-toggle="collapse" data-bs-target="#sitrepTableCollapse" aria-expanded="false" onclick="toggleSitrepChevron(this)">
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="collapse" id="sitrepTableCollapse">
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover mb-0 align-middle" style="table-layout: fixed; font-size: 0.8rem;">
+                                    <colgroup>
+                                        <col style="width: 85px;">
+                                        <col style="width: 90px;">
+                                        <col style="width: 130px;">
+                                        <col>
+                                        <col style="width: 70px;">
+                                        <col>
+                                        <col style="width: 60px;">
+                                        <col>
+                                        <col style="width: 150px;">
+                                    </colgroup>
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>SITREP #</th>
+                                            <th>Call Date</th>
+                                            <th class="d-none d-md-table-cell">Recorded At</th>
+                                            <th>Nature</th>
+                                            <th>Team</th>
+                                            <th class="d-none d-sm-table-cell">Place</th>
+                                            <th>Patients</th>
+                                            <th class="d-none d-lg-table-cell">Victim Status</th>
+                                            <th>Causes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="sitrepTableBody">
+                                        <tr><td colspan="9" class="text-center text-muted py-4">Loading SITREP data...</td></tr>
+                                    </tbody>
+                                </table>
+                                <div id="sitrepPagination" class="py-1"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -496,7 +698,9 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="js/supabase-client.js"></script>
     <script src="js/admin.js"></script>
+    <script src="js/sitrep-dashboard.js"></script>
 </body>
 </html>
