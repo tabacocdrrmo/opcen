@@ -47,6 +47,12 @@
             <a href="#" class="nav-link" data-page="sitrep-insights" onclick="switchPage('sitrep-insights')">
                 <i class="fa-solid fa-chart-line"></i><span> SITREP Insights</span>
             </a>
+            <a href="#" class="nav-link" data-page="team-dashboard" onclick="switchPage('team-dashboard')">
+                <i class="fa-solid fa-people-group"></i><span> Team Dashboard</span>
+            </a>
+            <a href="#" class="nav-link" data-page="employee-dashboard" onclick="switchPage('employee-dashboard')">
+                <i class="fa-solid fa-user"></i><span> Employee Dashboard</span>
+            </a>
             <a href="#" class="nav-link" data-page="leave" onclick="switchPage('leave')">
                 <i class="fa-solid fa-calendar-alt"></i><span> Leave Requests</span>
             </a>
@@ -450,6 +456,300 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+                        <span class="fw-bold small text-uppercase text-muted">Preventive Recommendations</span>
+                        <button type="button" class="btn btn-link p-0 text-muted" data-bs-toggle="collapse" data-bs-target="#preventiveCollapse" aria-expanded="false" onclick="toggleSitrepChevron(this)">
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="collapse" id="preventiveCollapse">
+                        <div class="card-body">
+                            <p class="small text-muted mb-2" id="preventiveSummary"></p>
+                            <div id="preventiveList"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== Team Dashboard Page ========== -->
+            <div id="page-team-dashboard" class="page-section d-none">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0">Team Dashboard</h4>
+                    <div class="d-flex gap-2 align-items-center flex-wrap">
+                        <div class="d-flex align-items-center gap-2 flex-nowrap">
+                            <select id="teamDashboardTeam" class="form-select form-select-sm" style="min-width:140px;">
+                                <option value="">All Teams</option>
+                                <option>Alpha</option>
+                                <option>Bravo</option>
+                                <option>Charlie</option>
+                            </select>
+                            <div class="d-flex align-items-center gap-1">
+                                <span class="small text-muted">From</span>
+                                <input type="date" id="teamDateFrom" class="form-control form-control-sm" style="max-width:140px;">
+                                <span class="small text-muted">To</span>
+                                <input type="date" id="teamDateTo" class="form-control form-control-sm" style="max-width:140px;">
+                            </div>
+                        </div>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="loadTeamDashboard(true)">
+                            <i class="fa-solid fa-rotate"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header bg-light py-2">
+                        <span class="fw-bold small text-uppercase text-muted">Team Comparison</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover mb-0 align-middle text-center" style="font-size:0.85rem;">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th class="text-start">Team</th>
+                                        <th>Total</th>
+                                        <th>This Month</th>
+                                        <th>Fatal</th>
+                                        <th>Patients</th>
+                                        <th>Avg Dispatch&rarr;Arrival</th>
+                                        <th>Avg Scene&rarr;Hospital</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="teamCompareBody">
+                                    <tr><td colspan="7" class="text-center text-muted py-4">Loading SITREP data...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-2 g-md-3 mb-3">
+                    <div class="col-6 col-md-3">
+                        <div class="card border-primary shadow-sm">
+                            <div class="card-body text-center py-3">
+                                <div class="fw-bold fs-4 text-primary" id="teamStatTotal">0</div>
+                                <div class="small text-muted">Total SITREPs</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card border-success shadow-sm">
+                            <div class="card-body text-center py-3">
+                                <div class="fw-bold fs-4 text-success" id="teamStatMonth">0</div>
+                                <div class="small text-muted">This Month</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card border-warning shadow-sm">
+                            <div class="card-body text-center py-3">
+                                <div class="fw-bold fs-4 text-warning" id="teamStatPatients">0</div>
+                                <div class="small text-muted">Patients Handled</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card border-danger shadow-sm">
+                            <div class="card-body text-center py-3">
+                                <div class="fw-bold fs-4 text-danger" id="teamStatFatal">0</div>
+                                <div class="small text-muted">Fatal Cases</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-2 mb-3">
+                    <div class="col-md-12 col-xl-4">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body py-2">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <h6 class="card-title text-uppercase text-muted small mb-1">Top Responders</h6>
+                                    <span class="small text-muted" id="teamResponderMonth"></span>
+                                </div>
+                                <div style="position:relative;height:396px;"><canvas id="teamResponderChart"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 col-xl-8">
+                        <div class="row g-2">
+                            <div class="col-md-6 col-xl-6">
+                                <div class="card shadow-sm h-100">
+                                    <div class="card-body py-2">
+                                        <h6 class="card-title text-uppercase text-muted small mb-1">Monthly Trend</h6>
+                                        <div style="position:relative;height:180px;"><canvas id="teamMonthlyChart"></canvas></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-xl-6">
+                                <div class="card shadow-sm h-100">
+                                    <div class="card-body py-2">
+                                        <h6 class="card-title text-uppercase text-muted small mb-1">SIC Shifts</h6>
+                                        <div style="position:relative;height:180px;"><canvas id="teamSicChart"></canvas></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-xl-6">
+                                <div class="card shadow-sm h-100">
+                                    <div class="card-body py-2">
+                                        <h6 class="card-title text-uppercase text-muted small mb-1">Operator in Charge</h6>
+                                        <div style="position:relative;height:180px;"><canvas id="teamOperatorChart"></canvas></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-xl-6">
+                                <div class="card shadow-sm h-100">
+                                    <div class="card-body py-2">
+                                        <h6 class="card-title text-uppercase text-muted small mb-1">Top Drivers</h6>
+                                        <div style="position:relative;height:180px;"><canvas id="teamDriverChart"></canvas></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== Employee Dashboard Page ========== -->
+            <div id="page-employee-dashboard" class="page-section d-none">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0">Employee Dashboard</h4>
+                    <div class="d-flex gap-2 align-items-center">
+                        <select id="empDashboardSelect" class="form-select form-select-sm" style="min-width:220px;">
+                            <option value="">-- Select Employee --</option>
+                        </select>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="loadEmployeeDashboard(true)">
+                            <i class="fa-solid fa-rotate"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <div id="empDashboardEmpty">
+                    <div class="text-muted text-center py-5">
+                        <i class="fa-solid fa-user fa-2x mb-2" style="opacity:.3;"></i>
+                        <p class="mb-0">Select an employee to see their SITREP activity and HR summary.</p>
+                    </div>
+                </div>
+
+                <div id="empDashboardContent" class="d-none">
+                    <div class="card shadow-sm mb-3">
+                        <div class="card-body">
+                            <div class="d-flex flex-wrap align-items-center gap-3">
+                                <img id="empAvatar" src="" alt="avatar" class="rounded-circle border"
+                                     style="width:80px;height:80px;object-fit:cover;background:#e9ecef;">
+                                <div class="flex-grow-1">
+                                    <div class="h5 mb-1"><span id="empName">—</span> <span class="badge" id="empStatusBadge">—</span></div>
+                                    <div class="small text-muted"><span id="empPosition">—</span> &middot; <span id="empEmploymentType">—</span> &middot; <span id="empEligibility">—</span></div>
+                                    <div class="small text-muted">Tenure: <span id="empTenure">—</span></div>
+                                    <div class="small text-muted">Team(s): <span id="empTeams">—</span> &middot; Role(s): <span id="empRoles">—</span></div>
+                                    <div class="small text-warning d-none" id="empRosterNote"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-2 g-md-3 mb-3">
+                        <div class="col-6 col-md-3">
+                            <div class="card border-primary shadow-sm">
+                                <div class="card-body text-center py-3">
+                                    <div class="fw-bold fs-4 text-primary" id="empStatTotal">0</div>
+                                    <div class="small text-muted">SITREPs Involved</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="card border-success shadow-sm">
+                                <div class="card-body text-center py-3">
+                                    <div class="fw-bold fs-4 text-success" id="empStatSic">0</div>
+                                    <div class="small text-muted">Shifts as SIC</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="card border-info shadow-sm">
+                                <div class="card-body text-center py-3">
+                                    <div class="fw-bold fs-4 text-info" id="empStatOperator">0</div>
+                                    <div class="small text-muted">Operator in Charge</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="card border-secondary shadow-sm">
+                                <div class="card-body text-center py-3">
+                                    <div class="fw-bold fs-4" id="empStatPcr">0</div>
+                                    <div class="small text-muted">PCRs Written</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="card border-warning shadow-sm">
+                                <div class="card-body text-center py-3">
+                                    <div class="fw-bold fs-4 text-warning" id="empStatMonth">0</div>
+                                    <div class="small text-muted">This Month</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="card border-danger shadow-sm">
+                                <div class="card-body text-center py-3">
+                                    <div class="fw-bold fs-4 text-danger" id="empStatFatal">0</div>
+                                    <div class="small text-muted">Fatal Cases</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="card border-dark shadow-sm">
+                                <div class="card-body text-center py-3">
+                                    <div class="fw-bold fs-4" id="empTimeDa">—</div>
+                                    <div class="small text-muted">Avg Dispatch&rarr;Arrival</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="card border-dark shadow-sm">
+                                <div class="card-body text-center py-3">
+                                    <div class="fw-bold fs-4" id="empTimeSh">—</div>
+                                    <div class="small text-muted">Avg Scene&rarr;Hospital</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="card border-dark shadow-sm">
+                                <div class="card-body text-center py-3">
+                                    <div class="fw-bold fs-4" id="empLeaveTile">…</div>
+                                    <div class="small text-muted">Approved Leave</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6 col-xl-4">
+                            <div class="card shadow-sm h-100">
+                                <div class="card-body py-2">
+                                    <h6 class="card-title text-uppercase text-muted small mb-1">Monthly Trend</h6>
+                                    <div style="position:relative;height:180px;"><canvas id="empMonthlyChart"></canvas></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-xl-4">
+                            <div class="card shadow-sm h-100">
+                                <div class="card-body py-2">
+                                    <h6 class="card-title text-uppercase text-muted small mb-1">Involvement by Role</h6>
+                                    <div style="position:relative;height:180px;"><canvas id="empRoleChart"></canvas></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-xl-4">
+                            <div class="card shadow-sm h-100">
+                                <div class="card-body py-2">
+                                    <h6 class="card-title text-uppercase text-muted small mb-1">Team Breakdown</h6>
+                                    <div style="position:relative;height:180px;"><canvas id="empTeamChart"></canvas></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
         </main>
@@ -702,5 +1002,8 @@
     <script src="js/supabase-client.js"></script>
     <script src="js/admin.js"></script>
     <script src="js/sitrep-dashboard.js"></script>
+    <script src="js/sitrep-roster.js"></script>
+    <script src="js/team-dashboard.js"></script>
+    <script src="js/employee-dashboard.js"></script>
 </body>
 </html>

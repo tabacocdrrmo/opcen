@@ -18,6 +18,69 @@ const CAUSE_KEYWORDS = {
     "Physical altercation": ["fight", "assault", "stabbed", "altercation"]
 };
 
+const PRECAUTIONS = {
+    "Alcohol-related": [
+        "Strengthen late-night patrols near bars, karaoke and drinking spots.",
+        "Add manpower on Fri-Sun evenings, when alcohol incidents peak.",
+        "Coordinate with barangay tanods on rowdy establishments."
+    ],
+    "Animal on road": [
+        "Issue lighting and signage advisories on stretches with frequent animal hits.",
+        "Brief dawn and dusk patrols to slow down in open road sections.",
+        "Coordinate with barangay officials on loose/stray animal reports."
+    ],
+    "Dog/Animal bite": [
+        "Advise immediate anti-rabies referral for bite victims.",
+        "Coordinate with the City Veterinary Office on stray dog sightings.",
+        "Include bite first aid (wash, no covering) in responder refreshers."
+    ],
+    "Hit-and-run": [
+        "Advise units to secure witnesses and dashcam footage on scene.",
+        "Remind responders to note plate numbers and vehicle descriptions.",
+        "Coordinate with police for early CCTV/barangay camera retrieval."
+    ],
+    "Reckless/overspeeding": [
+        "Request speed-enforcement support from police on high-incident roads.",
+        "Add visible signage/bumps at identified fast-stretch hotspots.",
+        "Conduct driver-safety reminders with motorist groups."
+    ],
+    "Motorcycle involved": [
+        "Reinforce helmet and protective-gear reminders.",
+        "Target rider-safety advisories at identified peak hours.",
+        "Coordinate with transport groups for visibility campaigns."
+    ],
+    "Pedestrian involved": [
+        "Enhance lighting and crosswalk visibility at high-hit crossings.",
+        "Brief drivers on pedestrian priority near schools and markets.",
+        "Coordinate sidewalk/barrier improvements with the engineering office."
+    ],
+    "Drowning": [
+        "Pre-season coastal and river watch before holidays.",
+        "Verify lifeguard presence, floats and rescue lines at known swimming spots.",
+        "Remind responders on water-rescue gear readiness."
+    ],
+    "Heat stroke": [
+        "Air advisories on hydration for outdoor workers.",
+        "Schedule responders for early-morning hydration and rest breaks.",
+        "Ensure cold packs and IV fluids stocked in peak heat months."
+    ],
+    "Cardiac/medical": [
+        "Hold regular CPR and AED refresher training.",
+        "Confirm cardiac/medical kit stock on all marked units.",
+        "Coordinate rapid referral routes to the nearest hospital."
+    ],
+    "Fire-related": [
+        "Pre-season fire-safety inspections on informal settlements.",
+        "Check extinguisher placement in markets and public buildings.",
+        "Coordinate evacuation drills and crowd control with the fire bureau."
+    ],
+    "Physical altercation": [
+        "Deploy peacekeeping teams to known hot spots on weekends.",
+        "Coordinate with police and barangay for conflict de-escalation.",
+        "Remind responders to request police back-up on assault scenes."
+    ]
+};
+
 // Barangays of Tabaco City. "Place of Incident" is free text (e.g. "near 7/11 Panal"),
 // so we match the known barangay word inside it and count by that name.
 const BARANGAYS = [
@@ -194,11 +257,14 @@ function applyCauseFilter(cause) {
     sitrepTableCause = cause || "";
     sitrepPage = 1;
     renderSitrepDashboard();
+    expandSitrepCard("sitrepTableCollapse");
+}
 
-    const collapse = document.getElementById("sitrepTableCollapse");
+function expandSitrepCard(cardId) {
+    const collapse = document.getElementById(cardId);
     if (collapse && typeof bootstrap !== "undefined") {
         bootstrap.Collapse.getOrCreateInstance(collapse, { toggle: false }).show();
-        const btn = document.querySelector('[data-bs-target="#sitrepTableCollapse"]');
+        const btn = document.querySelector('[data-bs-target="#' + cardId + '"]');
         const icon = btn && btn.querySelector("i");
         if (icon) {
             icon.classList.remove("fa-chevron-down");
@@ -255,6 +321,7 @@ function renderSitrepDashboard() {
     renderHourChart(drill);
     renderWeekdayChart(drill);
     renderMonthlyChart(drill);
+    renderRecommendations(drill);
     renderSitrepTable();
 }
 
@@ -300,6 +367,124 @@ function renderTopCauses(causeCounts) {
             <span class="fw-bold">${count}</span>
         </button>`;
     }).join("");
+}
+
+function renderRecommendations(rows, listId, summaryId) {
+    const list = document.getElementById(listId || "preventiveList");
+    const summaryEl = document.getElementById(summaryId || "preventiveSummary");
+    if (!list) return;
+
+    if (!rows.length) {
+        list.innerHTML = '<div class="text-muted small text-center py-3">No data for the current filters.</div>';
+        if (summaryEl) summaryEl.innerText = "";
+        return;
+    }
+
+    const counts = {};
+    const fatalities = {};
+    rows.forEach(r => {
+        const demised = String(r["Victim Status"] || "").toLowerCase().includes("demised");
+        tagSitrep(r).forEach(c => {
+            counts[c] = (counts[c] || 0) + 1;
+            if (demised) fatalities[c] = (fatalities[c] || 0) + 1;
+        });
+    });
+
+    const ranked = Object.keys(counts)
+        .map(cause => ({ cause, count: counts[cause], fatal: fatalities[cause] || 0 }))
+        .sort((a, b) => (b.fatal > 0) - (a.fatal > 0) || b.count - a.count || (a.cause < b.cause ? -1 : 1));
+
+    const unknownCount = rows.filter(r => tagSitrep(r).length === 0).length;
+    const items = ranked.slice(0, 8).map(({ cause, count, fatal }) => {
+        const tips = PRECAUTIONS[cause] || ["Review response plans for this cause type."];
+        const pct = Math.round((count / rows.length) * 100);
+        const fatalBadge = fatal > 0
+            ? ` <span class="badge bg-danger ms-1" title="Sitreps with deaths">${fatal} fatal${fatal > 1 ? "s" : ""}</span>`
+            : "";
+        return `<div class="preventive-item">
+            <div class="small fw-semibold">${esc(cause)} <span class="text-muted fw-normal">${count} (${pct}%)</span>${fatalBadge}</div>
+            <ul class="small text-muted ps-3 mb-1 mt-1">
+                ${tips.map(t => `<li>${esc(t)}</li>`).join("")}
+            </ul>
+        </div>`;
+    });
+
+    if (unknownCount > 0) {
+        items.push(`<div class="small text-muted ps-3 mb-1"><i class="fa-solid fa-circle-info me-1"></i>${unknownCount} sitrep${unknownCount > 1 ? "s have" : " has"} no identifiable cause - consider more detailed documentation.</div>`);
+    }
+
+    list.innerHTML = items.join("");
+    if (summaryEl) summaryEl.innerText = buildPreventiveSummary(rows);
+}
+
+function buildPreventiveSummary(rows) {
+    const causes = [];
+    const places = [];
+    const hours = [];
+    const days = [];
+    const teams = [];
+    rows.forEach(r => {
+        tagSitrep(r).forEach(c => causes.push(c));
+        const p = normalizePlace(r["Barangay"]);
+        if (p) places.push(p);
+        const h = timeHour(r["Call Time"]);
+        if (h != null) hours.push(h);
+        const d = dateDayOfWeek(r["Call Date"]);
+        if (d != null) days.push(d);
+        const t = String(r["Assigned Team"] || "").trim();
+        if (t) teams.push(t);
+    });
+
+    const parts = [];
+    const tc = modeOf(causes);
+    const tp = modeOf(places);
+    const th = modeOf(hours);
+    const td = modeOf(days);
+    const tt = modeOf(teams);
+
+    if (tc) parts.push("Leading cause: " + tc + ".");
+    if (tp) parts.push("Most affected place: " + tp + ".");
+    if (th != null) parts.push("Peak hour: " + hourLabel(th) + ".");
+    if (td != null) parts.push("Peak day: " + WEEKDAY_LABELS[td] + ".");
+    if (tt) parts.push("Most deployed team: " + tt + ".");
+    return parts.join(" ");
+}
+
+function timeHour(v) {
+    const s = String(v || "").trim();
+    const m = s.match(/(\d{1,2}):(\d{2})\s*([AP]M)?/i);
+    if (!m) return null;
+    let h = parseInt(m[1], 10);
+    const ap = (m[3] || "").toUpperCase();
+    if (ap === "PM" && h < 12) h += 12;
+    if (ap === "AM" && h === 12) h = 0;
+    return h;
+}
+
+function dateDayOfWeek(v) {
+    const m = String(v || "").match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
+    if (!m) return null;
+    return new Date(+m[1], +m[2] - 1, +m[3]).getDay();
+}
+
+function modeOf(values) {
+    const map = {};
+    let best = null;
+    let bestN = 0;
+    values.forEach(v => {
+        map[v] = (map[v] || 0) + 1;
+        if (map[v] > bestN) {
+            bestN = map[v];
+            best = v;
+        }
+    });
+    return best;
+}
+
+function hourLabel(h) {
+    const ap = h < 12 ? "AM" : "PM";
+    const hh = h % 12 === 0 ? 12 : h % 12;
+    return hh + ":00 " + ap;
 }
 
 function countBy(rows, field) {

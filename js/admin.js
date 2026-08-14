@@ -796,6 +796,8 @@ function switchPage(page) {
 
     if (page === "leave") loadLeaveRequests();
     if (page === "sitrep-insights") loadSitrepDashboard();
+    if (page === "team-dashboard") loadTeamDashboard();
+    if (page === "employee-dashboard") loadEmployeeDashboard();
 
     if (window.innerWidth < 768) toggleSidebar(false);
 }
