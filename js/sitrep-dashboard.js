@@ -335,6 +335,7 @@ function renderSitrepDashboard() {
     updateSitrepStats(drill, filtered);
     renderCauseChart(filtered);
     renderNatureChart(drill);
+    renderNatureTiles(drill);
     renderBarangayChart(drill);
     renderHourChart(drill);
     renderWeekdayChart(drill);
@@ -352,6 +353,8 @@ function updateSitrepStats(rows, topRows) {
     });
 
     setText("sitrepStatTotal", rows.length);
+    const monthLabel = now.toLocaleString("en-US", { month: "long", year: "numeric" });
+    setText("sitrepMonthLabel", monthLabel);
     setText("sitrepStatMonth", rows.filter(r => String(r["Call Date"] || "").startsWith(thisMonth)).length);
     setText("sitrepStatFatal", demised);
 
@@ -376,17 +379,16 @@ function renderTopCauses(causeCounts) {
         .slice(0, 5);
     if (!top.length) {
         list.innerHTML = '<div class="list-group-item text-muted text-center py-3 small">No cause data for the current filters.</div>';
-        return;
-    }
-    list.innerHTML = top.map(([cause, count], i) => {
-        const filterVal = cause === "Unknown / No cause" ? "__unknown" : cause;
-        return `<button type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2" onclick='applyCauseFilter(${JSON.stringify(filterVal)})' title="Show sitreps with this cause">
+    } else {
+        list.innerHTML = top.map(([cause, count], i) => {
+            const filterVal = cause === "Unknown / No cause" ? "__unknown" : cause;
+            return `<button type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2" onclick='applyCauseFilter(${JSON.stringify(filterVal)})' title="Show sitreps with this cause">
             <span class="small"><span class="badge bg-secondary me-2">${i + 1}</span>${esc(cause)}</span>
             <span class="fw-bold">${count}</span>
         </button>`;
-    }).join("");
+        }).join("");
+    }
 }
-
 function renderRecommendations(rows, listId, summaryId) {
     const list = document.getElementById(listId || "preventiveList");
     const summaryEl = document.getElementById(summaryId || "preventiveSummary");
@@ -589,6 +591,20 @@ function renderNatureChart(rows) {
             datasets: [{ label: "SITREPs", data: sorted.map(e => e[1]), backgroundColor: "#0d6efd" }]
         },
         options: baseOpts()
+    });
+}
+
+function renderNatureTiles(rows) {
+    const ids = ["natureTile1", "natureTile2", "natureTile3", "natureTile4"];
+    const colors = ["text-primary", "text-info", "text-warning", "text-success"];
+    const counts = countBy(rows, "Nature of Incident");
+    ids.forEach((id, i) => {
+        const tile = document.getElementById(id);
+        if (!tile) return;
+        const [nature, count] = counts[i] || [null, 0];
+        tile.innerHTML = nature
+            ? `<div class="text-muted small text-uppercase">${esc(nature)}</div><div class="fw-bold fs-4 ${colors[i]}">${count}</div>`
+            : `<div class="text-muted small text-uppercase">No nature data</div><div class="fw-bold fs-4 ${colors[i]}">0</div>`;
     });
 }
 

@@ -273,92 +273,80 @@
                     </div>
                 </div>
 
-                <div class="row g-2 g-md-3 mb-4">
-                    <div class="col-6 col-md-4">
-                        <div class="card stat-card border-primary">
-                            <div class="card-body text-center py-3">
-                                <div class="text-muted small text-uppercase">Total SITREPs</div>
-                                <div class="fw-bold fs-4 text-primary" id="sitrepStatTotal">0</div>
+                <div class="sitrep-tiles mb-4">
+                    <div class="sitrep-tile card stat-card border-primary">
+                        <div class="text-muted small text-uppercase">Total SITREPs</div>
+                        <div class="fw-bold fs-4 text-primary" id="sitrepStatTotal">0</div>
+                    </div>
+                    <div class="sitrep-tile card stat-card border-info">
+                        <div class="text-muted small text-uppercase" id="sitrepMonthLabel">This Month</div>
+                        <div class="fw-bold fs-4 text-info" id="sitrepStatMonth">0</div>
+                    </div>
+                    <div class="sitrep-tile card stat-card border-danger">
+                        <div class="text-muted small text-uppercase">Fatalities</div>
+                        <div class="fw-bold fs-4 text-danger" id="sitrepStatFatal">0</div>
+                    </div>
+                    <div class="sitrep-tile card stat-card border-primary" id="natureTile1"></div>
+                    <div class="sitrep-tile card stat-card border-info" id="natureTile2"></div>
+                    <div class="sitrep-tile card stat-card border-warning" id="natureTile3"></div>
+                    <div class="sitrep-tile card stat-card border-success" id="natureTile4"></div>
+                </div>
+
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+                        <span class="fw-bold small text-uppercase text-muted">Filters</span>
+                        <button type="button" class="btn btn-link p-0 text-muted" data-bs-toggle="collapse" data-bs-target="#sitrepFiltersCollapse" aria-expanded="false" onclick="toggleSitrepChevron(this)">
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="collapse" id="sitrepFiltersCollapse">
+                    <div class="card-body py-3">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-6 col-md-3">
+                                <label class="form-label small text-muted mb-1" for="sitrepDateFrom">From</label>
+                                <input type="date" id="sitrepDateFrom" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <label class="form-label small text-muted mb-1" for="sitrepDateTo">To</label>
+                                <input type="date" id="sitrepDateTo" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <label class="form-label small text-muted mb-1" for="sitrepTeamFilter">Team</label>
+                                <select id="sitrepTeamFilter" class="form-select form-select-sm"><option value="">All Teams</option></select>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <label class="form-label small text-muted mb-1" for="sitrepNatureFilter">Nature</label>
+                                <select id="sitrepNatureFilter" class="form-select form-select-sm"><option value="">All Natures</option></select>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <label class="form-label small text-muted mb-1" for="sitrepBarangayFilter">Place of Incident</label>
+                                <select id="sitrepBarangayFilter" class="form-select form-select-sm"><option value="">All Places</option></select>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <label class="form-label small text-muted mb-1" for="sitrepCauseFilter">Cause</label>
+                                <select id="sitrepCauseFilter" class="form-select form-select-sm"><option value="">All Causes</option></select>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <button class="btn btn-outline-secondary btn-sm w-100" onclick="resetSitrepFilters()">Clear Filters</button>
                             </div>
                         </div>
                     </div>
-                    <div class="col-6 col-md-4">
-                        <div class="card stat-card border-info">
-                            <div class="card-body text-center py-3">
-                                <div class="text-muted small text-uppercase">This Month</div>
-                                <div class="fw-bold fs-4 text-info" id="sitrepStatMonth">0</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-6 col-md-4">
-                        <div class="card stat-card border-danger">
-                            <div class="card-body text-center py-3">
-                                <div class="text-muted small text-uppercase">Fatalities</div>
-                                <div class="fw-bold fs-4 text-danger" id="sitrepStatFatal">0</div>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
-                <div class="row g-2 mb-3">
-                    <div class="col-lg-8">
+                <div class="sitrep-charts-grid mb-3">
+                    <div class="sitrep-chart-cell sitrep-chart-tall">
                         <div class="card shadow-sm h-100">
-                            <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
-                                <span class="fw-bold small text-uppercase text-muted">Filters</span>
-                                <button type="button" class="btn btn-link p-0 text-muted" data-bs-toggle="collapse" data-bs-target="#sitrepFiltersCollapse" aria-expanded="false" onclick="toggleSitrepChevron(this)">
-                                    <i class="fa-solid fa-chevron-down"></i>
-                                </button>
-                            </div>
-                            <div class="collapse" id="sitrepFiltersCollapse">
-                                <div class="card-body py-3">
-                                    <div class="row g-2 align-items-end">
-                                        <div class="col-6 col-md-3">
-                                            <label class="form-label small text-muted mb-1" for="sitrepDateFrom">From</label>
-                                            <input type="date" id="sitrepDateFrom" class="form-control form-control-sm">
-                                        </div>
-                                        <div class="col-6 col-md-3">
-                                            <label class="form-label small text-muted mb-1" for="sitrepDateTo">To</label>
-                                            <input type="date" id="sitrepDateTo" class="form-control form-control-sm">
-                                        </div>
-                                        <div class="col-6 col-md-3">
-                                            <label class="form-label small text-muted mb-1" for="sitrepTeamFilter">Team</label>
-                                            <select id="sitrepTeamFilter" class="form-select form-select-sm"><option value="">All Teams</option></select>
-                                        </div>
-                                        <div class="col-6 col-md-3">
-                                            <label class="form-label small text-muted mb-1" for="sitrepNatureFilter">Nature</label>
-                                            <select id="sitrepNatureFilter" class="form-select form-select-sm"><option value="">All Natures</option></select>
-                                        </div>
-                                        <div class="col-6 col-md-3">
-                                            <label class="form-label small text-muted mb-1" for="sitrepBarangayFilter">Place of Incident</label>
-                                            <select id="sitrepBarangayFilter" class="form-select form-select-sm"><option value="">All Places</option></select>
-                                        </div>
-                                        <div class="col-6 col-md-3">
-                                            <label class="form-label small text-muted mb-1" for="sitrepCauseFilter">Cause</label>
-                                            <select id="sitrepCauseFilter" class="form-select form-select-sm"><option value="">All Causes</option></select>
-                                        </div>
-                                        <div class="col-6 col-md-3">
-                                            <button class="btn btn-outline-secondary btn-sm w-100" onclick="resetSitrepFilters()">Clear Filters</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4">
-                        <div class="card shadow-sm h-100">
-                            <div class="card-body py-3">
+                            <div class="card-body py-2">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <h6 class="card-title text-uppercase text-muted small mb-0">Top 5 Causes</h6>
+                                    <h6 class="card-title text-uppercase text-muted small mb-0">Top Causes</h6>
                                     <span class="badge bg-primary" id="topCausesNatureBadge">All Natures</span>
                                 </div>
                                 <div id="topCausesList" class="list-group list-group-flush"></div>
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <div class="row g-2 mb-3">
-                    <div class="col-md-6 col-xl-4">
+                    <div class="sitrep-chart-cell">
                         <div class="card shadow-sm h-100">
                             <div class="card-body py-2">
                                 <h6 class="card-title text-uppercase text-muted small mb-1">Incidents by Cause</h6>
@@ -366,7 +354,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6 col-xl-4">
+                    <div class="sitrep-chart-cell">
                         <div class="card shadow-sm h-100">
                             <div class="card-body py-2">
                                 <h6 class="card-title text-uppercase text-muted small mb-1">Incidents by Nature</h6>
@@ -374,7 +362,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6 col-xl-4">
+                    <div class="sitrep-chart-cell">
                         <div class="card shadow-sm h-100">
                             <div class="card-body py-2">
                                 <h6 class="card-title text-uppercase text-muted small mb-1">Place of Incident Hotspots</h6>
@@ -382,7 +370,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6 col-xl-4">
+                    <div class="sitrep-chart-cell">
                         <div class="card shadow-sm h-100">
                             <div class="card-body py-2">
                                 <h6 class="card-title text-uppercase text-muted small mb-1">Incidents by Hour of Day</h6>
@@ -390,7 +378,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6 col-xl-4">
+                    <div class="sitrep-chart-cell">
                         <div class="card shadow-sm h-100">
                             <div class="card-body py-2">
                                 <h6 class="card-title text-uppercase text-muted small mb-1">Incidents by Weekday</h6>
@@ -398,7 +386,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6 col-xl-4">
+                    <div class="sitrep-chart-cell">
                         <div class="card shadow-sm h-100">
                             <div class="card-body py-2">
                                 <h6 class="card-title text-uppercase text-muted small mb-1">Monthly Trend</h6>
@@ -719,11 +707,12 @@
                                     <div class="fw-bold fs-4" id="empLeaveTile">…</div>
                                     <div class="small text-muted">Approved Leave</div>
                                 </div>
-                            </div>
                         </div>
                     </div>
+                    </div>
+                </div>
 
-                    <div class="row g-2 mb-3">
+                <div class="row g-2 mb-3">
                         <div class="col-md-6 col-xl-4">
                             <div class="card shadow-sm h-100">
                                 <div class="card-body py-2">
