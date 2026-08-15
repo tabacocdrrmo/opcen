@@ -5,8 +5,8 @@
 
 const CAUSE_KEYWORDS = {
     "Alcohol-related": ["alcohol", "drunk", "intoxicated", "drinking", "liquor"],
-    "Animal on road": ["hit a dog", "hit an animal", "hit a stray", "ran over a dog", "ran over an animal", "dog got hit", "animal collision"],
-    "Dog/Animal bite": ["dog bite", "animal bite", "bite"],
+    "Animal on road": ["hit a dog", "hit an animal", "hit a stray", "ran over a dog", "ran over an animal", "dog got hit", "animal collision", "stray dog"],
+    "Dog/Animal bite": ["dog bite", "animal bite", "bite", "dog"],
     "Hit-and-run": ["hit and run", "hit-and-run", "hit & run"],
     "Reckless/overspeeding": ["reckless", "overspeeding", "speeding"],
     "Motorcycle involved": ["motorcycle", "motorbike"],
