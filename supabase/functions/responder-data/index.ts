@@ -5,16 +5,32 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const normalizeName = (s: string): string =>
-  (s || "").toLowerCase().replace(/\s+/g, " ").replace(/\./g, "").trim();
+const GENERATIONAL_SUFFIXES = new Set(["i", "ii", "iii", "iv", "v", "jr", "sr"]);
 
-// Lenient match: both the employee's first and last name appear as tokens in the
-// responder/PCR name, regardless of middle initial differences.
+const normalizeName = (s: string): string =>
+  (s || "")
+    .toLowerCase()
+    .replace(/\./g, "")
+    .replace(/,/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .split(" ")
+    .filter(Boolean)
+    .filter((t) => !GENERATIONAL_SUFFIXES.has(t))
+    .join(" ");
+
+// Lenient match: every significant first and last name token appears in the
+// responder/PCR name, regardless of middle initial / generational suffix
+// (Jr., Sr., II, etc.) / multi-word surname differences.
 function nameMatches(name: string, first: string, last: string): boolean {
   const n = normalizeName(name);
-  if (!n || !first || !last) return false;
+  const f = normalizeName(first);
+  const l = normalizeName(last);
+  if (!n || !f || !l) return false;
   const tokens = n.split(" ").filter(Boolean);
-  return tokens.includes(normalizeName(first)) && tokens.includes(normalizeName(last));
+  const firstOk = f.split(" ").every((t) => tokens.includes(t));
+  const lastOk = l.split(" ").every((t) => tokens.includes(t));
+  return firstOk && lastOk;
 }
 
 // The Apps Script endpoint is flaky on cold start / first request, so retry with

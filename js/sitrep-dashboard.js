@@ -777,7 +777,14 @@ function splitSlots(s) {
 function sitrepFmt(v) {
     if (typeof v === "string") {
         const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(v);
-        if (m && m[1] === "1899") return m[4] + ":" + m[5];
+        if (m && m[1] === "1899") {
+            const d = new Date(v);
+            if (!isNaN(d.getTime())) {
+                const p = n => String(n).padStart(2, "0");
+                return p(d.getHours()) + ":" + p(d.getMinutes());
+            }
+            return m[4] + ":" + m[5];
+        }
     }
     if (!(v instanceof Date) || isNaN(v)) return v;
     const p = n => String(n).padStart(2, "0");

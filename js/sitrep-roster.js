@@ -89,9 +89,42 @@ const SITREP_ROSTER_MAP = (function () {
     return map;
 })();
 
+const ROSTER_GENERATIONAL = new Set(["i", "ii", "iii", "iv", "v", "jr", "sr"]);
+
+// Significant name tokens for lenient roster matching: lowercase, punctuation
+// stripped, generational suffixes (Jr., Sr., II, etc.) removed.
+function rosterSignificantTokens(s) {
+    return String(s || "")
+        .toLowerCase()
+        .replace(/ñ/g, "n")
+        .replace(/\./g, "")
+        .replace(/,/g, " ")
+        .split(/\s+/)
+        .filter(Boolean)
+        .filter(t => !ROSTER_GENERATIONAL.has(t));
+}
+
+// Roster entries pre-keyed by their significant-token set for the lenient scan.
+const SITREP_ROSTER_TOKEN_LIST = (function () {
+    const list = [];
+    Object.keys(SITREP_ROSTER_MAP).forEach(n => {
+        const entry = SITREP_ROSTER_MAP[n];
+        list.push({ entry: entry, tokens: new Set(rosterSignificantTokens(entry.name)) });
+    });
+    return list;
+})();
+
 function rosterEntry(name) {
     const n = normName(name);
-    return n ? (SITREP_ROSTER_MAP[n] || null) : null;
+    if (n && SITREP_ROSTER_MAP[n]) return SITREP_ROSTER_MAP[n];
+    const toks = rosterSignificantTokens(name);
+    if (toks.length < 2) return null;
+    const first = toks[0];
+    const last = toks[toks.length - 1];
+    for (const item of SITREP_ROSTER_TOKEN_LIST) {
+        if (item.tokens.has(first) && item.tokens.has(last)) return item.entry;
+    }
+    return null;
 }
 
 function isRosterName(name) {

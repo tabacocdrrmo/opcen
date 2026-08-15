@@ -6,8 +6,19 @@
 
 let empDashboardLoaded = false;
 
+const GENERATIONAL_SUFFIXES = new Set(["i", "ii", "iii", "iv", "v", "jr", "sr"]);
+
 function normalizeName(s) {
-    return String(s || "").toLowerCase().replace(/\s+/g, " ").replace(/\./g, "").trim();
+    return String(s || "")
+        .toLowerCase()
+        .replace(/\./g, "")
+        .replace(/,/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .split(" ")
+        .filter(Boolean)
+        .filter(t => !GENERATIONAL_SUFFIXES.has(t))
+        .join(" ");
 }
 
 function employeeNameVariants(emp) {
@@ -27,14 +38,17 @@ function employeeNameVariants(emp) {
     return variants;
 }
 
-// Lenient fallback: matches when both the employee's first and last name appear
-// as tokens, regardless of middle name / initial / format differences.
+// Lenient fallback: matches when every significant first and last name token
+// appears in the candidate, regardless of middle name / initial / generational
+// suffix (Jr., Sr., II, etc.) / multi-word surname differences.
 function nameTokensMatch(candidate, emp) {
     const first = normalizeName(emp && emp.first_name);
     const last = normalizeName(emp && emp.last_name);
     if (!first || !last) return false;
     const tokens = normalizeName(candidate).split(" ").filter(Boolean);
-    return tokens.includes(first) && tokens.includes(last);
+    const firstOk = first.split(" ").every(t => tokens.includes(t));
+    const lastOk = last.split(" ").every(t => tokens.includes(t));
+    return firstOk && lastOk;
 }
 
 async function loadEmployeeDashboard(force) {

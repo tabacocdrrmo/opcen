@@ -453,12 +453,24 @@ function formatResponderDate(callDate) {
     return out;
 }
 
+const GENERATIONAL_SUFFIXES = new Set(["i", "ii", "iii", "iv", "v", "jr", "sr"]);
+
 function normalizeName(s) {
-    return (s || "").toLowerCase().replace(/\s+/g, " ").replace(/\./g, "").trim();
+    return String(s || "")
+        .toLowerCase()
+        .replace(/\./g, "")
+        .replace(/,/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .split(" ")
+        .filter(Boolean)
+        .filter(t => !GENERATIONAL_SUFFIXES.has(t))
+        .join(" ");
 }
 
-// Lenient fallback: matches when both the employee's first and last name appear
-// as tokens in the PCR By cell, regardless of middle name / initial differences.
+// Lenient fallback: matches when every significant first and last name token of
+// the employee appears in the name, regardless of middle name / initial /
+// generational suffix (Jr., Sr., II, etc.) / multi-word surname differences.
 function nameMatchesEmployee(name, data) {
     const n = normalizeName(name);
     if (!n || !data) return false;
@@ -466,7 +478,9 @@ function nameMatchesEmployee(name, data) {
     const last = normalizeName(data.last_name);
     if (!first || !last) return false;
     const tokens = n.split(" ").filter(Boolean);
-    return tokens.includes(first) && tokens.includes(last);
+    const firstOk = first.split(" ").every(t => tokens.includes(t));
+    const lastOk = last.split(" ").every(t => tokens.includes(t));
+    return firstOk && lastOk;
 }
 
 function getEmployeeNameVariants(data) {
@@ -704,7 +718,14 @@ async function togglePcrFilter() {
 function fmt(v) {
     if (typeof v === "string") {
         const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(v);
-        if (m && m[1] === "1899") return m[4] + ":" + m[5];
+        if (m && m[1] === "1899") {
+            const d = new Date(v);
+            if (!isNaN(d.getTime())) {
+                const p = n => String(n).padStart(2, "0");
+                return p(d.getHours()) + ":" + p(d.getMinutes());
+            }
+            return m[4] + ":" + m[5];
+        }
     }
     if (!(v instanceof Date) || isNaN(v)) return v;
     const p = n => String(n).padStart(2, "0");
