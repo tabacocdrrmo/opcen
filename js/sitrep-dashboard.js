@@ -156,6 +156,7 @@ const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 let sitrepRows = [];
+let sitrepLog = [];
 let sitrepLoaded = false;
 let sitrepChartInstances = {};
 let sitrepPage = 1;
@@ -223,6 +224,7 @@ async function loadSitrepDashboard(force) {
         }
         if (!data || !data.ok) throw new Error((data && data.error) || "Failed to load sitreps");
         sitrepRows = data.rows || [];
+        sitrepLog = data.log || [];
         sitrepLoaded = true;
         populateSitrepFilters();
         renderSitrepDashboard();

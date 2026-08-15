@@ -79,7 +79,35 @@ Deno.serve(async (req) => {
       return await forward(apiUrl + "?action=photo&id=" + encodeURIComponent(id) + "&" + tokenParam);
     }
 
-    return await forward(apiUrl + "?action=sitreps&" + tokenParam);
+    // Main sheet rows (the SITREP reports) plus the responder log (one row per
+    // driver/responder per sitrep). The log lets the admin dashboards attribute
+    // a sitrep to an employee even when the main sheet's name columns are
+    // incomplete, and is fetched sequentially to avoid concurrent cold starts.
+    const sitrepsRes = await fetch(apiUrl + "?action=sitreps&" + tokenParam);
+    const sitrepsText = await sitrepsRes.text();
+    let sitrepsData: { ok?: boolean; rows?: unknown; error?: string };
+    try {
+      sitrepsData = JSON.parse(sitrepsText);
+    } catch (_) {
+      return json({ error: "Non-JSON response from backend" }, 502);
+    }
+    if (!sitrepsData.ok) {
+      return json({ error: sitrepsData.error || "Failed to load sitreps" }, 502);
+    }
+
+    let logData: { ok?: boolean; rows?: unknown } = {};
+    try {
+      const logRes = await fetch(apiUrl + "?" + tokenParam);
+      logData = JSON.parse(await logRes.text());
+    } catch (_) {
+      logData = {};
+    }
+
+    return json({
+      ok: true,
+      rows: sitrepsData.rows || [],
+      log: (logData && logData.ok && logData.rows) || [],
+    });
   } catch (err) {
     return json({ error: (err && (err as Error).message) || "Sitrep data failed." }, 500);
   }

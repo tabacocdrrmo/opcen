@@ -1,8 +1,41 @@
 // Employee Dashboard (admin only). Per-employee activity + HR summary. SITREP
 // attribution is roster-based: a call counts for an employee when their name
-// matches Responders / Drivers / Operator in Charge / SIC / PCR By fields.
+// matches Responders / Drivers / Operator in Charge / SIC / PCR By fields, or
+// when they appear in the responder log for that sitrep (covers main-sheet rows
+// whose name columns are incomplete).
 
 let empDashboardLoaded = false;
+
+function normalizeName(s) {
+    return String(s || "").toLowerCase().replace(/\s+/g, " ").replace(/\./g, "").trim();
+}
+
+function employeeNameVariants(emp) {
+    const first = (emp && emp.first_name || "").trim();
+    const last = (emp && emp.last_name || "").trim();
+    const middle = (emp && emp.middle_name || "").trim();
+    const variants = new Set();
+    if (first && last) {
+        variants.add(normalizeName(first + " " + last));
+        if (middle) {
+            variants.add(normalizeName(first + " " + middle + " " + last));
+            const initial = middle[0];
+            variants.add(normalizeName(first + " " + initial + ". " + last));
+            variants.add(normalizeName(first + " " + initial + " " + last));
+        }
+    }
+    return variants;
+}
+
+// Lenient fallback: matches when both the employee's first and last name appear
+// as tokens, regardless of middle name / initial / format differences.
+function nameTokensMatch(candidate, emp) {
+    const first = normalizeName(emp && emp.first_name);
+    const last = normalizeName(emp && emp.last_name);
+    if (!first || !last) return false;
+    const tokens = normalizeName(candidate).split(" ").filter(Boolean);
+    return tokens.includes(first) && tokens.includes(last);
+}
 
 async function loadEmployeeDashboard(force) {
     try {
@@ -40,15 +73,30 @@ function populateEmployeeSelect() {
     if (prev) sel.value = prev;
 }
 
-function empRoleMatched(r, n) {
+function empRoleMatched(r, n, emp) {
     const m = { sic: false, operator: false, responder: false, driver: false, pcr: false };
     if (!n) return m;
-    if (normName(r["Shift-In-Charge (SIC)"]) === n) m.sic = true;
-    if (normName(r["Operator in Charge"]) === n) m.operator = true;
-    if (splitJoined(r["Responders"]).some(x => normName(x) === n)) m.responder = true;
-    if (splitJoined(r["Drivers"]).some(x => normName(x) === n)) m.driver = true;
-    if (splitJoined(r["PCR By"]).some(x => normName(x) === n)) m.pcr = true;
+    const variants = employeeNameVariants(emp);
+    const isEmp = x => variants.has(normalizeName(x)) || nameTokensMatch(x, emp);
+    if (isEmp(r["Shift-In-Charge (SIC)"])) m.sic = true;
+    if (isEmp(r["Operator in Charge"])) m.operator = true;
+    if (splitJoined(r["Responders"]).some(x => isEmp(x))) m.responder = true;
+    if (splitJoined(r["Drivers"]).some(x => isEmp(x))) m.driver = true;
+    if (splitJoined(r["PCR By"]).some(x => isEmp(x))) m.pcr = true;
     return m;
+}
+
+// Distinct sitrep numbers for which the employee appears in the responder log.
+function employeeLogSitreps(emp) {
+    const set = new Set();
+    const variants = employeeNameVariants(emp);
+    sitrepLog.forEach(r => {
+        if (!r || !r.name) return;
+        if (variants.has(normalizeName(r.name)) || nameTokensMatch(r.name, emp)) {
+            set.add(String(r.sitrepNo || "").trim().toLowerCase());
+        }
+    });
+    return set;
 }
 
 function renderEmployeeDashboard() {
@@ -70,14 +118,16 @@ function renderEmployeeDashboard() {
     const name = empDisplayName(emp);
     const n = normName(name);
     const entry = rosterEntry(name);
+    const logSitreps = employeeLogSitreps(emp);
     const matched = n ? sitrepRows.filter(r => {
-        const m = empRoleMatched(r, n);
-        return m.sic || m.operator || m.responder || m.driver || m.pcr;
+        const m = empRoleMatched(r, n, emp);
+        return m.sic || m.operator || m.responder || m.driver || m.pcr ||
+            logSitreps.has(String(r["SITREP #"] || "").trim().toLowerCase());
     }) : [];
 
     renderEmpHeader(emp, entry);
     renderEmpStats(matched, emp, n);
-    renderEmpCharts(matched, n);
+    renderEmpCharts(matched, n, emp);
     renderEmpTimes(matched);
     loadEmpLeave(emp);
 }
@@ -138,7 +188,7 @@ function renderEmpStats(matched, emp, n) {
     const thisMonth = sitrepMonthKey();
     let sic = 0, operator = 0, pcr = 0, fatal = 0, month = 0;
     matched.forEach(r => {
-        const m = empRoleMatched(r, n);
+        const m = empRoleMatched(r, n, emp);
         if (m.sic) sic++;
         if (m.operator) operator++;
         if (m.pcr) pcr++;
@@ -153,7 +203,7 @@ function renderEmpStats(matched, emp, n) {
     setText("empStatFatal", fatal);
 }
 
-function renderEmpCharts(rows, n) {
+function renderEmpCharts(rows, n, emp) {
     const map = {};
     rows.forEach(r => {
         const k = String(r["Call Date"] || "").slice(0, 7);
@@ -182,7 +232,7 @@ function renderEmpCharts(rows, n) {
 
     let sicCount = 0, opCount = 0, respCount = 0, drvCount = 0, pcrCount = 0;
     rows.forEach(r => {
-        const m = empRoleMatched(r, n);
+        const m = empRoleMatched(r, n, emp);
         if (m.sic) sicCount++;
         if (m.operator) opCount++;
         if (m.responder) respCount++;
