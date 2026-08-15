@@ -138,6 +138,33 @@ body { overflow-x: hidden; }
     }
 }
 
+/* ---- Stat cards: soft tinted fill ---- */
+.card.stat-card {
+    border: 0;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .08);
+}
+.card.stat-card .card-body {
+    padding: 14px 12px;
+}
+.card.stat-card .text-muted {
+    color: #3d4c58;
+    font-weight: 600;
+    font-size: .72rem;
+    letter-spacing: .4px;
+    text-transform: uppercase;
+}
+.card.stat-card.border-primary { background: #e8f1fd; }
+.card.stat-card.border-success { background: #e8f6ef; }
+.card.stat-card.border-info { background: #e2f6f9; }
+.card.stat-card.border-warning { background: #fdf3d8; }
+.card.stat-card.border-danger { background: #fdecee; }
+.card.stat-card.border-secondary { background: #eef0f2; }
+.card.stat-card.border-dark { background: #e9ebee; }
+.card.stat-card.stat-orange { background: #fdf0e4; }
+.card.stat-card .text-info { color: #0aa2c0; }
+.card.stat-card .text-warning { color: #b8860b; }
+
 /* ---- SITREP report-style detail modal (faithful port of SITREP View page) ---- */
 #sitrepDetailModal .sitrep-report-box {
     position: relative;

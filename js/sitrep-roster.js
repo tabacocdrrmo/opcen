@@ -17,7 +17,7 @@ const SITREP_TEAMS = {
     Bravo: {
         sic: ["Ambrocio V. Piolino"],
         operator: ["Domingo C. Bron Jr."],
-        drivers: ["Ariel C. Bolaños", "Christopher Jeorge B. Lacerna", "Reynaldo B. Belgica Jr.", "Jaime II B. Benosa Jr.", "Segundo B. Ballon Jr."],
+        drivers: ["Ariel C. Bolaños", "Christopher Jeorge B. Lacerna", "Reynaldo B. Belgica Jr.", "Jaime Benosa Jr. II", "Segundo B. Ballon Jr."],
         responders: [
             "Jonel B. Bocalbos", "Romulo P. Bolilan Jr.", "Adrian C. Callao",
             "Arnel C. Camata", "Levi Martin B. Madrid", "Joan B. Sayago",
@@ -45,7 +45,7 @@ const SITREP_ALL_ROSTER = {
     drivers: [
         "Al C. Asis", "Jomar B. Belo", "Eugenio S. Cao Jr.", "Warren B. Henson",
         "Antonio B. Buison Jr.", "Ariel C. Bolaños", "Christopher Jeorge B. Lacerna",
-        "Reynaldo B. Belgica Jr.", "Jaime II B. Benosa Jr.", "Segundo B. Ballon Jr.",
+        "Reynaldo B. Belgica Jr.", "Jaime Benosa Jr. II", "Segundo B. Ballon Jr.",
         "Jonel A. Buendia", "Angelo B. Baraero", "Marlon B. Belda", "Jophen B. Bragais",
         "Pablito M. Amortizado Jr."
     ],
