@@ -805,6 +805,7 @@ function photoThumbnails(photos, id) {
 function renderSitrepDetail(row) {
     const e = escapeHtml;
     const patients = splitSlots(row["Patient"]);
+    const sexes = splitSlots(row["Sex"]);
     const ages = splitSlots(row["Age"]);
     const addresses = splitSlots(row["Address"]);
     const injuries = splitSlots(row["Injuries"]);
@@ -817,6 +818,7 @@ function renderSitrepDetail(row) {
         <tr>
             <td>${i + 1}</td>
             <td>${e(p)}</td>
+            <td>${e(sexes[i] || "")}</td>
             <td>${e(ages[i] || "")}</td>
             <td>${e(addresses[i] || "")}</td>
             <td>${e(injuries[i] || "")}</td>
@@ -878,11 +880,11 @@ function renderSitrepDetail(row) {
             tile("Remarks", e(row["Remarks"]), true) +
             tile("Driver(s)", br(splitJoined(row["Drivers"])), true) +
             tile("Responder(s)", br(splitJoined(row["Responders"])), true))}
-        ${patients.length ? section("fa-solid fa-people-roof", "Patients / Victims", `
+        ${patients.length ? section("fa-solid fa-people-roof", "Patients / Victims Details", `
                 <div class="table-responsive">
                     <table class="table table-sm small table-bordered align-middle mb-0 patients-table">
                         <thead class="table-light">
-                            <tr><th>No.</th><th>Patient / Victim</th><th>Age</th><th>Address</th><th>Injuries</th><th>Status</th><th>Impression</th><th>Disposition</th><th>PCR By</th></tr>
+                            <tr><th>No.</th><th>Name</th><th>Sex</th><th>Age</th><th>Address</th><th>Injuries</th><th>Status</th><th>Impression</th><th>Disposition</th><th>PCR By</th></tr>
                         </thead>
                         <tbody>${patientRows}</tbody>
                     </table>
