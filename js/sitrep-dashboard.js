@@ -1,7 +1,7 @@
 // SITREP Insights dashboard (admin only). All sitrep rows come through the
 // authenticated sitrep-data edge function, so the Apps Script sheet stays
 // token-protected. Causes are derived from English keywords found in the free
-// text columns (Remarks, Initial Impression, Injuries, Nature of Incident).
+// text columns (Remarks, Initial Impression, Injuries, Cause of Incident).
 
 const CAUSE_KEYWORDS = {
     "Vehicular Accident": {
@@ -289,6 +289,14 @@ function normalizePlace(value) {
     return normalizePlaces(value)[0] || "";
 }
 
+// The incident place text: newer records store the selected barangay in
+// "Barangay" (with a free-text "Place / Landmark"); older records put the
+// free-text place directly under "Barangay". Prefer the dropdown, fall back to
+// the free text so legacy rows keep normalizing correctly.
+function placeText(row) {
+    return String(row["Barangay"] || "").trim() || String(row["Place / Landmark"] || "").trim();
+}
+
 const CHART_COLORS = [
     "#0d6efd", "#dc3545", "#198754", "#ffc107", "#6f42c1", "#fd7e14",
     "#20c997", "#0dcaf0", "#d63384", "#6c757d", "#6610f2", "#74c0fc"
@@ -332,7 +340,7 @@ function escapeRegExp(s) {
 
 function tagSitrep(row) {
     const text = [
-        row["Remarks"], row["Initial Impression"], row["Injuries"]
+        row["Remarks"], row["Initial Impression"], row["Injuries"], row["Cause of Incident"]
     ].filter(Boolean).join(" ").toLowerCase();
     const tags = [];
     Object.keys(CAUSE_DEFS).forEach(name => {
@@ -400,7 +408,7 @@ async function loadSitrepDashboard(force) {
 function populateSitrepFilters() {
     const teams = uniqueSorted(sitrepRows.map(r => String(r["Assigned Team"] || "").trim()).filter(Boolean));
     const natures = uniqueSorted(sitrepRows.map(r => String(r["Nature of Incident"] || "").trim()).filter(Boolean));
-    const barangays = uniqueSorted(sitrepRows.flatMap(r => normalizePlaces(r["Barangay"])).filter(Boolean));
+    const barangays = uniqueSorted(sitrepRows.flatMap(r => normalizePlaces(placeText(r))).filter(Boolean));
     fillSelect("sitrepTeamFilter", teams, "All Teams");
     fillSelect("sitrepNatureFilter", natures, "All Natures");
     fillSelect("sitrepBarangayFilter", barangays, "All Places");
@@ -501,7 +509,7 @@ function getFilteredSitreps(opts) {
         if (to && d > to) return false;
         if (team && String(r["Assigned Team"] || "").trim() !== team) return false;
         if (nature && String(r["Nature of Incident"] || "").trim() !== nature) return false;
-        if (barangay && !excludePlace && !normalizePlaces(r["Barangay"]).includes(barangay)) return false;
+        if (barangay && !excludePlace && !normalizePlaces(placeText(r)).includes(barangay)) return false;
         if (!matchesCause(r, cause)) return false;
         return true;
     });
@@ -634,7 +642,7 @@ function buildPreventiveSummary(rows) {
     const teams = [];
     rows.forEach(r => {
         tagSitrep(r).forEach(c => causes.push(c));
-        normalizePlaces(r["Barangay"]).forEach(p => {
+        normalizePlaces(placeText(r)).forEach(p => {
             if (p) places.push(p);
         });
         const h = timeHour(r["Call Time"]);
@@ -710,7 +718,7 @@ function countBy(rows, field) {
 function countByPlace(rows) {
     const map = {};
     rows.forEach(r => {
-        normalizePlaces(r["Barangay"]).forEach(k => {
+        normalizePlaces(placeText(r)).forEach(k => {
             if (k) map[k] = (map[k] || 0) + 1;
         });
     });
@@ -969,7 +977,7 @@ function renderSitrepTable() {
             <td class="d-none d-md-table-cell">${esc(r["Recorded At"])}</td>
             <td>${esc(r["Nature of Incident"])}</td>
             <td>${esc(r["Assigned Team"])}</td>
-            <td class="d-none d-sm-table-cell">${esc(normalizePlaces(r["Barangay"]).join(", "))}</td>
+            <td class="d-none d-sm-table-cell">${esc(normalizePlaces(placeText(r)).join(", "))}</td>
             <td>${countPatients(r)}</td>
             <td class="d-none d-lg-table-cell text-truncate" title="${esc(r["Victim Status"])}">${esc(r["Victim Status"])}</td>
             <td>${causes.length ? causes.slice(0, 3).map(esc).join(", ") + (causes.length > 3 ? ` <span class="text-muted">+${causes.length - 3}</span>` : "") : '<span class="text-muted">&mdash;</span>'}</td>
@@ -1006,7 +1014,7 @@ function exportSitrepCsv() {
         "Disposition", "PCR By", "Remarks", "Causes"
     ];
     const rows = getSitrepTableRows().map(r => {
-        const vals = headers.slice(0, -1).map(h => h === "Place of Incident" ? normalizePlaces(r["Barangay"]).join(", ") : (r[h] != null ? r[h] : ""));
+        const vals = headers.slice(0, -1).map(h => h === "Place of Incident" ? normalizePlaces(placeText(r)).join(", ") : (r[h] != null ? r[h] : ""));
         vals.push(tagSitrep(r).join("; "));
         return vals;
     });
@@ -1110,6 +1118,7 @@ function renderSitrepReport(row) {
         <table class="report-table report-table-main">
             <tr><th>Nature of Incident</th><td>${esc(row["Nature of Incident"])}</td>
                 <th>Assigned Team</th><td>${esc(row["Assigned Team"])}</td></tr>
+            ${row["Cause of Incident"] ? `<tr><th>Cause of Incident</th><td colspan="3">${esc(row["Cause of Incident"])}</td></tr>` : ""}
             <tr><th>Shift-In-Charge</th><td>${esc(row["Shift-In-Charge (SIC)"])}</td>
                 <th>Operator in Charge</th><td>${esc(row["Operator in Charge"])}</td></tr>
             <tr><th>Dispatched Resource(s)</th><td colspan="3">${splitJoined(row["Dispatched Resources"]).map(esc).join(", ")}</td></tr>
@@ -1121,8 +1130,9 @@ function renderSitrepReport(row) {
                 <th>Arrival at Scene</th><td>${esc(sitrepFmt(row["Arrival at Scene"]))}</td></tr>
             <tr><th>Take Off from Scene</th><td>${esc(sitrepFmt(row["Take Off from Scene"]))}</td>
                 <th>Arrival at Hospital</th><td>${esc(sitrepFmt(row["Arrival at Hospital"]))}</td></tr>
-            <tr><th>Place / Landmark</th><td>${esc(row["Barangay"])}</td>
+            <tr><th>Barangay</th><td>${esc(row["Barangay"] || "")}</td>
                 <th>Municipality</th><td>${esc(row["Municipality"])}</td></tr>
+            <tr><th>Place / Landmark</th><td colspan="3">${esc(row["Place / Landmark"] || row["Barangay"] || "")}</td></tr>
             <tr><th colspan="4">Patients / Victims Details</th></tr>
             <tr><td colspan="4">
                 <div class="patients-wrap">

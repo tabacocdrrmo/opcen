@@ -858,6 +858,7 @@ function renderSitrepDetail(row) {
     return `
         ${section("fa-solid fa-circle-info", "Incident Details",
             tile("Nature of Incident", e(row["Nature of Incident"])) +
+            tile("Cause of Incident", e(row["Cause of Incident"] || "")) +
             tile("Assigned Team", e(row["Assigned Team"])) +
             tile("Shift-In-Charge", e(row["Shift-In-Charge (SIC)"])) +
             tile("Operator in Charge", e(row["Operator in Charge"])) +
@@ -873,7 +874,8 @@ function renderSitrepDetail(row) {
             tile("Take Off from Scene", e(fmt(row["Take Off from Scene"]))) +
             tile("Arrival at Hospital", e(fmt(row["Arrival at Hospital"]))))}
         ${section("fa-solid fa-location-dot", "Location",
-            tile("Place / Landmark", e(row["Barangay"])) +
+            tile("Barangay", e(row["Barangay"] || "")) +
+            tile("Place / Landmark", e(row["Place / Landmark"] || row["Barangay"] || "")) +
             tile("Municipality", e(row["Municipality"])))}
         ${section("fa-solid fa-kit-medical", "Response & Remarks",
             tile("First Aid Provided", e(row["First Aid Provided"]), true) +
