@@ -239,6 +239,7 @@ const BARANGAYS = [
     { name: "Fatima", keys: ["fatima"] },
     { name: "Guinobat", keys: ["guinobat"] },
     { name: "Hacienda", keys: ["hacienda"] },
+    { name: "Karangahan", keys: ["karangahan"] },
     { name: "Magapo", keys: ["magapo"] },
     { name: "Mariroc", keys: ["mariroc"] },
     { name: "Matagbac", keys: ["matagbac"] },
@@ -265,21 +266,31 @@ const BARANGAYS = [
     { name: "Tabiguian", keys: ["tabiguian"] },
     { name: "Tagas", keys: ["tagas"] },
     { name: "Tayhi", keys: ["tayhi"] },
-    { name: "Visita", keys: ["visita"] }
+    { name: "TNHS", keys: ["tnhs"] },
+    { name: "Visita", keys: ["visita"] },
+    { name: "Ziga", keys: ["ziga"] }
 ];
 
-function normalizePlace(value) {
+function normalizePlaces(value) {
     const raw = String(value || "").trim();
-    if (!raw) return "";
+    if (!raw) return [];
     const norm = raw.toLowerCase()
         .replace(/ñ/g, "n")
         .replace(/[^a-z0-9]/g, "");
+    const found = [];
     for (const b of BARANGAYS) {
         for (const key of b.keys) {
-            if (norm.includes(key)) return b.name;
+            if (norm.includes(key)) {
+                found.push(b.name);
+                break;
+            }
         }
     }
-    return raw;
+    return found.length ? found : [raw];
+}
+
+function normalizePlace(value) {
+    return normalizePlaces(value)[0] || "";
 }
 
 const CHART_COLORS = [
@@ -393,7 +404,7 @@ async function loadSitrepDashboard(force) {
 function populateSitrepFilters() {
     const teams = uniqueSorted(sitrepRows.map(r => String(r["Assigned Team"] || "").trim()).filter(Boolean));
     const natures = uniqueSorted(sitrepRows.map(r => String(r["Nature of Incident"] || "").trim()).filter(Boolean));
-    const barangays = uniqueSorted(sitrepRows.map(r => normalizePlace(r["Barangay"])).filter(Boolean));
+    const barangays = uniqueSorted(sitrepRows.flatMap(r => normalizePlaces(r["Barangay"])).filter(Boolean));
     fillSelect("sitrepTeamFilter", teams, "All Teams");
     fillSelect("sitrepNatureFilter", natures, "All Natures");
     fillSelect("sitrepBarangayFilter", barangays, "All Places");
@@ -494,7 +505,7 @@ function getFilteredSitreps(opts) {
         if (to && d > to) return false;
         if (team && String(r["Assigned Team"] || "").trim() !== team) return false;
         if (nature && String(r["Nature of Incident"] || "").trim() !== nature) return false;
-        if (barangay && !excludePlace && normalizePlace(r["Barangay"]) !== barangay) return false;
+        if (barangay && !excludePlace && !normalizePlaces(r["Barangay"]).includes(barangay)) return false;
         if (!matchesCause(r, cause)) return false;
         return true;
     });
@@ -627,8 +638,9 @@ function buildPreventiveSummary(rows) {
     const teams = [];
     rows.forEach(r => {
         tagSitrep(r).forEach(c => causes.push(c));
-        const p = normalizePlace(r["Barangay"]);
-        if (p) places.push(p);
+        normalizePlaces(r["Barangay"]).forEach(p => {
+            if (p) places.push(p);
+        });
         const h = timeHour(r["Call Time"]);
         if (h != null) hours.push(h);
         const d = dateDayOfWeek(r["Call Date"]);
@@ -702,9 +714,9 @@ function countBy(rows, field) {
 function countByPlace(rows) {
     const map = {};
     rows.forEach(r => {
-        const k = normalizePlace(r["Barangay"]);
-        if (!k) return;
-        map[k] = (map[k] || 0) + 1;
+        normalizePlaces(r["Barangay"]).forEach(k => {
+            if (k) map[k] = (map[k] || 0) + 1;
+        });
     });
     return Object.entries(map).sort((a, b) => b[1] - a[1]);
 }
@@ -961,7 +973,7 @@ function renderSitrepTable() {
             <td class="d-none d-md-table-cell">${esc(r["Recorded At"])}</td>
             <td>${esc(r["Nature of Incident"])}</td>
             <td>${esc(r["Assigned Team"])}</td>
-            <td class="d-none d-sm-table-cell">${esc(normalizePlace(r["Barangay"]))}</td>
+            <td class="d-none d-sm-table-cell">${esc(normalizePlaces(r["Barangay"]).join(", "))}</td>
             <td>${countPatients(r)}</td>
             <td class="d-none d-lg-table-cell text-truncate" title="${esc(r["Victim Status"])}">${esc(r["Victim Status"])}</td>
             <td>${causes.length ? causes.slice(0, 3).map(esc).join(", ") + (causes.length > 3 ? ` <span class="text-muted">+${causes.length - 3}</span>` : "") : '<span class="text-muted">&mdash;</span>'}</td>
@@ -998,7 +1010,7 @@ function exportSitrepCsv() {
         "Disposition", "PCR By", "Remarks", "Causes"
     ];
     const rows = getSitrepTableRows().map(r => {
-        const vals = headers.slice(0, -1).map(h => h === "Place of Incident" ? normalizePlace(r["Barangay"]) : (r[h] != null ? r[h] : ""));
+        const vals = headers.slice(0, -1).map(h => h === "Place of Incident" ? normalizePlaces(r["Barangay"]).join(", ") : (r[h] != null ? r[h] : ""));
         vals.push(tagSitrep(r).join("; "));
         return vals;
     });
