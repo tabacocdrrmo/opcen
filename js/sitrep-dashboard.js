@@ -4,19 +4,125 @@
 // text columns (Remarks, Initial Impression, Injuries, Nature of Incident).
 
 const CAUSE_KEYWORDS = {
-    "Alcohol-related": ["alcohol", "drunk", "intoxicated", "drinking", "liquor"],
-    "Animal on road": ["hit a dog", "hit an animal", "hit a stray", "ran over a dog", "ran over an animal", "dog got hit", "animal collision", "stray dog"],
-    "Dog/Animal bite": ["dog bite", "animal bite", "bite", "dog"],
-    "Hit-and-run": ["hit and run", "hit-and-run", "hit & run"],
-    "Reckless/overspeeding": ["reckless", "overspeeding", "speeding"],
-    "Motorcycle involved": ["motorcycle", "motorbike"],
-    "Pedestrian involved": ["pedestrian", "hit a person", "hit a man", "hit a woman"],
-    "Drowning": ["drown", "drowning"],
-    "Heat stroke": ["heat stroke", "heatstroke"],
-    "Cardiac/medical": ["cardiac", "heart attack", "stroke"],
-    "Fire-related": ["fire", "burning", "smoke"],
-    "Physical altercation": ["fight", "assault", "stabbed", "altercation"]
+    "Vehicular Accident": {
+        "Collision": ["collision", "collided", "crashed", "crash", "crashed into", "crash into", "bump"],
+        "Rear-end collision": ["rear-ended", "rear ended", "rear end collision", "hit from behind", "hit from the rear"],
+        "Head-on collision": ["head-on", "head on", "head-on collision", "frontal collision", "front collision"],
+        "Side collision": ["side collision", "side impact", "sideswiped", "side-swiped", "t-bone", "t bone"],
+        "Multiple vehicle collision": ["multiple vehicle", "multiple vehicles", "multiple collision", "pile-up", "pile up", "chain collision", "multi-vehicle"],
+        "Hit-and-run": ["hit and run", "hit-and-run", "hit & run", "fled the scene", "fled from the scene", "left the scene", "driver fled", "vehicle fled"],
+        "Reckless/overspeeding": ["reckless", "reckless driving", "reckless driver", "overspeeding", "overspeed", "speeding", "excessive speed", "high speed", "driving fast"],
+        "Alcohol-related": ["alcohol", "drunk", "intoxicated", "drinking", "liquor", "drunk driving", "under the influence", "alcohol intoxication"],
+        "Motorcycle involved": ["motorcycle", "motorbike", "motor cycle", "motorcycle rider", "motorbike rider"],
+        "Pedestrian involved": ["pedestrian", "hit a person", "hit a man", "hit a woman", "hit person", "hit pedestrian", "pedestrian hit", "pedestrian struck", "person struck"],
+        "Animal on road": ["hit a dog", "hit an animal", "hit a stray", "ran over a dog", "ran over an animal", "dog got hit", "animal collision", "stray dog", "hit dog", "hit cat", "hit a cat", "ran over a cat", "animal on road", "animal crossing", "livestock on road"],
+        "Loss of control": ["lost control", "loss of control", "lost control of vehicle", "lost control of motorcycle", "vehicle went out of control", "motorcycle went out of control"],
+        "Vehicle rollover": ["rolled over", "rollover", "roll over", "overturned", "overturned vehicle", "vehicle overturned", "motorcycle overturned"],
+        "Motorcycle skid": ["motorcycle skid", "motorbike skid", "motorcycle skidded", "motorbike skidded", "skidded", "skid"],
+        "Mechanical failure": ["mechanical failure", "mechanical problem", "brake failure", "brake malfunction", "brake problem", "brake loss", "lost its brake", "engine failure", "engine problem", "tire blowout", "flat tire", "tire failure", "steering failure"],
+        "Road condition": ["slippery road", "wet road", "rough road", "pothole", "potholes", "road damage", "poor road condition", "muddy road", "road obstruction"],
+        "Vehicle vs. property": ["hit a wall", "hit wall", "hit a fence", "hit fence", "hit a post", "hit post", "hit a building", "hit building", "hit a barrier", "hit barrier", "hit a house", "hit house"],
+        "Road Accident": []
+    },
+    "Medical Emergency": {
+        "Cardiac/heart-related": ["cardiac", "heart attack", "heart problem", "cardiac arrest", "chest pain"],
+        "Stroke": ["stroke", "suspected stroke", "signs of stroke", "possible stroke"],
+        "Breathing difficulty": ["difficulty of breathing", "difficulty on breathing", "difficulty breathing", "difficulty in breathing", "shortness of breath", "can't breathe", "cannot breathe", "hard to breathe", "breathing problem", "breathing difficulty", "respiratory problem", "hyperventilation", "hyperventilating", "hypervent", "hyperventilation episode", "asthma", "asthma attack", "asthmatic", "asthmatic attack", "panic attack", "panic attacks"],
+        "Seizure": ["seizure", "seizures", "convulsion", "convulsions", "convulsing", "epilepsy", "epileptic", "epileptic seizure", "epileptic attack", "seizure disorder"],
+        "Unconsciousness": ["unconscious", "unresponsive", "not responding", "unconscious person", "lost consciousness", "loss of consciousness", "lost of consciousness"],
+        "Fainting": ["fainted", "fainting", "passed out", "pass out", "felt faint"],
+        "Heat stroke": ["heat stroke", "heatstroke", "heat exhaustion", "heat-related", "overheated", "heat exposure"],
+        "High blood pressure": ["high blood pressure", "hypertension", "elevated blood pressure", "high bp", "elevated bp"],
+        "Diabetes-related": ["diabetic", "diabetes", "high blood sugar", "low blood sugar", "hypoglycemia", "hyperglycemia"],
+        "Fever": ["fever", "high fever", "very high fever"],
+        "Poisoning": ["poisoned", "poisoning", "poison", "ingested poison", "chemical poisoning", "toxic ingestion"],
+        "Allergic reaction": ["allergic reaction", "allergy", "allergic", "anaphylaxis", "anaphylactic"],
+        "Vomiting/Gastrointestinal": ["vomiting", "vomitting", "vomiting blood", "vomitting blood", "diarrhea", "diarrhoea"],
+        "Pain": ["pain", "back pain", "abdominal pain", "stomach pain", "chest discomfort", "headache", "sprain ankle"],
+        "Wounds": ["wound", "abrasion", "abrasions", "laceration", "lacerations", "open wound", "open wounds", "scraped", "cuts and scratches", "skin wound", "superficial wound", "injuries to the upper and lower extremities", "injuries to the upper", "injuries to the lower", "injuries to extremities", "injuries on the upper and lower extremities", "injuries on the upper", "injuries on the lower"],
+        "Pregnancy-related": ["pregnant", "pregnancy", "in labor", "giving birth", "childbirth", "delivery"],
+        "Animal bite": ["dog bite", "animal bite", "dog bitten", "animal bitten", "snake bite", "snakebite", "cat bite"],
+        "Alcohol-related": ["alcohol", "drunk", "intoxicated", "drinking", "liquor"],
+        "Drug-related": ["drug", "drugs", "drug overdose", "overdose", "drug intoxication"],
+        "Dizziness": ["dizzy", "dizziness", "lightheaded", "unsteady"],
+        "Body Weakness": ["weak", "weakness", "feeble", "exhausted"],
+        "Tenderness": ["tender", "tenderness", "sore", "soreness", "painful"],
+        "Bleeding": ["nosebleed", "nose bleed", "nose bleeding", "epistaxis", "bleeding", "hemorrhage", "hemorrhaging", "bleeding wound", "uncontrolled bleeding"],
+        "Swelling/Inflammation": ["joint swelling", "swelling", "swollen", "swollen joint", "inflammation", "inflamed", "edema"],
+        "Skin conditions": ["psoriasis", "skin condition", "skin disease", "skin rash", "rash", "eczema", "dermatitis"],
+        "Medical Condition": [],
+    },
+    "Drowning": {
+        "Near drowning": ["near drowning", "almost drowned", "nearly drowned", "rescued from drowning", "rescued from water"],
+        "Swimming incident": ["swimming accident", "swimming incident", "swimmer", "swimming"],
+        "Boating incident": ["boat accident", "boat incident", "boat capsized", "capsized", "capsized boat", "overturned boat", "boat overturned", "boating accident"],
+        "Water-related": ["drowning", "river", "sea", "ocean", "pool", "swimming pool", "creek", "lake", "water"],
+        "Accidental drowning": ["accidentally drowned", "accidental drowning", "accidentally fell into water", "fell into the water"]
+    },
+    "Extrication": {
+        "Vehicle entrapment": ["trapped in vwehicle", "trapped inside vehicle", "trapped in car", "trapped inside car", "vehicle entrapment", "car entrapment", "vehicular entrapment", "entrapment"],
+        "Structural entrapment": ["trapped under debris", "trapped inside building", "trapped under rubble", "trapped in building", "trapped under structure"],
+        "Machinery entrapment": ["trapped in machine", "caught in machine", "machinery accident", "machine accident", "trapped in machinery", "caught in machinery"],
+        "Collapsed structure": ["building collapse", "structure collapse", "collapsed building", "collapsed structure", "building collapsed", "structure collapsed", "falling structure", "rubble"]
+    },
+    "Fire Alarm": {
+        "Smoke alarm": ["smoke alarm", "smoke detector", "smoke detected", "detected smoke"],
+        "Possible fire": ["possible fire", "suspected fire", "smell of smoke", "smoke coming from", "smoke coming out"],
+        "Electrical fire": ["electrical fire", "electrical short", "short circuit", "electrical spark", "electrical sparks", "wiring fire", "electrical burning"],
+        "Kitchen fire": ["kitchen fire", "cooking fire", "stove fire", "cooking accident", "oil fire"],
+        "Gas-related": ["gas leak", "lpg leak", "lpg", "gas explosion", "gas smell", "leaking gas"],
+        "Burning material": ["burning material", "burning garbage", "burning trash", "burning leaves", "burning plastic", "burning grass"],
+        "Fire-related": ["fire", "fire alarm", "alarm activated", "alarm triggered", "alarm went off", "alarm sounded"]
+    },
+    "Physical Violence / Assault": {
+        "Physical altercation": ["fight", "fighting", "assault", "attacked", "physical altercation"],
+        "Verbal altercation": ["verbal altercation", "verbal argument", "verbal dispute", "argument", "arguing", "quarrel", "quarreling", "shouting", "yelling", "heated argument", "threatened", "threatening"],
+        "Stabbing": ["stabbed", "stabbing", "stab wound", "knife attack", "knife wound", "wounded with knife", "stabbed with knife"],
+        "Shooting": ["shot", "shooting", "gunshot", "gunshot wound", "shot with gun", "firearm injury"],
+        "Blunt-force injury": ["beaten", "beating", "battered", "hit with object", "struck with object", "beaten with object"],
+        "Domestic violence": ["domestic violence", "domestic abuse", "husband attacked", "wife attacked", "partner attacked", "family violence", "family dispute"],
+        "Sexual assault": ["sexual assault", "sexual abuse", "rape", "attempted rape"],
+        "Robbery-related": ["robbery", "robbed", "mugging", "hold-up", "hold up", "snatching"]
+    },
+    "Self Accident": {
+        "Fall": ["fell down", "accidental fall", "accidentally fell", "accidental falls", "sustained a fall", "had a fall"],
+        "Fall from height": ["fell from roof", "fell from building", "fell from height", "fell from stairs", "fell off roof", "fell off building", "fell from ladder", "fell off ladder"],
+        "Slip/trip": ["slipped", "slipping", "tripped", "trip and fall", "tripped and fell"],
+        "Motorcycle accident": ["motorcycle accident", "motorbike accident", "motorcycle crash", "motorbike crash"],
+        "Bicycle accident": ["bicycle accident", "bike accident", "bicycle crash", "bicycle fell"],
+        "Hit object": ["hit a tree", "hit tree"],
+        "Electrical-related": ["electrical accident", "electrocution", "electric shock", "electrical shock", "shocked by electricity", "live wire", "electric wire"],
+        "Work-related accident": ["workplace accident", "work accident", "work-related accident", "work related accident", "occupational accident", "workplace injury"],
+        "Animal-related": ["livestock", "stray animal", "animal attack"],
+        "Accidental Injury": []
+    },
+    "Self-Harm": {
+        "Suicide attempt": ["suicide attempt", "attempted suicide", "tried to kill self", "attempted to kill self", "suicidal attempt"],
+        "Self-inflicted injury": ["self-inflicted", "self inflicted", "injured self", "hurt self", "intentionally injured self"],
+        "Cutting": ["cut self", "cutting", "cut himself", "cut herself", "slashed self", "self-cutting"],
+        "Hanging/strangulation": ["hanging", "attempted hanging", "strangulation", "attempted strangulation", "strangled self"],
+        "Overdose": ["overdose", "took pills", "took medication", "took too many pills", "medication overdose", "drug overdose"],
+        "Self-poisoning": ["drank poison", "ingested poison", "took poison", "poison ingestion", "self poisoning", "self-poisoning"],
+        "Jumping from height": ["jumped from building", "jumped from bridge", "jumped from height", "jumped off building", "jumped off bridge", "jumped from roof"]
+    }
 };
+
+// Flattened view of the cause hierarchy: cause name -> { category, keywords }.
+// Sub-cause names that appear in more than one category (e.g. "Alcohol-related")
+// are merged so a record is only ever tagged/counted once per name.
+const CAUSE_DEFS = (function () {
+    const map = {};
+    Object.keys(CAUSE_KEYWORDS).forEach(cat => {
+        Object.keys(CAUSE_KEYWORDS[cat]).forEach(name => {
+            if (map[name]) {
+                map[name].keywords = map[name].keywords.concat(CAUSE_KEYWORDS[cat][name]);
+            } else {
+                map[name] = { category: cat, keywords: CAUSE_KEYWORDS[cat][name].slice() };
+            }
+        });
+    });
+    return map;
+})();
 
 const PRECAUTIONS = {
     "Alcohol-related": [
@@ -28,11 +134,6 @@ const PRECAUTIONS = {
         "Issue lighting and signage advisories on stretches with frequent animal hits.",
         "Brief dawn and dusk patrols to slow down in open road sections.",
         "Coordinate with barangay officials on loose/stray animal reports."
-    ],
-    "Dog/Animal bite": [
-        "Advise immediate anti-rabies referral for bite victims.",
-        "Coordinate with the City Veterinary Office on stray dog sightings.",
-        "Include bite first aid (wash, no covering) in responder refreshers."
     ],
     "Hit-and-run": [
         "Advise units to secure witnesses and dashcam footage on scene.",
@@ -54,30 +155,64 @@ const PRECAUTIONS = {
         "Brief drivers on pedestrian priority near schools and markets.",
         "Coordinate sidewalk/barrier improvements with the engineering office."
     ],
-    "Drowning": [
-        "Pre-season coastal and river watch before holidays.",
-        "Verify lifeguard presence, floats and rescue lines at known swimming spots.",
-        "Remind responders on water-rescue gear readiness."
-    ],
     "Heat stroke": [
         "Air advisories on hydration for outdoor workers.",
         "Schedule responders for early-morning hydration and rest breaks.",
         "Ensure cold packs and IV fluids stocked in peak heat months."
     ],
-    "Cardiac/medical": [
-        "Hold regular CPR and AED refresher training.",
-        "Confirm cardiac/medical kit stock on all marked units.",
-        "Coordinate rapid referral routes to the nearest hospital."
-    ],
-    "Fire-related": [
-        "Pre-season fire-safety inspections on informal settlements.",
-        "Check extinguisher placement in markets and public buildings.",
-        "Coordinate evacuation drills and crowd control with the fire bureau."
-    ],
     "Physical altercation": [
         "Deploy peacekeeping teams to known hot spots on weekends.",
         "Coordinate with police and barangay for conflict de-escalation.",
         "Remind responders to request police back-up on assault scenes."
+    ],
+    "Collision": [
+        "Reinforce defensive-driving briefings for responders, especially at intersections.",
+        "Coordinate with LTO/traffic enforcers on multi-vehicle crash hotspots.",
+        "Remind units to document vehicle damage, positions, and witness statements at multi-vehicle scenes."
+    ]
+};
+
+// Category-level precautions used when a sub-cause has no specific tips above.
+const CATEGORY_PRECAUTIONS = {
+    "Vehicular Accident": [
+        "Reinforce defensive-driving briefings and intersection awareness for responders.",
+        "Coordinate with traffic enforcers on crash-prone road sections.",
+        "Remind units to document vehicle damage, positions, and witnesses at accident scenes."
+    ],
+    "Medical Emergency": [
+        "Hold regular CPR, AED, and first-responder medical refreshers.",
+        "Confirm medical kit stock and oxygen supplies on all marked units.",
+        "Coordinate rapid referral routes to the nearest hospital."
+    ],
+    "Drowning": [
+        "Pre-season coastal and river watch before holidays.",
+        "Verify lifeguard presence, floats and rescue lines at known swimming spots.",
+        "Remind responders on water-rescue gear readiness."
+    ],
+    "Extrication": [
+        "Drill on cutting/tool extrication techniques with partner agencies.",
+        "Verify hydraulic rescue equipment and training on all shifts.",
+        "Coordinate joint extrication drills with the fire bureau."
+    ],
+    "Fire Alarm": [
+        "Pre-season fire-safety inspections on informal settlements.",
+        "Check extinguisher placement and smoke-alarm coverage in public buildings.",
+        "Coordinate evacuation drills and crowd control with the fire bureau."
+    ],
+    "Physical Violence / Assault": [
+        "Deploy peacekeeping teams to known hot spots on weekends.",
+        "Coordinate with police and barangay for conflict de-escalation.",
+        "Remind responders to request police back-up on assault scenes."
+    ],
+    "Self Accident": [
+        "Promote home-safety checks for slips, falls, and electrical hazards.",
+        "Coordinate barangay programs on workplace and road safety awareness.",
+        "Brief responders on rapid assessment of falls and household accidents."
+    ],
+    "Self-Harm": [
+        "Coordinate crisis-response referrals with mental health and barangay support.",
+        "Train responders on compassionate de-escalation and scene safety.",
+        "Establish rapid referral links for psychological first aid."
     ]
 };
 
@@ -184,15 +319,37 @@ function countPatients(r) {
     return splitCell(r["Patient"]).length;
 }
 
+function escapeRegExp(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function tagSitrep(row) {
     const text = [
-        row["Remarks"], row["Initial Impression"], row["Injuries"], row["Nature of Incident"]
+        row["Remarks"], row["Initial Impression"], row["Injuries"]
     ].filter(Boolean).join(" ").toLowerCase();
     const tags = [];
-    Object.keys(CAUSE_KEYWORDS).forEach(cause => {
-        if (CAUSE_KEYWORDS[cause].some(k => text.includes(k))) tags.push(cause);
+    Object.keys(CAUSE_DEFS).forEach(name => {
+        if (CAUSE_DEFS[name].keywords.some(k => new RegExp("\\b" + escapeRegExp(k)).test(text))) tags.push(name);
     });
-    return tags;
+    const vehicles = splitJoined(row["Involved Vehicle Type"]);
+    if (vehicles.length >= 2) tags.push("Collision");
+    if (vehicles.some(v => /motorcycle|motorbike/i.test(v))) tags.push("Motorcycle involved");
+    const unique = [...new Set(tags)];
+    const nature = String(row["Nature of Incident"] || "").trim();
+    const isVehicular = nature === "Vehicular Accident"
+        || unique.some(t => CAUSE_DEFS[t] && CAUSE_DEFS[t].category === "Vehicular Accident");
+    if (isVehicular) {
+        const rest = unique.filter(t => t !== "Wounds" && t !== "Pain");
+        if (rest.length) return rest;
+        return ["Road Accident"];
+    }
+    if (unique.length === 0) {
+        if (nature === "Physical Violence / Assault") return ["Verbal altercation"];
+        if (nature === "Fire Alarm") return ["Fire-related"];
+        if (nature === "Medical Emergency") return ["Medical Condition"];
+        if (nature === "Self Accident") return ["Accidental Injury"];
+    }
+    return unique;
 }
 
 async function ensureFreshSession() {
@@ -244,9 +401,19 @@ function populateSitrepFilters() {
     const causeEl = document.getElementById("sitrepCauseFilter");
     if (causeEl) {
         const prev = causeEl.value;
-        causeEl.innerHTML = '<option value="">All Causes</option>' +
-            '<option value="__unknown">Unknown / No cause</option>' +
-            Object.keys(CAUSE_KEYWORDS).map(c => `<option>${esc(c)}</option>`).join("");
+        let html = '<option value="">All Causes</option>' +
+            '<option value="__unknown">Unknown / No cause</option>';
+        const emitted = {};
+        Object.keys(CAUSE_KEYWORDS).forEach(cat => {
+            const opts = Object.keys(CAUSE_KEYWORDS[cat])
+                .filter(name => !emitted[name])
+                .map(name => {
+                    emitted[name] = true;
+                    return `<option>${esc(name)}</option>`;
+                }).join("");
+            if (opts) html += `<optgroup label="${esc(cat)}">${opts}</optgroup>`;
+        });
+        causeEl.innerHTML = html;
         if (prev) causeEl.value = prev;
     }
 }
@@ -269,13 +436,21 @@ function resetSitrepFilters() {
     renderSitrepDashboard();
 }
 
-// Table-only drill-down: clicking a cause in the top-5 list or the cause chart
-// filters only the records table (not the stat cards, charts, or top-5 panel).
+// Cause drill-down: clicking a cause in the top-causes list or the cause chart
+// filters the records table (and the cause drill is combined with the main filters).
 function applyCauseFilter(cause) {
     sitrepTableCause = cause || "";
     sitrepPage = 1;
     renderSitrepDashboard();
     expandSitrepCard("sitrepTableCollapse");
+}
+
+function applyPlaceFilter(place) {
+    const sel = document.getElementById("sitrepBarangayFilter");
+    if (sel) {
+        sel.value = place || "";
+        sel.dispatchEvent(new Event("change"));
+    }
 }
 
 function expandSitrepCard(cardId) {
@@ -291,7 +466,7 @@ function expandSitrepCard(cardId) {
     }
 }
 
-function clearSitrepTableCause() {
+function clearSitrepTableDrill() {
     sitrepTableCause = "";
     sitrepPage = 1;
     renderSitrepDashboard();
@@ -304,7 +479,8 @@ function matchesCause(r, cause) {
     return tags.indexOf(cause) !== -1;
 }
 
-function getFilteredSitreps() {
+function getFilteredSitreps(opts) {
+    const { excludePlace } = opts || {};
     const from = document.getElementById("sitrepDateFrom").value;
     const to = document.getElementById("sitrepDateTo").value;
     const team = document.getElementById("sitrepTeamFilter").value;
@@ -318,7 +494,7 @@ function getFilteredSitreps() {
         if (to && d > to) return false;
         if (team && String(r["Assigned Team"] || "").trim() !== team) return false;
         if (nature && String(r["Nature of Incident"] || "").trim() !== nature) return false;
-        if (barangay && normalizePlace(r["Barangay"]) !== barangay) return false;
+        if (barangay && !excludePlace && normalizePlace(r["Barangay"]) !== barangay) return false;
         if (!matchesCause(r, cause)) return false;
         return true;
     });
@@ -331,12 +507,17 @@ function getSitrepTableRows() {
 
 function renderSitrepDashboard() {
     const filtered = getFilteredSitreps();
+    const noPlace = getFilteredSitreps({ excludePlace: true });
     const drill = sitrepTableCause ? filtered.filter(r => matchesCause(r, sitrepTableCause)) : filtered;
+    const hotspotRows = sitrepTableCause ? noPlace.filter(r => matchesCause(r, sitrepTableCause)) : noPlace;
+    const placeEl = document.getElementById("sitrepBarangayFilter");
+    const placeBadge = document.getElementById("hotspotPlaceBadge");
+    if (placeBadge) placeBadge.innerText = placeEl && placeEl.value ? placeEl.value : "All Places";
     updateSitrepStats(drill, filtered);
     renderCauseChart(filtered);
     renderNatureChart(drill);
     renderNatureTiles(drill);
-    renderBarangayChart(drill);
+    renderBarangayChart(hotspotRows);
     renderHourChart(drill);
     renderWeekdayChart(drill);
     renderMonthlyChart(drill);
@@ -347,16 +528,18 @@ function renderSitrepDashboard() {
 function updateSitrepStats(rows, topRows) {
     const now = new Date();
     const thisMonth = String(now.getFullYear()) + "-" + String(now.getMonth() + 1).padStart(2, "0");
-    let demised = 0;
-    rows.forEach(r => {
-        if (String(r["Victim Status"] || "").toLowerCase().includes("demised")) demised++;
-    });
+    const todayKey = String(now.getFullYear()) + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
+    const thisMonthRows = rows.filter(r => String(r["Call Date"] || "").startsWith(thisMonth));
 
     setText("sitrepStatTotal", rows.length);
     const monthLabel = now.toLocaleString("en-US", { month: "long", year: "numeric" });
     setText("sitrepMonthLabel", monthLabel);
-    setText("sitrepStatMonth", rows.filter(r => String(r["Call Date"] || "").startsWith(thisMonth)).length);
-    setText("sitrepStatFatal", demised);
+    setText("qrMonthValue", rows.filter(r => String(r["Call Date"] || "").startsWith(thisMonth)).length);
+    setText("qrTodayValue", rows.filter(r => String(r["Call Date"] || "").startsWith(todayKey)).length);
+    setText("qrPatientsValue", rows.filter(r => String(r["Call Date"] || "").startsWith(todayKey)).reduce((s, r) => s + countPatients(r), 0));
+    setText("qrPatientsTotalValue", thisMonthRows.reduce((s, r) => s + countPatients(r), 0));
+    const topNature = countBy(thisMonthRows, "Nature of Incident")[0];
+    setText("qrTopNatureValue", topNature ? topNature[0] + " (" + topNature[1] + ")" : "—");
 
     const source = topRows || rows;
     const causeCounts = {};
@@ -375,8 +558,7 @@ function renderTopCauses(causeCounts) {
     if (badge) badge.innerText = natureEl && natureEl.value ? natureEl.value : "All Natures";
 
     const top = Object.entries(causeCounts)
-        .sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1))
-        .slice(0, 5);
+        .sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1));
     if (!top.length) {
         list.innerHTML = '<div class="list-group-item text-muted text-center py-3 small">No cause data for the current filters.</div>';
     } else {
@@ -416,7 +598,7 @@ function renderRecommendations(rows, listId, summaryId) {
 
     const unknownCount = rows.filter(r => tagSitrep(r).length === 0).length;
     const items = ranked.slice(0, 8).map(({ cause, count, fatal }) => {
-        const tips = PRECAUTIONS[cause] || ["Review response plans for this cause type."];
+        const tips = PRECAUTIONS[cause] || CATEGORY_PRECAUTIONS[CAUSE_DEFS[cause] && CAUSE_DEFS[cause].category] || ["Review response plans for this cause type."];
         const pct = Math.round((count / rows.length) * 100);
         const fatalBadge = fatal > 0
             ? ` <span class="badge bg-danger ms-1" title="Sitreps with deaths">${fatal} fatal${fatal > 1 ? "s" : ""}</span>`
@@ -543,13 +725,22 @@ function buildChart(id, config) {
 }
 
 function baseOpts() {
+    const dark = document.body.classList.contains("sitrep-display-mode");
     return {
         responsive: true,
         maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: {
-            x: { beginAtZero: true, ticks: { font: { size: 10 } } },
-            y: { beginAtZero: true, ticks: { font: { size: 10 } } }
+            x: {
+                beginAtZero: true,
+                ticks: { font: { size: 10 }, color: dark ? "#cbd5e1" : undefined },
+                grid: { color: dark ? "rgba(255,255,255,0.12)" : undefined }
+            },
+            y: {
+                beginAtZero: true,
+                ticks: { font: { size: 10 }, color: dark ? "#cbd5e1" : undefined },
+                grid: { color: dark ? "rgba(255,255,255,0.12)" : undefined }
+            }
         }
     };
 }
@@ -559,7 +750,7 @@ function renderCauseChart(rows) {
     rows.forEach(r => tagSitrep(r).forEach(c => counts[c] = (counts[c] || 0) + 1));
     const unknown = rows.filter(r => tagSitrep(r).length === 0).length;
     if (unknown > 0) counts["Unknown / No cause"] = unknown;
-    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 8);
     const causes = sorted.map(e => e[0]);
     buildChart("causeChart", {
         type: "bar",
@@ -570,6 +761,7 @@ function renderCauseChart(rows) {
         options: {
             ...baseOpts(),
             indexAxis: "y",
+            layout: { padding: { right: 24 } },
             onClick: function (evt, items) {
                 if (!items || !items.length) return;
                 const cause = causes[items[0].index];
@@ -578,7 +770,8 @@ function renderCauseChart(rows) {
             onHover: function (evt, items) {
                 evt.native.target.style.cursor = items && items.length ? "pointer" : "default";
             }
-        }
+        },
+        plugins: [countLabelPlugin]
     });
 }
 
@@ -609,14 +802,29 @@ function renderNatureTiles(rows) {
 }
 
 function renderBarangayChart(rows) {
-    const sorted = topWithOthers(countByPlace(rows), 10);
+    const sorted = countByPlace(rows);
+    const places = sorted.map(e => e[0]);
+    const wrap = document.getElementById("barangayChartWrap");
+    if (wrap) wrap.style.height = Math.max(240, sorted.length * 30) + "px";
     buildChart("barangayChart", {
         type: "bar",
         data: {
-            labels: sorted.map(e => e[0]),
+            labels: places,
             datasets: [{ label: "SITREPs", data: sorted.map(e => e[1]), backgroundColor: sorted.map((_, i) => CHART_COLORS[i % CHART_COLORS.length]) }]
         },
-        options: { ...baseOpts(), indexAxis: "y" }
+        options: {
+            ...baseOpts(),
+            indexAxis: "y",
+            layout: { padding: { right: 24 } },
+            onClick: function (evt, items) {
+                if (!items || !items.length) return;
+                applyPlaceFilter(places[items[0].index]);
+            },
+            onHover: function (evt, items) {
+                evt.native.target.style.cursor = items && items.length ? "pointer" : "default";
+            }
+        },
+        plugins: [countLabelPlugin]
     });
 }
 
@@ -655,6 +863,27 @@ function renderWeekdayChart(rows) {
     });
 }
 
+const countLabelPlugin = {
+    id: "countLabels",
+    afterDatasetsDraw(chart) {
+        const ctx = chart.ctx;
+        const horizontal = chart.options.indexAxis === "y";
+        ctx.save();
+        ctx.font = "10px sans-serif";
+        ctx.fillStyle = document.body.classList.contains("sitrep-display-mode") ? "#e2e8f0" : "#212529";
+        ctx.textBaseline = "middle";
+        ctx.textAlign = horizontal ? "left" : "center";
+        chart.data.datasets.forEach((ds, di) => {
+            const meta = chart.getDatasetMeta(di);
+            ds.data.forEach((v, i) => {
+                const p = meta.data[i];
+                if (p && v !== null && v !== undefined) ctx.fillText(String(v), horizontal ? p.x + 4 : p.x, horizontal ? p.y : p.y - 6);
+            });
+        });
+        ctx.restore();
+    }
+};
+
 function renderMonthlyChart(rows) {
     const map = {};
     rows.forEach(r => {
@@ -679,7 +908,11 @@ function renderMonthlyChart(rows) {
                 pointRadius: 3
             }]
         },
-        options: baseOpts()
+        options: {
+            ...baseOpts(),
+            layout: { padding: { top: 16 } }
+        },
+        plugins: [countLabelPlugin]
     });
 }
 
@@ -707,7 +940,7 @@ function renderSitrepTable() {
     if (chip) {
         if (sitrepTableCause) {
             const label = sitrepTableCause === "__unknown" ? "Unknown / No cause" : sitrepTableCause;
-            chip.innerHTML = '<span class="badge bg-primary">' + esc(label) + ' <a href="#" onclick="clearSitrepTableCause(); return false;" class="text-white" style="text-decoration:none;" title="Clear cause">&times;</a></span>';
+            chip.innerHTML = '<span class="badge bg-primary">' + esc(label) + ' <a href="#" onclick="clearSitrepTableDrill(); return false;" class="text-white" style="text-decoration:none;" title="Clear cause">&times;</a></span>';
         } else {
             chip.innerHTML = "";
         }
@@ -731,7 +964,7 @@ function renderSitrepTable() {
             <td class="d-none d-sm-table-cell">${esc(normalizePlace(r["Barangay"]))}</td>
             <td>${countPatients(r)}</td>
             <td class="d-none d-lg-table-cell text-truncate" title="${esc(r["Victim Status"])}">${esc(r["Victim Status"])}</td>
-            <td>${causes.length ? causes.map(esc).join(", ") : '<span class="text-muted">&mdash;</span>'}</td>
+            <td>${causes.length ? causes.slice(0, 3).map(esc).join(", ") + (causes.length > 3 ? ` <span class="text-muted">+${causes.length - 3}</span>` : "") : '<span class="text-muted">&mdash;</span>'}</td>
         </tr>`;
     }).join("");
     renderSitrepPagination(rows.length, totalPages);
@@ -942,3 +1175,62 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 });
+
+/* ---- SITREP display (TV / kiosk) mode ---- */
+let sitrepDisplayClockTimer = null;
+let sitrepDisplayRefreshTimer = null;
+
+function enterSitrepDisplayMode() {
+    document.body.classList.add("sitrep-display-mode");
+    const header = document.getElementById("sitrepDisplayHeader");
+    if (header) header.classList.remove("d-none");
+    if (!sitrepLoaded) {
+        loadSitrepDashboard(true);
+    } else {
+        renderSitrepDashboard();
+    }
+    updateSitrepDisplayClock();
+    sitrepDisplayClockTimer = setInterval(updateSitrepDisplayClock, 1000);
+    sitrepDisplayRefreshTimer = setInterval(function () { loadSitrepDashboard(true); }, 5 * 60 * 1000);
+    try {
+        const de = document.documentElement;
+        if (de.requestFullscreen) {
+            de.requestFullscreen().catch(function () {});
+        } else if (de.webkitRequestFullscreen) {
+            de.webkitRequestFullscreen();
+        }
+    } catch (_) {}
+}
+
+function exitSitrepDisplayMode() {
+    document.body.classList.remove("sitrep-display-mode");
+    const header = document.getElementById("sitrepDisplayHeader");
+    if (header) header.classList.add("d-none");
+    if (sitrepLoaded) renderSitrepDashboard();
+    clearInterval(sitrepDisplayClockTimer); sitrepDisplayClockTimer = null;
+    clearInterval(sitrepDisplayRefreshTimer); sitrepDisplayRefreshTimer = null;
+    try {
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+            if (document.exitFullscreen) {
+                document.exitFullscreen().catch(function () {});
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            }
+        }
+    } catch (_) {}
+}
+
+function updateSitrepDisplayClock() {
+    const now = new Date();
+    const t = document.getElementById("sitrepDisplayClockTime");
+    const d = document.getElementById("sitrepDisplayClockDate");
+    if (t) t.textContent = now.toLocaleTimeString("en-US", { hour12: true });
+    if (d) d.textContent = now.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+}
+
+function syncSitrepDisplayModeFromFullscreen() {
+    const fs = document.fullscreenElement || document.webkitFullscreenElement;
+    if (!fs && document.body.classList.contains("sitrep-display-mode")) exitSitrepDisplayMode();
+}
+document.addEventListener("fullscreenchange", syncSitrepDisplayModeFromFullscreen);
+document.addEventListener("webkitfullscreenchange", syncSitrepDisplayModeFromFullscreen);

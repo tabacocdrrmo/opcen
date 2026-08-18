@@ -261,9 +261,12 @@
 
             <!-- ========== SITREP Insights Page ========== -->
             <div id="page-sitrep-insights" class="page-section d-none">
-                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+                <div id="sitrepInsightsHeader" class="d-flex flex-wrap justify-content-between align-items-center mb-3">
                     <h4 class="mb-0">SITREP Insights</h4>
                     <div class="d-flex gap-2">
+                        <button class="btn btn-dark btn-sm" onclick="enterSitrepDisplayMode()" title="Open fullscreen display mode for TV / projector">
+                            <i class="fa-solid fa-tv"></i> Display Mode
+                        </button>
                         <button class="btn btn-outline-secondary btn-sm" onclick="loadSitrepDashboard(true)">
                             <i class="fa-solid fa-rotate"></i> Refresh
                         </button>
@@ -273,26 +276,44 @@
                     </div>
                 </div>
 
-                <div class="sitrep-tiles mb-4">
-                    <div class="sitrep-tile card stat-card border-primary">
-                        <div class="text-muted small text-uppercase">Total SITREPs</div>
-                        <div class="fw-bold fs-4 text-primary" id="sitrepStatTotal">0</div>
+<div class="sitrep-tiles mb-4">
+                        <div class="sitrep-tile card stat-card border-primary">
+                            <div class="text-muted small text-uppercase">Total SITREPs</div>
+                            <div class="fw-bold fs-4 text-primary" id="sitrepStatTotal">0</div>
+                        </div>
+                        <div class="sitrep-tile card stat-card border-primary" id="natureTile1"></div>
+                        <div class="sitrep-tile card stat-card border-info" id="natureTile2"></div>
+                        <div class="sitrep-tile card stat-card border-warning" id="natureTile3"></div>
+                        <div class="sitrep-tile card stat-card border-success" id="natureTile4"></div>
+                        <div class="sitrep-tile card stat-card border-secondary sitrep-qr" id="sitrepQuickReport">
+                            <div class="d-flex align-items-baseline justify-content-center gap-2 w-100 mb-1">
+                                <span class="fw-bold small text-uppercase text-muted">Quick Report</span>
+                                <span class="fw-bold small" id="sitrepMonthLabel">This Month</span>
+                            </div>
+                            <div class="d-flex justify-content-between w-100 small">
+                                <span class="text-muted">Total SITREPs</span>
+                                <span class="fw-bold" id="qrMonthValue">0</span>
+                            </div>
+                            <div class="d-flex justify-content-between w-100 small">
+                                <span class="text-muted">Total Involved This Month</span>
+                                <span class="fw-bold" id="qrPatientsTotalValue">0</span>
+                            </div>
+                            <div class="d-flex justify-content-between w-100 small">
+                                <span class="text-muted">Total Involved Today</span>
+                                <span class="fw-bold" id="qrPatientsValue">0</span>
+                            </div>
+                            <div class="d-flex justify-content-between w-100 small">
+                                <span class="text-muted">Today's SITREPs</span>
+                                <span class="fw-bold" id="qrTodayValue">0</span>
+                            </div>
+                            <div class="d-flex justify-content-between w-100 small">
+                                <span class="text-muted">Top Nature</span>
+                                <span class="fw-bold" id="qrTopNatureValue">—</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="sitrep-tile card stat-card border-info">
-                        <div class="text-muted small text-uppercase" id="sitrepMonthLabel">This Month</div>
-                        <div class="fw-bold fs-4 text-info" id="sitrepStatMonth">0</div>
-                    </div>
-                    <div class="sitrep-tile card stat-card border-danger">
-                        <div class="text-muted small text-uppercase">Fatalities</div>
-                        <div class="fw-bold fs-4 text-danger" id="sitrepStatFatal">0</div>
-                    </div>
-                    <div class="sitrep-tile card stat-card border-primary" id="natureTile1"></div>
-                    <div class="sitrep-tile card stat-card border-info" id="natureTile2"></div>
-                    <div class="sitrep-tile card stat-card border-warning" id="natureTile3"></div>
-                    <div class="sitrep-tile card stat-card border-success" id="natureTile4"></div>
-                </div>
 
-                <div class="card shadow-sm mb-3">
+                <div class="card shadow-sm mb-3" id="sitrepFiltersCard">
                     <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
                         <span class="fw-bold small text-uppercase text-muted">Filters</span>
                         <button type="button" class="btn btn-link p-0 text-muted" data-bs-toggle="collapse" data-bs-target="#sitrepFiltersCollapse" aria-expanded="false" onclick="toggleSitrepChevron(this)">
@@ -342,7 +363,20 @@
                                     <h6 class="card-title text-uppercase text-muted small mb-0">Top Causes</h6>
                                     <span class="badge bg-primary" id="topCausesNatureBadge">All Natures</span>
                                 </div>
-                                <div id="topCausesList" class="list-group list-group-flush"></div>
+                                <div id="topCausesList" class="list-group list-group-flush sitrep-scroll-y"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sitrep-chart-cell sitrep-chart-tall sitrep-chart-tall-col2">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body py-2 d-flex flex-column">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <h6 class="card-title text-uppercase text-muted small mb-0">Place of Incident Hotspots</h6>
+                                    <span class="badge bg-success" id="hotspotPlaceBadge">All Places</span>
+                                </div>
+                                <div class="sitrep-scroll-y sitrep-hotspot-scroll" style="position:relative;flex:1 1 auto;min-height:240px;max-height:400px;overflow-y:auto;">
+                                    <div id="barangayChartWrap" class="sitrep-canvas-wrap" style="position:relative;height:240px;"><canvas id="barangayChart"></canvas></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -350,7 +384,7 @@
                         <div class="card shadow-sm h-100">
                             <div class="card-body py-2">
                                 <h6 class="card-title text-uppercase text-muted small mb-1">Incidents by Cause</h6>
-                                <div style="position:relative;height:180px;"><canvas id="causeChart"></canvas></div>
+                                <div class="sitrep-canvas-wrap" style="position:relative;height:180px;"><canvas id="causeChart"></canvas></div>
                             </div>
                         </div>
                     </div>
@@ -358,15 +392,7 @@
                         <div class="card shadow-sm h-100">
                             <div class="card-body py-2">
                                 <h6 class="card-title text-uppercase text-muted small mb-1">Incidents by Nature</h6>
-                                <div style="position:relative;height:180px;"><canvas id="natureChart"></canvas></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="sitrep-chart-cell">
-                        <div class="card shadow-sm h-100">
-                            <div class="card-body py-2">
-                                <h6 class="card-title text-uppercase text-muted small mb-1">Place of Incident Hotspots</h6>
-                                <div style="position:relative;height:180px;"><canvas id="barangayChart"></canvas></div>
+                                <div class="sitrep-canvas-wrap" style="position:relative;height:180px;"><canvas id="natureChart"></canvas></div>
                             </div>
                         </div>
                     </div>
@@ -374,7 +400,7 @@
                         <div class="card shadow-sm h-100">
                             <div class="card-body py-2">
                                 <h6 class="card-title text-uppercase text-muted small mb-1">Incidents by Hour of Day</h6>
-                                <div style="position:relative;height:180px;"><canvas id="hourChart"></canvas></div>
+                                <div class="sitrep-canvas-wrap" style="position:relative;height:180px;"><canvas id="hourChart"></canvas></div>
                             </div>
                         </div>
                     </div>
@@ -382,21 +408,20 @@
                         <div class="card shadow-sm h-100">
                             <div class="card-body py-2">
                                 <h6 class="card-title text-uppercase text-muted small mb-1">Incidents by Weekday</h6>
-                                <div style="position:relative;height:180px;"><canvas id="weekdayChart"></canvas></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="sitrep-chart-cell">
-                        <div class="card shadow-sm h-100">
-                            <div class="card-body py-2">
-                                <h6 class="card-title text-uppercase text-muted small mb-1">Monthly Trend</h6>
-                                <div style="position:relative;height:180px;"><canvas id="monthlyChart"></canvas></div>
+                                <div class="sitrep-canvas-wrap" style="position:relative;height:180px;"><canvas id="weekdayChart"></canvas></div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="card shadow-sm">
+                <div class="card shadow-sm mb-3" id="sitrepMonthlyCard">
+                    <div class="card-body py-2">
+                        <h6 class="card-title text-uppercase text-muted small mb-1">Monthly Trend</h6>
+                        <div class="sitrep-canvas-wrap" style="position:relative;height:180px;"><canvas id="monthlyChart"></canvas></div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm" id="sitrepRecordsCard">
                     <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
                         <div class="d-flex align-items-center gap-2">
                             <span class="fw-bold small text-uppercase text-muted">Records</span>
@@ -445,7 +470,7 @@
                     </div>
                 </div>
 
-                <div class="card shadow-sm mb-3">
+                <div class="card shadow-sm mb-3" id="sitrepRecoCard">
                     <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
                         <span class="fw-bold small text-uppercase text-muted">Preventive Recommendations</span>
                         <button type="button" class="btn btn-link p-0 text-muted" data-bs-toggle="collapse" data-bs-target="#preventiveCollapse" aria-expanded="false" onclick="toggleSitrepChevron(this)">
@@ -742,7 +767,6 @@
             </div>
 
         </main>
-    </div>
 
     <!-- Change Status Modal -->
     <div class="modal fade" id="statusModal" tabindex="-1" aria-hidden="true">
@@ -983,6 +1007,24 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- SITREP Display Mode Header -->
+    <div id="sitrepDisplayHeader" class="sitrep-display-header d-none">
+        <div class="d-flex align-items-center gap-2">
+            <img src="assets/images/logo.png" alt="" width="36" height="36" class="d-inline-block" onerror="this.style.display='none'">
+            <div>
+                <div class="sitrep-display-title">Tabaco CDRRMO</div>
+                <div class="sitrep-display-sub">SITREP Situation Dashboard</div>
+            </div>
+        </div>
+        <div class="text-center">
+            <div class="sitrep-display-time" id="sitrepDisplayClockTime">--:--</div>
+            <div class="sitrep-display-date" id="sitrepDisplayClockDate">—</div>
+        </div>
+        <button class="btn btn-outline-light btn-sm" onclick="exitSitrepDisplayMode()">
+            <i class="fa-solid fa-xmark me-1"></i>Exit
+        </button>
     </div>
 
     <!-- SITREP Detail Modal -->
