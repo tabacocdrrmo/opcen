@@ -1190,6 +1190,7 @@ function enterSitrepDisplayMode() {
         renderSitrepDashboard();
     }
     updateSitrepDisplayClock();
+    updateSitrepDisplayHeader();
     sitrepDisplayClockTimer = setInterval(updateSitrepDisplayClock, 1000);
     sitrepDisplayRefreshTimer = setInterval(function () { loadSitrepDashboard(true); }, 5 * 60 * 1000);
     try {
@@ -1226,6 +1227,25 @@ function updateSitrepDisplayClock() {
     const d = document.getElementById("sitrepDisplayClockDate");
     if (t) t.textContent = now.toLocaleTimeString("en-US", { hour12: true });
     if (d) d.textContent = now.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+}
+
+function updateSitrepDisplayHeader() {
+    const now = new Date();
+    const sub = document.getElementById("sitrepDisplaySub");
+    if (sub) sub.textContent = now.getFullYear() + " Incident Data Analytics";
+
+    const fromEl = document.getElementById("sitrepDateFrom");
+    const toEl = document.getElementById("sitrepDateTo");
+    const start = new Date(now.getFullYear(), 0, 1);
+    let from = fromEl && fromEl.value ? new Date(fromEl.value + "T00:00:00") : start;
+    let to = toEl && toEl.value ? new Date(toEl.value + "T00:00:00") : now;
+    if (isNaN(from)) from = start;
+    if (isNaN(to)) to = now;
+
+    const fmt = d => d.toLocaleDateString("en-US", { month: "long", day: "numeric" });
+    const fmtY = d => d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+    const range = document.getElementById("sitrepDisplayRange");
+    if (range) range.textContent = fmt(from) + " - " + fmtY(to);
 }
 
 function syncSitrepDisplayModeFromFullscreen() {

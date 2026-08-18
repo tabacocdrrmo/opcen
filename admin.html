@@ -1012,19 +1012,24 @@
     <!-- SITREP Display Mode Header -->
     <div id="sitrepDisplayHeader" class="sitrep-display-header d-none">
         <div class="d-flex align-items-center gap-2">
-            <img src="assets/images/logo.png" alt="" width="36" height="36" class="d-inline-block" onerror="this.style.display='none'">
+            <img src="assets/images/logo.png" alt="" width="52" height="52" class="d-inline-block" onerror="this.style.display='none'">
             <div>
-                <div class="sitrep-display-title">Tabaco CDRRMO</div>
-                <div class="sitrep-display-sub">SITREP Situation Dashboard</div>
+                <div class="sitrep-display-title">Tabaco City Disaster Risk Reduction &amp; Management Office</div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="sitrep-display-sub" id="sitrepDisplaySub">Incident Data Analytics</span>
+                    <span class="sitrep-display-range" id="sitrepDisplayRange">—</span>
+                </div>
             </div>
         </div>
-        <div class="text-center">
-            <div class="sitrep-display-time" id="sitrepDisplayClockTime">--:--</div>
-            <div class="sitrep-display-date" id="sitrepDisplayClockDate">—</div>
+        <div class="d-flex align-items-center gap-3">
+            <div class="text-center">
+                <div class="sitrep-display-time" id="sitrepDisplayClockTime">--:--</div>
+                <div class="sitrep-display-date" id="sitrepDisplayClockDate">—</div>
+            </div>
+            <button class="btn btn-outline-light btn-sm" onclick="exitSitrepDisplayMode()" title="Exit display mode">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
         </div>
-        <button class="btn btn-outline-light btn-sm" onclick="exitSitrepDisplayMode()">
-            <i class="fa-solid fa-xmark me-1"></i>Exit
-        </button>
     </div>
 
     <!-- SITREP Detail Modal -->

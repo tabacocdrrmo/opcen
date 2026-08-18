@@ -268,8 +268,9 @@ body { overflow-x: hidden; }
     color: #fff;
     box-shadow: 0 2px 12px rgba(0, 0, 0, .35);
 }
-.sitrep-display-title { font-size: 1.35rem; font-weight: 700; line-height: 1.1; }
+.sitrep-display-title { font-size: 1.4rem; font-weight: 700; line-height: 1.15; }
 .sitrep-display-sub { font-size: .8rem; opacity: .85; text-transform: uppercase; letter-spacing: 1px; }
+.sitrep-display-range { font-size: .78rem; opacity: .75; }
 .sitrep-display-time { font-size: 1.6rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
 .sitrep-display-date { font-size: .85rem; opacity: .85; }
 
