@@ -219,7 +219,6 @@ const CATEGORY_PRECAUTIONS = {
 // Barangays of Tabaco City. "Place of Incident" is free text (e.g. "near 7/11 Panal"),
 // so we match the known barangay word inside it and count by that name.
 const BARANGAYS = [
-    { name: "Agnas", keys: ["agnas"] },
     { name: "Bacolod", keys: ["bacolod"] },
     { name: "Bangkilingan", keys: ["bangkilingan", "bankilingan"] },
     { name: "Bantayan", keys: ["bantayan"] },
@@ -238,7 +237,6 @@ const BARANGAYS = [
     { name: "Divino Rostro", keys: ["divinorostro"] },
     { name: "Fatima", keys: ["fatima"] },
     { name: "Guinobat", keys: ["guinobat"] },
-    { name: "Hacienda", keys: ["hacienda"] },
     { name: "Karangahan", keys: ["karangahan"] },
     { name: "Magapo", keys: ["magapo"] },
     { name: "Mariroc", keys: ["mariroc"] },
@@ -250,7 +248,7 @@ const BARANGAYS = [
     { name: "Pinagbobong", keys: ["pinagbobong"] },
     { name: "Quinale Cabasan", keys: ["quinalecabasan", "quinale"] },
     { name: "Quinastillojan", keys: ["quinastillojan"] },
-    { name: "San Miguel Island", keys: ["rawis", "sagurong", "visita", "sanmiguel", "maritime", "maritimeport"] },
+    { name: "San Miguel Island", keys: ["agnas", "hacienda", "rawis", "sagurong", "visita", "sanmiguel", "maritime", "maritimeport"] },
     { name: "Salvacion", keys: ["salvacion"] },
     { name: "San Antonio", keys: ["sanantonio"] },
     { name: "San Carlos", keys: ["sancarlos"] },
