@@ -27,7 +27,7 @@ const CAUSE_KEYWORDS = {
     "Medical Emergency": {
         "Cardiac/heart-related": ["cardiac", "heart attack", "heart problem", "cardiac arrest", "chest pain"],
         "Stroke": ["stroke", "suspected stroke", "signs of stroke", "possible stroke"],
-        "Breathing difficulty": ["difficulty of breathing", "difficulty on breathing", "difficulty breathing", "difficulty in breathing", "shortness of breath", "can't breathe", "cannot breathe", "hard to breathe", "breathing problem", "breathing difficulty", "respiratory problem", "hyperventilation", "hyperventilating", "hypervent", "hyperventilation episode", "asthma", "asthma attack", "asthmatic", "asthmatic attack", "panic attack", "panic attacks"],
+        "difficulty of breathing": ["difficulty of breathing", "difficulty on breathing", "difficulty breathing", "difficulty in breathing", "shortness of breath", "can't breathe", "cannot breathe", "hard to breathe", "breathing problem", "breathing difficulty", "respiratory problem", "hyperventilation", "hyperventilating", "hypervent", "hyperventilation episode", "asthma", "asthma attack", "asthmatic", "asthmatic attack", "panic attack", "panic attacks"],
         "Seizure": ["seizure", "seizures", "convulsion", "convulsions", "convulsing", "epilepsy", "epileptic", "epileptic seizure", "epileptic attack", "seizure disorder"],
         "Unconsciousness": ["unconscious", "unresponsive", "not responding", "unconscious person", "lost consciousness", "loss of consciousness", "lost of consciousness"],
         "Fainting": ["fainted", "fainting", "passed out", "pass out", "felt faint"],
@@ -250,8 +250,7 @@ const BARANGAYS = [
     { name: "Pinagbobong", keys: ["pinagbobong"] },
     { name: "Quinale Cabasan", keys: ["quinalecabasan", "quinale"] },
     { name: "Quinastillojan", keys: ["quinastillojan"] },
-    { name: "Rawis", keys: ["rawis"] },
-    { name: "Sagurong", keys: ["sagurong"] },
+    { name: "San Miguel Island", keys: ["rawis", "sagurong", "visita", "sanmiguel", "maritime", "maritimeport"] },
     { name: "Salvacion", keys: ["salvacion"] },
     { name: "San Antonio", keys: ["sanantonio"] },
     { name: "San Carlos", keys: ["sancarlos"] },
@@ -267,8 +266,7 @@ const BARANGAYS = [
     { name: "Tagas", keys: ["tagas"] },
     { name: "Tayhi", keys: ["tayhi"] },
     { name: "TNHS", keys: ["tnhs"] },
-    { name: "Visita", keys: ["visita"] },
-    { name: "Ziga", keys: ["ziga"] }
+    { name: "Ziga Avenue", keys: ["ziga"] }
 ];
 
 function normalizePlaces(value) {
