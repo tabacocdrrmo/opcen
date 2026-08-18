@@ -27,7 +27,7 @@ const CAUSE_KEYWORDS = {
     "Medical Emergency": {
         "Cardiac/heart-related": ["cardiac", "heart attack", "heart problem", "cardiac arrest", "chest pain"],
         "Stroke": ["stroke", "suspected stroke", "signs of stroke", "possible stroke"],
-        "difficulty of breathing": ["difficulty of breathing", "difficulty on breathing", "difficulty breathing", "difficulty in breathing", "shortness of breath", "can't breathe", "cannot breathe", "hard to breathe", "breathing problem", "breathing difficulty", "respiratory problem", "hyperventilation", "hyperventilating", "hypervent", "hyperventilation episode", "asthma", "asthma attack", "asthmatic", "asthmatic attack", "panic attack", "panic attacks"],
+        "Difficulty of Breathing": ["difficulty of breathing", "difficulty on breathing", "difficulty breathing", "difficulty in breathing", "shortness of breath", "can't breathe", "cannot breathe", "hard to breathe", "breathing problem", "breathing difficulty", "respiratory problem", "hyperventilation", "hyperventilating", "hypervent", "hyperventilation episode", "asthma", "asthma attack", "asthmatic", "asthmatic attack", "panic attack", "panic attacks"],
         "Seizure": ["seizure", "seizures", "convulsion", "convulsions", "convulsing", "epilepsy", "epileptic", "epileptic seizure", "epileptic attack", "seizure disorder"],
         "Unconsciousness": ["unconscious", "unresponsive", "not responding", "unconscious person", "lost consciousness", "loss of consciousness", "lost of consciousness"],
         "Fainting": ["fainted", "fainting", "passed out", "pass out", "felt faint"],
