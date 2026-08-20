@@ -59,3 +59,10 @@
         padding-bottom: 0;
     }
 }
+
+@media (max-width: 576px) {
+    #tab-profile .card-title { font-size: 0.95rem; }
+    #tab-profile .card { font-size: 0.78rem; }
+    #tab-profile .card .text-muted { font-size: 0.62rem; }
+    #tab-profile .card .fw-medium { font-size: 0.8rem; }
+}
