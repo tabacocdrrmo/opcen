@@ -13,6 +13,8 @@
         [data-bs-toggle="collapse"].collapsed .fa-chevron-down{transform:rotate(-90deg)}
         .pcr-filter-active{background:#fff3cd !important;border:1px solid #ffc107 !important;box-shadow:0 0 0 1px #ffc107 !important}
         .pcr-filter-active .fs-3{color:#b8860b}
+        .shift-filter-active{background:#e7f1ff !important;border:1px solid #0d6efd !important;box-shadow:0 0 0 1px #0d6efd !important}
+        .shift-filter-active .fs-3{color:#0a58ca}
         @media (max-width: 575.98px) {
             .patients-table{table-layout:fixed;min-width:980px}
             .patients-table th:nth-child(1),.patients-table td:nth-child(1){width:4%}
@@ -264,6 +266,30 @@
                     </div>
                 </div>
             </div>
+            <div class="col-4 col-md-2">
+                <div class="card shadow-sm text-center" id="respShiftCard1" role="button" onclick="toggleShiftFilter(1)" title="Click to show only entries in the 1st shift" style="cursor:pointer">
+                    <div class="card-body py-3">
+                        <div class="fs-3 fw-bold" id="respStatShift1">—</div>
+                        <div class="text-muted small text-uppercase">1st Shift</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-4 col-md-2">
+                <div class="card shadow-sm text-center" id="respShiftCard2" role="button" onclick="toggleShiftFilter(2)" title="Click to show only entries in the 2nd shift" style="cursor:pointer">
+                    <div class="card-body py-3">
+                        <div class="fs-3 fw-bold" id="respStatShift2">—</div>
+                        <div class="text-muted small text-uppercase">2nd Shift</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-4 col-md-2">
+                <div class="card shadow-sm text-center" id="respShiftCard3" role="button" onclick="toggleShiftFilter(3)" title="Click to show only entries in the 3rd shift" style="cursor:pointer">
+                    <div class="card-body py-3">
+                        <div class="fs-3 fw-bold" id="respStatShift3">—</div>
+                        <div class="text-muted small text-uppercase">3rd Shift</div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Responder Log -->
@@ -272,9 +298,7 @@
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="card-title mb-0">Activity Log</h5>
                 </div>
-                <div id="pcrFilterNote" class="alert alert-warning py-1 px-3 small d-none mb-3">
-                    Showing only sitreps with your PCR. Click "PCR Made" again to clear.
-                </div>
+                <div id="activityFilterNote" class="alert alert-warning py-1 px-3 small d-none mb-3"></div>
                 <div class="row g-2 mb-3">
                     <div class="col-md-3">
                         <label class="form-label small text-muted mb-1" for="responderSearch">Search</label>

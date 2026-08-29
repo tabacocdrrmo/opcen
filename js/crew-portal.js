@@ -439,18 +439,92 @@ let logCache = null;
 let logLoading = false;
 let pcrFilterActive = false;
 let pcrSitreps = null;
+let shiftFilterActive = 0;
 let logPage = 1;
 const LOG_PAGE_SIZE = 10;
 
 const normId = s => String(s || "").trim().toLowerCase();
 
-function formatResponderDate(callDate) {
-    let out = callDate || "";
-    if (out) {
-        const d = new Date(out);
-        out = isNaN(d.getTime()) ? out : d.toLocaleDateString();
+const pad2 = n => String(n).padStart(2, "0");
+
+// Renders a YYYY-MM-DD (or Date) value as MM/DD/YYYY for display. Falls back to
+// the raw input when it cannot be parsed.
+function formatUnderscoreDate(v) {
+    if (v instanceof Date) {
+        if (isNaN(v.getTime())) return "";
+        return pad2(v.getMonth() + 1) + "/" + pad2(v.getDate()) + "/" + v.getFullYear();
     }
-    return out;
+    let s = String(v || "").trim();
+    if (!s) return "";
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+    if (m) return pad2(Number(m[2])) + "/" + pad2(Number(m[3])) + "/" + m[1];
+    const d = new Date(s);
+    if (isNaN(d.getTime())) return String(v);
+    return pad2(d.getMonth() + 1) + "/" + pad2(d.getDate()) + "/" + d.getFullYear();
+}
+
+// Renders a "YYYY-MM-DD HH:MM" datetime value as "MM/DD/YYYY HH:MM".
+function formatRecordedAt(v) {
+    let s = String(v || "").trim();
+    if (!s) return "";
+    const m = /^(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2}(?::\d{2})?)/.exec(s);
+    if (m) return formatUnderscoreDate(m[1]) + " " + m[2];
+    return s;
+}
+
+function formatResponderDate(callDate) {
+    return formatUnderscoreDate(callDate) || "";
+}
+
+// Returns a call date as a local "YYYY-MM-DD" key for comparison/display.
+// - Plain YYYY-MM-DD values are used as-is (no Date parsing -> no timezone shift).
+// - Anything else is parsed with local date parts, recovering the correct day
+//   even when the source serialized it as a UTC ISO instant (which would
+//   otherwise land on the previous day in +08:00 timezones).
+function callDateKey(v) {
+    if (v instanceof Date) {
+        if (isNaN(v.getTime())) return "";
+        return "" + v.getFullYear() + "-" + pad2(v.getMonth() + 1) + "-" + pad2(v.getDate());
+    }
+    let s = String(v || "").trim();
+    if (!s) return "";
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+    if (m) return m[1] + "-" + m[2] + "-" + m[3];
+    const d = new Date(s);
+    if (isNaN(d.getTime())) return "";
+    return "" + d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+}
+
+// Returns the shift (1, 2, or 3) an "HH:MM" time falls in, or null if unparseable.
+//   1st: 08:00 - <16:00   |   2nd: 16:00 - <00:00   |   3rd: 00:00 - <08:00
+function callTimeShift(hhmm) {
+    const h = parseInt(String(hhmm || ""), 10);
+    if (isNaN(h)) return null;
+    if (h >= 8 && h < 16) return 1;
+    if (h >= 16) return 2;
+    return 3; // 00:00 - 07:59
+}
+
+// Maps SITREP # -> Call Time ("HH:MM") from the loaded sitrep rows, so a
+// responder-log row can be assigned to a shift by the incident's call time.
+let sitrepCallTimeMap = null;
+function getSitrepCallTimeMap() {
+    if (!sitrepCallTimeMap) {
+        sitrepCallTimeMap = new Map();
+        (sitrepRows || []).forEach(r => {
+            sitrepCallTimeMap.set(normId(r["SITREP #"]), String(r["Call Time"] || ""));
+        });
+    }
+    return sitrepCallTimeMap;
+}
+
+// The time used to bucket a responder-log row into a shift: the incident's Call
+// Time when available, falling back to the row's Recorded At time.
+function logRowTime(r) {
+    const ct = getSitrepCallTimeMap().get(normId(r.sitrepNo));
+    if (ct && /^\d{1,2}:\d{2}/.test(ct)) return ct;
+    const rt = /(\d{2}):(\d{2})/.exec(String(r.recordedAt || ""));
+    return rt ? rt[1] + ":" + rt[2] : "";
 }
 
 const GENERATIONAL_SUFFIXES = new Set(["i", "ii", "iii", "iv", "v", "jr", "sr"]);
@@ -597,10 +671,10 @@ function getFilteredResponderLog() {
 
     return responderLogRows.filter(r => {
         if (pcrFilterActive && pcrSitreps && !pcrSitreps.has(normId(r.sitrepNo))) return false;
+        if (shiftFilterActive && callTimeShift(logRowTime(r)) !== shiftFilterActive) return false;
         if (nature && (r.nature || "").trim() !== nature) return false;
         if (dateFrom || dateTo) {
-            const d = new Date(r.callDate);
-            const day = isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 10);
+            const day = callDateKey(r.callDate);
             if (dateFrom && (!day || day < dateFrom)) return false;
             if (dateTo && (!day || day > dateTo)) return false;
         }
@@ -650,7 +724,7 @@ function renderResponderLog() {
     const start = (logPage - 1) * LOG_PAGE_SIZE;
     tbody.innerHTML = filtered.slice(start, start + LOG_PAGE_SIZE).map(r => `<tr class="clickable-row" onclick="showSitrepDetail('${escapeHtml(r.sitrepNo)}')" title="View full SITREP detail">
         <td data-label="SITREP #">${escapeHtml(r.sitrepNo)}</td>
-        <td data-label="Recorded At">${escapeHtml(r.recordedAt)}</td>
+        <td data-label="Recorded At">${escapeHtml(formatRecordedAt(r.recordedAt))}</td>
         <td data-label="Call Date">${escapeHtml(formatResponderDate(r.callDate))}</td>
         <td data-label="Nature of Incident">${escapeHtml(r.nature)}</td>
         <td data-label="Name">${escapeHtml(r.name)}</td>
@@ -668,6 +742,15 @@ let pcrStatToken = 0;
 function updateResponderStats(filtered) {
     const sitreps = new Set(filtered.map(r => normId(r.sitrepNo)).filter(Boolean));
     document.getElementById("respStatSitreps").innerText = sitreps.size;
+
+    const shiftCounts = [0, 0, 0];
+    filtered.forEach(r => {
+        const s = callTimeShift(logRowTime(r));
+        if (s) shiftCounts[s - 1]++;
+    });
+    document.getElementById("respStatShift1").innerText = shiftCounts[0];
+    document.getElementById("respStatShift2").innerText = shiftCounts[1];
+    document.getElementById("respStatShift3").innerText = shiftCounts[2];
 
     const token = ++pcrStatToken;
     countPcrMade(getEmployeeNameVariants(profileData), sitreps).then(c => {
@@ -702,6 +785,25 @@ async function buildPcrSitreps(nameVariants) {
     }
 }
 
+// Updates the single activity-log filter note to reflect whatever combination
+// of the PCR and shift filters is currently active.
+function updateActivityFilterNote() {
+    const note = document.getElementById("activityFilterNote");
+    if (!note) return;
+    const parts = [];
+    if (pcrFilterActive) parts.push("Filtered by: PCR Made");
+    if (shiftFilterActive) {
+        const shiftNames = ["1st Shift", "2nd Shift", "3rd Shift"];
+        parts.push("Filtered by: " + shiftNames[shiftFilterActive - 1]);
+    }
+    if (parts.length) {
+        note.textContent = parts.join(" ") + " · Click the card again to clear.";
+        note.classList.remove("d-none");
+    } else {
+        note.classList.add("d-none");
+    }
+}
+
 async function togglePcrFilter() {
     if (!pcrSitreps) {
         const s = await buildPcrSitreps(getEmployeeNameVariants(profileData));
@@ -710,8 +812,16 @@ async function togglePcrFilter() {
     }
     pcrFilterActive = !pcrFilterActive;
     document.getElementById("respPcrCard").classList.toggle("pcr-filter-active", pcrFilterActive);
-    const note = document.getElementById("pcrFilterNote");
-    if (note) note.classList.toggle("d-none", !pcrFilterActive);
+    updateActivityFilterNote();
+    renderResponderLog();
+}
+
+function toggleShiftFilter(shift) {
+    shiftFilterActive = shiftFilterActive === shift ? 0 : shift;
+    ["respShiftCard1", "respShiftCard2", "respShiftCard3"].forEach((id, i) => {
+        document.getElementById(id).classList.toggle("shift-filter-active", shiftFilterActive === i + 1);
+    });
+    updateActivityFilterNote();
     renderResponderLog();
 }
 
@@ -728,9 +838,8 @@ function fmt(v) {
         }
     }
     if (!(v instanceof Date) || isNaN(v)) return v;
-    const p = n => String(n).padStart(2, "0");
-    if (v.getFullYear() >= 2000) return `${v.getFullYear()}-${p(v.getMonth() + 1)}-${p(v.getDate())}`;
-    return `${p(v.getHours())}:${p(v.getMinutes())}`;
+    if (v.getFullYear() >= 2000) return pad2(v.getMonth() + 1) + "/" + pad2(v.getDate()) + "/" + v.getFullYear();
+    return `${pad2(v.getHours())}:${pad2(v.getMinutes())}`;
 }
 
 function splitSlots(s) {
@@ -867,7 +976,7 @@ function renderSitrepDetail(row) {
             tile("Incident Caller / Informant", e(row["Incident Caller / Informant"])) +
             tile("Contact No.", e(row["Contact No."])))}
         ${section("fa-solid fa-clock", "Call & Response Times",
-            tile("Call Date", e(fmt(row["Call Date"]))) +
+            tile("Call Date", e(formatUnderscoreDate(row["Call Date"]))) +
             tile("Call Time", e(fmt(row["Call Time"]))) +
             tile("Dispatched Time", e(fmt(row["Dispatched Time"]))) +
             tile("Arrival at Scene", e(fmt(row["Arrival at Scene"]))) +
@@ -921,9 +1030,14 @@ function resetResponderFilters() {
     if (pcrFilterActive) {
         pcrFilterActive = false;
         document.getElementById("respPcrCard").classList.remove("pcr-filter-active");
-        const note = document.getElementById("pcrFilterNote");
-        if (note) note.classList.add("d-none");
     }
+    if (shiftFilterActive) {
+        shiftFilterActive = 0;
+        ["respShiftCard1", "respShiftCard2", "respShiftCard3"].forEach(id => {
+            document.getElementById(id).classList.remove("shift-filter-active");
+        });
+    }
+    updateActivityFilterNote();
     logPage = 1;
     renderResponderLog();
 }
