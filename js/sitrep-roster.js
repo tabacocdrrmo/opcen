@@ -6,7 +6,7 @@ const SITREP_TEAMS = {
     Alpha: {
         sic: ["Ramon D. Rodriguez"],
         operator: ["Luis C. Borlagdan", "Vicente B. Carale Jr."],
-        drivers: ["Al C. Asis", "Jomar B. Belo", "Eugenio S. Cao Jr.", "Warren B. Henson", "Antonio B. Buison Jr."],
+        drivers: ["Al C. Asis", "Marlon B. Belda", "Eugenio S. Cao Jr.", "Warren B. Henson", "Antonio B. Buison Jr."],
         responders: [
             "Wynel B. De Mesa", "Vicente B. Carale Jr.", "Jaime V. Buensoceso",
             "Ferdinand P. San Juan", "Roberto S. Villegas", "Shay Marie Luz R. Benavides",
@@ -28,7 +28,7 @@ const SITREP_TEAMS = {
     Charlie: {
         sic: ["Romar B. Bombon"],
         operator: ["Dennis R. Flores", "Imelda B. Castillo"],
-        drivers: ["Jonel A. Buendia", "Angelo B. Baraero", "Marlon B. Belda", "Jophen B. Bragais", "Pablito M. Amortizado Jr."],
+        drivers: ["Jonel A. Buendia", "Angelo B. Baraero", "Jomar B. Belo", "Jophen B. Bragais", "Pablito M. Amortizado Jr."],
         responders: [
             "Herman B. Bonaobra", "Ero B. Obreros", "Noah M. Altavano",
             "Pedro G. Boringot, I", "Francis R. Tañang", "Janine Eve Q. Base",
