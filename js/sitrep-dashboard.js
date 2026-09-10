@@ -406,7 +406,7 @@ async function loadSitrepDashboard(force) {
 }
 
 function populateSitrepFilters() {
-    const teams = uniqueSorted(sitrepRows.map(r => String(r["Assigned Team"] || "").trim()).filter(Boolean));
+    const teams = uniqueSorted(sitrepRows.flatMap(r => teamNames(r["Assigned Team"])));
     const natures = uniqueSorted(sitrepRows.map(r => String(r["Nature of Incident"] || "").trim()).filter(Boolean));
     const barangays = uniqueSorted(sitrepRows.flatMap(r => normalizePlaces(placeText(r))).filter(Boolean));
     fillSelect("sitrepTeamFilter", teams, "All Teams");
@@ -507,7 +507,7 @@ function getFilteredSitreps(opts) {
         const d = String(r["Call Date"] || "");
         if (from && d < from) return false;
         if (to && d > to) return false;
-        if (team && String(r["Assigned Team"] || "").trim() !== team) return false;
+        if (team && !teamMatches(r["Assigned Team"], team)) return false;
         if (nature && String(r["Nature of Incident"] || "").trim() !== nature) return false;
         if (barangay && !excludePlace && !normalizePlaces(placeText(r)).includes(barangay)) return false;
         if (!matchesCause(r, cause)) return false;
@@ -650,7 +650,7 @@ function buildPreventiveSummary(rows) {
         const d = dateDayOfWeek(r["Call Date"]);
         if (d != null) days.push(d);
         const t = String(r["Assigned Team"] || "").trim();
-        if (t) teams.push(t);
+        if (t) teams.push(...teamNames(t));
     });
 
     const parts = [];
@@ -1009,12 +1009,12 @@ function exportSitrepCsv() {
     if (!sitrepRows.length) return alert("No SITREP data to export.");
     const headers = [
         "SITREP #", "Recorded At", "Call Date", "Call Time", "Nature of Incident",
-        "Assigned Team", "Shift-In-Charge (SIC)", "Operator in Charge", "Place of Incident", "Municipality",
+        "Assigned Team", "Shift-In-Charge (SIC)", "Dispatch Operator", "Place of Incident", "Municipality",
         "Patient", "Sex", "Age", "Address", "Injuries", "Victim Status", "Initial Impression",
         "Disposition", "PCR By", "Remarks", "Causes"
     ];
     const rows = getSitrepTableRows().map(r => {
-        const vals = headers.slice(0, -1).map(h => h === "Place of Incident" ? normalizePlaces(placeText(r)).join(", ") : (r[h] != null ? r[h] : ""));
+        const vals = headers.slice(0, -1).map(h => h === "Place of Incident" ? normalizePlaces(placeText(r)).join(", ") : h === "Dispatch Operator" ? (r["Operator in Charge"] != null ? r["Operator in Charge"] : "") : (r[h] != null ? r[h] : ""));
         vals.push(tagSitrep(r).join("; "));
         return vals;
     });
@@ -1120,7 +1120,7 @@ function renderSitrepReport(row) {
                 <th>Assigned Team</th><td>${esc(row["Assigned Team"])}</td></tr>
             ${row["Cause of Incident"] ? `<tr><th>Cause of Incident</th><td colspan="3">${esc(row["Cause of Incident"])}</td></tr>` : ""}
             <tr><th>Shift-In-Charge</th><td>${esc(row["Shift-In-Charge (SIC)"])}</td>
-                <th>Operator in Charge</th><td>${esc(row["Operator in Charge"])}</td></tr>
+                <th>Dispatch Operator</th><td>${esc(row["Operator in Charge"])}</td></tr>
             <tr><th>Dispatched Resource(s)</th><td colspan="3">${splitJoined(row["Dispatched Resources"]).map(esc).join(", ")}</td></tr>
             <tr><th>Incident Caller / Informant</th><td>${esc(row["Incident Caller / Informant"])}</td>
                 <th>Contact No.</th><td>${esc(row["Contact No."])}</td></tr>

@@ -55,7 +55,7 @@ function teamFilteredRows() {
     const to = document.getElementById("teamDateTo") ? document.getElementById("teamDateTo").value : "";
     return teamDashboardRows.filter(r => {
         const d = String(r["Call Date"] || "");
-        if (team && String(r["Assigned Team"] || "").trim() !== team) return false;
+        if (team && !teamMatches(r["Assigned Team"], team)) return false;
         if (from && d < from) return false;
         if (to && d > to) return false;
         return true;
@@ -67,7 +67,7 @@ function teamStatsOf(team) {
     const to = document.getElementById("teamDateTo") ? document.getElementById("teamDateTo").value : "";
     const rows = teamDashboardRows.filter(r => {
         const d = String(r["Call Date"] || "");
-        if (String(r["Assigned Team"] || "").trim() !== team) return false;
+        if (!teamMatches(r["Assigned Team"], team)) return false;
         if (from && d < from) return false;
         if (to && d > to) return false;
         return true;

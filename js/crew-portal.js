@@ -970,7 +970,7 @@ function renderSitrepDetail(row) {
             tile("Cause of Incident", e(row["Cause of Incident"] || "")) +
             tile("Assigned Team", e(row["Assigned Team"])) +
             tile("Shift-In-Charge", e(row["Shift-In-Charge (SIC)"])) +
-            tile("Operator in Charge", e(row["Operator in Charge"])) +
+            tile("Dispatch Operator", e(row["Operator in Charge"])) +
             tile("Dispatched Resource(s)", splitJoined(row["Dispatched Resources"]).map(e).join(", "), true) +
             tile("Involved Vehicle Type", splitJoined(row["Involved Vehicle Type"]).map(e).join(", "), true) +
             tile("Incident Caller / Informant", e(row["Incident Caller / Informant"])) +

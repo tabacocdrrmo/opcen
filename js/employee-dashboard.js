@@ -269,7 +269,9 @@ function renderEmpCharts(rows, n, emp) {
         options: { ...baseOpts(), indexAxis: "y" }
     });
 
-    const teams = countBy(rows, "Assigned Team");
+    const teamCounts = {};
+    rows.forEach(r => teamNames(r["Assigned Team"]).forEach(t => teamCounts[t] = (teamCounts[t] || 0) + 1));
+    const teams = Object.entries(teamCounts).sort((a, b) => b[1] - a[1]);
     buildChart("empTeamChart", {
         type: "bar",
         data: {

@@ -72,6 +72,16 @@ function splitJoined(v) {
     return String(v || "").split(/[;,]/).map(s => s.trim()).filter(Boolean);
 }
 
+// "Assigned Team" may hold a single team or several (e.g. "Alpha, Charlie")
+// for multi-team responses. These helpers treat the string as a team list.
+function teamNames(v) {
+    return splitJoined(v);
+}
+
+function teamMatches(v, team) {
+    return teamNames(v).includes(team);
+}
+
 // normalized name -> { name, teams:Set, roles:Set }
 const SITREP_ROSTER_MAP = (function () {
     const map = {};
