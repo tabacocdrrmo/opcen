@@ -443,6 +443,9 @@ let shiftFilterActive = 0;
 let logPage = 1;
 const LOG_PAGE_SIZE = 10;
 
+// Session cache of team-summary aggregates, keyed by team|from|to.
+const crewReportCache = {};
+
 const normId = s => String(s || "").trim().toLowerCase();
 
 const pad2 = n => String(n).padStart(2, "0");
@@ -850,110 +853,244 @@ function splitJoined(s) {
     return String(s ?? "").split(/;\s*|,\s*|\n/).map(x => x.trim()).filter(Boolean);
 }
 
-// A sitrep involves the logged-in employee when any of its personnel fields
-// (Responders / Drivers / PCR By / Shift-In-Charge / Dispatch Operator) matches
-// their name. With no profile or no usable name variants, everything is kept.
-function sitrepInvolvesEmployee(r) {
+// ---- Team Summary form (printable "TEAM ___" report) ----
+
+// Is the logged-in employee among this sitrep's personnel fields?
+function employeeInSitrep(r) {
     const variants = getEmployeeNameVariants(profileData);
-    if (variants.size === 0) return true;
-    const fields = ["Responders", "Drivers", "PCR By", "Shift-In-Charge (SIC)", "Operator in Charge"];
-    return fields.some(f =>
-        String(r[f] || "").split(/[;,]/).some(s => {
-            const name = (s || "").trim();
-            return name && (variants.has(normalizeName(name)) || nameMatchesEmployee(name, profileData));
+    if (variants.size === 0) return false;
+    return ["Responders", "Drivers", "PCR By", "Shift-In-Charge (SIC)", "Operator in Charge"].some(f =>
+        splitNames(r[f]).some(s => {
+            const n = normalizeName(s);
+            return n && (variants.has(n) || nameMatchesEmployee(s, profileData));
         })
     );
 }
 
-function sitrepPlace(r) {
-    return [String(r["Barangay"] || "").trim(), String(r["Place / Landmark"] || "").trim()].filter(Boolean).join(", ");
+// The team the employee responds with most, from the Assigned Team on their own
+// SITREP records ("" when they have no records).
+function modeTeamOfEmployeeRecords() {
+    const counts = {};
+    const order = { Alpha: 0, Bravo: 1, Charlie: 2 };
+    (sitrepRows || []).forEach(r => {
+        if (!employeeInSitrep(r)) return;
+        teamNames(r["Assigned Team"]).forEach(t => { if (t) counts[t] = (counts[t] || 0) + 1; });
+    });
+    const best = Object.keys(counts)
+        .sort((a, b) => counts[b] - counts[a] || (order[a] ?? 99) - (order[b] ?? 99))[0];
+    return best || "";
 }
 
-// The sitreps that show in the employee's report: only their own records,
-// constrained by the Activity Log filters (search, incident type, date range)
-// and any active PCR / shift card.
-function getFilteredSitrepRecords() {
-    const query = document.getElementById("responderSearch").value.trim().toLowerCase();
-    const nature = document.getElementById("responderNatureFilter").value;
-    const dateFrom = document.getElementById("responderDateFrom").value;
-    const dateTo = document.getElementById("responderDateTo").value;
+// Detects the employee's team from the roster that fills the SITREP form
+// dropdowns (unique team when possible), falling back to the team they respond
+// with most across their own records. "" when undetermined.
+function detectEmployeeTeam() {
+    const name = profileData
+        ? [profileData.first_name, profileData.middle_name, profileData.last_name].filter(Boolean).join(" ").trim()
+        : "";
+    if (name) {
+        const entry = rosterEntry(name);
+        if (entry && entry.teams.size === 1) return [...entry.teams][0];
+    }
+    return modeTeamOfEmployeeRecords();
+}
+
+// Sitreps that feed the team form: the team's rows restricted to the Activity
+// Log date range. Search / incident type / PCR / shift cards are intentionally
+// ignored so the summary totals stay correct. With no detected team (blank),
+// falls back to the employee's own records so the counts stay meaningful.
+function getTeamSitrepScope(team) {
+    const from = document.getElementById("responderDateFrom").value;
+    const to = document.getElementById("responderDateTo").value;
     return (sitrepRows || []).filter(r => {
-        if (!sitrepInvolvesEmployee(r)) return false;
-        if (pcrFilterActive && pcrSitreps && !pcrSitreps.has(normId(r["SITREP #"]))) return false;
-        if (shiftFilterActive && callTimeShift(String(r["Call Time"] || "").slice(0, 5)) !== shiftFilterActive) return false;
-        if (nature && (r["Nature of Incident"] || "").trim() !== nature) return false;
+        if (team ? !teamNames(r["Assigned Team"]).includes(team) : !employeeInSitrep(r)) return false;
         const day = callDateKey(r["Call Date"]);
-        if (dateFrom && (!day || day < dateFrom)) return false;
-        if (dateTo && (!day || day > dateTo)) return false;
-        if (query) {
-            const hay = [r["SITREP #"], r["Nature of Incident"], r["Assigned Team"], sitrepPlace(r),
-                r["Cause of Incident"], r["Patient"], r["Responders"], r["Drivers"]]
-                .join(" ").toLowerCase();
-            if (!hay.includes(query)) return false;
-        }
+        if (from && (!day || day < from)) return false;
+        if (to && (!day || day > to)) return false;
         return true;
     });
 }
 
-// Builds the tabulated Response Activity Report (only the employee's filtered
-// records) into the report modal, which is then printable / saveable as PDF.
-async function openCrewReport() {
-    try {
-        await loadSitrepRows();
-        const filtered = getFilteredSitrepRecords().sort((a, b) => logSortValue(b["SITREP #"]) - logSortValue(a["SITREP #"]));
+function splitNames(v) {
+    return String(v || "").split(/[;,]/).map(s => s.trim()).filter(Boolean);
+}
 
-        const from = document.getElementById("responderDateFrom").value;
-        const to = document.getElementById("responderDateTo").value;
-        const period = (from || to) ? ((from || "…") + " to " + (to || "…")) : "All periods";
+// date input value "YYYY-MM-DD" -> "MM/DD/YYYY" (null when blank).
+function formatReportPeriod(v) {
+    if (!v) return null;
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v);
+    if (m) return m[2] + "/" + m[3] + "/" + m[1];
+    return v;
+}
 
-        const notes = [];
-        const query = document.getElementById("responderSearch").value.trim();
-        if (query) notes.push('Search: "' + query + '"');
-        if (pcrFilterActive) notes.push("PCR Made");
-        if (shiftFilterActive) notes.push(["1st Shift", "2nd Shift", "3rd Shift"][shiftFilterActive - 1]);
+// Whole-team aggregate counts for the Summary form (via the edge function, so
+// teammates' raw records are never exposed to the client).
+async function fetchTeamSummary(team, from, to) {
+    const data = await invokeResponderData("teamSummary", { team, from, to });
+    if (!data.ok) throw new Error(data.error || "Failed to load team summary");
+    return data;
+}
 
-        const name = profileData
-            ? [profileData.first_name, profileData.middle_name, profileData.last_name].filter(Boolean).join(" ")
-            : (currentActiveUser || "Employee");
+// Blank-team fallback: same counts computed client-side over the employee's own
+// records (the only data the crew portal normally has).
+function clientSideSummary(rows) {
+    const responderCounts = {};
+    const drivers = [];
+    rows.forEach(r => {
+        const rescueNames = new Set();
+        const pcrNames = new Set();
+        ["Responders", "Drivers", "Shift-In-Charge (SIC)", "Operator in Charge"].forEach(f =>
+            splitNames(r[f]).forEach(s => {
+                const n = normalizeName(s);
+                if (n) rescueNames.add(n);
+            })
+        );
+        splitNames(r["PCR By"]).forEach(s => {
+            const n = normalizeName(s);
+            if (n) pcrNames.add(n);
+        });
+        rescueNames.forEach(n => {
+            if (!responderCounts[n]) responderCounts[n] = { rescue: 0, pcr: 0 };
+            responderCounts[n].rescue++;
+        });
+        pcrNames.forEach(n => {
+            if (!responderCounts[n]) responderCounts[n] = { rescue: 0, pcr: 0 };
+            responderCounts[n].pcr++;
+        });
+        splitNames(r["Drivers"]).forEach(d => {
+            const n = normalizeName(d);
+            if (n && !drivers.some(x => normalizeName(x.name) === n)) {
+                drivers.push({ name: d, rescue: 0, pcr: 0 });
+            }
+        });
+    });
+    drivers.forEach(d => {
+        const c = responderCounts[normalizeName(d.name)];
+        if (c) { d.rescue = c.rescue; d.pcr = c.pcr; }
+    });
+    return { responderCounts, drivers };
+}
 
-        const rowsHtml = filtered.length
-            ? filtered.map(r => {
-                const patients = splitSlots(r["Patient"]).filter(Boolean).length;
-                const causes = splitJoined(r["Cause of Incident"]).join(", ");
-                return `<tr>
-                    <td>${escapeHtml(r["SITREP #"])}</td>
-                    <td>${escapeHtml(formatResponderDate(r["Call Date"]))}</td>
-                    <td>${escapeHtml(formatRecordedAt(r["Recorded At"]))}</td>
-                    <td>${escapeHtml(r["Nature of Incident"])}</td>
-                    <td>${escapeHtml(r["Assigned Team"])}</td>
-                    <td>${escapeHtml(sitrepPlace(r))}</td>
-                    <td class="text-center">${patients}</td>
-                    <td>${escapeHtml(String(r["Victim Status"] || "").slice(0, 60))}</td>
-                    <td>${escapeHtml(causes) || "&mdash;"}</td>
-                </tr>`;
-            }).join("")
-            : '<tr><td colspan="9" class="text-center text-muted">No records match the current filters.</td></tr>';
+function renderTeamForm(team, va, me, responderCounts, drivers, totalRows) {
+    const from = formatReportPeriod(document.getElementById("responderDateFrom").value);
+    const to = formatReportPeriod(document.getElementById("responderDateTo").value);
+    const period = "FROM " + (from || "________") + " TO " + (to || "________") + " 2026";
 
-        document.getElementById("crewReportContent").innerHTML = `
-            <div class="crew-report-meta">
-                <div>Prepared for: <strong>${escapeHtml(name)}</strong></div>
-                <div>Period: <strong>${escapeHtml(period)}</strong> &middot; Records: <strong>${filtered.length}</strong></div>
-                ${notes.length ? `<div class="small text-muted">Filtered by: ${escapeHtml(notes.join(" · "))}</div>` : ""}
-            </div>
-            <div class="table-responsive">
-                <table class="table table-sm table-bordered align-middle crew-report-table">
-                    <thead><tr>
-                        <th>SITREP #</th><th>Call Date</th><th>Recorded At</th><th>Nature</th><th>Team</th><th>Place</th><th>Patients</th><th>Victim Status</th><th>Causes</th>
-                    </tr></thead>
-                    <tbody>${rowsHtml}</tbody>
+    const responders = (SITREP_TEAMS[team] && SITREP_TEAMS[team].responders) || [];
+    const responderRows = responders.map(name => {
+        const c = responderCounts[normalizeName(name)] || { rescue: 0, pcr: 0 };
+        return { name, rescue: c.rescue, pcr: c.pcr };
+    }).filter(x => x.rescue > 0 || x.pcr > 0).map(x => `
+        <tr>
+            <td>${escapeHtml(x.name)}</td>
+            <td class="text-center">${x.rescue}</td>
+            <td class="text-center">${x.pcr}</td>
+        </tr>`).join("");
+
+    const driverRows = (drivers || []).filter(d => (d.rescue || 0) > 0 || (d.pcr || 0) > 0).map(d => `
+        <tr>
+            <td>${escapeHtml(d.name)}</td>
+            <td class="text-center">${d.rescue || 0}</td>
+            <td class="text-center">${d.pcr || 0}</td>
+        </tr>`).join("");
+
+    document.getElementById("crewReportContent").innerHTML = `
+            <div class="team-form">
+                <div class="team-form-title">${team ? "TEAM " + escapeHtml(team.toUpperCase()) : "TEAM ______"}</div>
+                <div class="team-form-header">SUMMARY OF RESCUE OPERATION/MEDICAL EMERGENCY</div>
+                <div class="team-form-header">CONDUCTED ${escapeHtml(period)}</div>
+                <div class="team-form-counts">
+                    <span>Vehicular Accident: <strong>${va}</strong></span>
+                    <span>Medical Emergency: <strong>${me}</strong></span>
+                </div>
+                ${totalRows === 0 ? '<div class="team-form-note">No records for the selected team in this period.</div>' : ""}
+                <table class="team-form-table">
+                    <thead>
+                        <tr>
+                            <th>RESPONDERS</th>
+                            <th>NO. OF RESCUE<br>CONDUCTED</th>
+                            <th>NO. OF PCR<br>PREPARED</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${responderRows}
+                        ${driverRows ? `<tr class="team-form-section">
+                            <td>DRIVERS</td>
+                            <td></td>
+                            <td></td>
+                        </tr>${driverRows}` : ""}
+                    </tbody>
                 </table>
             </div>`;
+}
 
-        const modalEl = document.getElementById("crewReportModal");
-        if (modalEl) bootstrap.Modal.getOrCreateInstance(modalEl).show();
+async function buildCrewReport() {
+    try {
+        const team = detectEmployeeTeam();
+        const from = document.getElementById("responderDateFrom").value;
+        const to = document.getElementById("responderDateTo").value;
+        const cacheKey = (team || "?") + "|" + from + "|" + to;
+
+        let va = 0, me = 0, totalRows = 0;
+        let responderCounts = {};
+        let drivers = [];
+
+        if (team) {
+            const cached = crewReportCache[cacheKey];
+            if (cached) {
+                va = cached.va;
+                me = cached.me;
+                totalRows = cached.total;
+                responderCounts = cached.responderCounts;
+                drivers = cached.drivers;
+            } else {
+                const sum = await fetchTeamSummary(team, from, to);
+                va = sum.va || 0;
+                me = sum.me || 0;
+                totalRows = sum.total || 0;
+                const rc = {};
+                (sum.responders || []).forEach(e => {
+                    if (e && e.name) rc[normalizeName(e.name)] = { rescue: e.rescue || 0, pcr: e.pcr || 0 };
+                });
+                const dr = (sum.drivers || []).map(d => ({ name: d.name, rescue: d.rescue || 0, pcr: d.pcr || 0 }));
+                crewReportCache[cacheKey] = { va, me, total: totalRows, responderCounts: rc, drivers: dr };
+                responderCounts = rc;
+                drivers = dr;
+            }
+        } else {
+            const rows = getTeamSitrepScope("");
+            totalRows = rows.length;
+            const combined = r => String(r["Nature of Incident"] || "") + " | " + String(r["Cause of Incident"] || "");
+            va = rows.filter(r => /vehicular accident/i.test(combined(r))).length;
+            me = rows.filter(r => /medical emergency/i.test(combined(r))).length;
+            const cs = clientSideSummary(rows);
+            responderCounts = cs.responderCounts;
+            drivers = cs.drivers;
+        }
+
+        renderTeamForm(team, va, me, responderCounts, drivers, totalRows);
     } catch (err) {
         console.error("Failed to build report:", err);
-        alert("Failed to build report: " + (err.message || err));
+        document.getElementById("crewReportContent").innerHTML =
+            '<div class="text-danger">Failed to build report: ' + escapeHtml(err.message || err) + "</div>";
+    }
+}
+
+async function openCrewReport() {
+    const content = document.getElementById("crewReportContent");
+    const modalEl = document.getElementById("crewReportModal");
+    if (content) {
+        content.innerHTML = '<div class="text-center text-muted py-4"><i class="fa-solid fa-spinner fa-spin me-1"></i>Building report...</div>';
+    }
+    if (modalEl) bootstrap.Modal.getOrCreateInstance(modalEl).show();
+    try {
+        await loadSitrepRows();
+        await buildCrewReport();
+    } catch (err) {
+        console.error("Failed to open report:", err);
+        if (content) {
+            content.innerHTML = '<div class="text-danger">Failed to open report: ' + escapeHtml(err.message || err) + "</div>";
+        }
     }
 }
 

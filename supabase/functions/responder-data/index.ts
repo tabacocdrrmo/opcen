@@ -33,6 +33,24 @@ function nameMatches(name: string, first: string, last: string): boolean {
   return firstOk && lastOk;
 }
 
+// In-memory cache of the full SITREP sheet so a request's "data" and
+// "teamSummary" calls (and re-opens within the TTL) avoid re-fetching Apps
+// Script. It lives only in the function instance's memory -- every response is
+// still filtered per caller before reaching the client.
+const SITREP_CACHE_TTL_MS = 120000; // 2 minutes
+let sitrepCache: { at: number; rows: any[] } | null = null;
+
+async function getAllSitreps(url: string): Promise<any[]> {
+  const now = Date.now();
+  if (sitrepCache && now - sitrepCache.at < SITREP_CACHE_TTL_MS) {
+    return sitrepCache.rows;
+  }
+  const sitData = await fetchAppsScript(url + "?action=sitreps");
+  const rows: any[] = (sitData && sitData.rows) || [];
+  sitrepCache = { at: now, rows };
+  return rows;
+}
+
 // The Apps Script endpoint is flaky on cold start / first request, so retry with
 // a backoff and a per-attempt timeout.
 async function fetchAppsScript(url: string, attempts = 4): Promise<any> {
@@ -95,20 +113,7 @@ Deno.serve(async (req) => {
     if (acctErr) throw acctErr;
     const emp = account && account.employees;
 
-    const body = await req.json().catch(() => ({}));
-    const action = body.action || "data";
-
-    if (action === "photo") {
-      const id = String(body.id || "").trim();
-      if (!id) {
-        return json({ error: "id required" }, 400);
-      }
-      const data = await fetchAppsScript(apiUrl + "?action=photo&id=" + encodeURIComponent(id));
-      return json(data);
-    }
-
-    // "data" action: return the caller's own responder-log rows and the sitreps
-    // they participated in, filtered server-side.
+    // Caller name variants used by both the "data" and "teamSummary" actions.
     const first = (emp && emp.first_name) || "";
     const last = (emp && emp.last_name) || "";
     const middle = (emp && emp.middle_name) || "";
@@ -123,6 +128,135 @@ Deno.serve(async (req) => {
       }
     }
 
+    const body = await req.json().catch(() => ({}));
+    const action = body.action || "data";
+
+    if (action === "photo") {
+      const id = String(body.id || "").trim();
+      if (!id) {
+        return json({ error: "id required" }, 400);
+      }
+      const data = await fetchAppsScript(apiUrl + "?action=photo&id=" + encodeURIComponent(id));
+      return json(data);
+    }
+
+    // "teamSummary" action: aggregate counts for one team's sitreps (over the
+    // optional call-date range). Returns numbers only -- never the raw records
+    // of teammates -- so an employee can build the team Summary form.
+    if (action === "teamSummary") {
+      const team = String(body.team || "").trim();
+      if (!team) {
+        return json({ error: "team required" }, 400);
+      }
+      const from = String(body.from || "").trim();
+      const to = String(body.to || "").trim();
+
+      const teamMembers = (r: any) =>
+        String((r && r["Assigned Team"]) || "")
+          .split(/[;,]/)
+          .map((s) => s.trim())
+          .filter(Boolean)
+          .includes(team);
+
+      const pad2 = (n: number) => String(n).padStart(2, "0");
+      const callDay = (r: any) => {
+        const s = String((r && r["Call Date"]) || "").trim();
+        const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+        if (m) return m[1] + "-" + m[2] + "-" + m[3];
+        const d = new Date(s);
+        if (isNaN(d.getTime())) return "";
+        return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+      };
+
+      const allSitreps = await getAllSitreps(apiUrl);
+
+      // Security: an employee may only view aggregates for teams they actually
+      // participate in (from the personnel fields of the shared sheet rows).
+      const callerInvolved = (r: any) =>
+        ["Responders", "Drivers", "PCR By", "Shift-In-Charge (SIC)", "Operator in Charge"]
+          .some((f) =>
+            String((r && r[f]) || "").split(/[;,]/).some((s: string) => {
+              const n = normalizeName(s);
+              return n && (variants.has(n) || nameMatches(n, first, last));
+            })
+          );
+      const callerTeams = new Set<string>();
+      allSitreps.filter(callerInvolved).forEach((r) =>
+        String((r && r["Assigned Team"]) || "").split(/[;,]/).forEach((t: string) => {
+          if (t.trim()) callerTeams.add(t.trim());
+        })
+      );
+      if (!callerTeams.has(team)) {
+        return json({ error: "Not authorized" }, 403);
+      }
+
+      const rows = allSitreps.filter((r) => {
+        if (!teamMembers(r)) return false;
+        const day = callDay(r);
+        if (from && (!day || day < from)) return false;
+        if (to && (!day || day > to)) return false;
+        return true;
+      });
+
+      const combined = (r: any) =>
+        String((r && r["Nature of Incident"]) || "") + " | " +
+        String((r && r["Cause of Incident"]) || "");
+      const va = rows.filter((r) => /vehicular accident/i.test(combined(r))).length;
+      const me = rows.filter((r) => /medical emergency/i.test(combined(r))).length;
+
+      const PERSONNEL_FIELDS = ["Responders", "Drivers", "Shift-In-Charge (SIC)", "Operator in Charge"];
+      const splitNames = (v: any) =>
+        String(v || "").split(/[;,]/).map((s) => String(s).trim()).filter(Boolean);
+
+      const counts: Record<string, { name: string; rescue: number; pcr: number }> = {};
+      rows.forEach((r) => {
+        const rescueNames = new Set<string>();
+        const pcrNames = new Set<string>();
+        PERSONNEL_FIELDS.forEach((f) => {
+          splitNames(r[f]).forEach((t) => {
+            const n = normalizeName(t);
+            if (n) {
+              if (!counts[n]) counts[n] = { name: t, rescue: 0, pcr: 0 };
+              rescueNames.add(n);
+            }
+          });
+        });
+        splitNames(r["PCR By"]).forEach((t) => {
+          const n = normalizeName(t);
+          if (n) {
+            if (!counts[n]) counts[n] = { name: t, rescue: 0, pcr: 0 };
+            pcrNames.add(n);
+          }
+        });
+        rescueNames.forEach((n) => counts[n].rescue++);
+        pcrNames.forEach((n) => counts[n].pcr++);
+      });
+
+      const driverList: { name: string; n: string }[] = [];
+      rows.forEach((r) => {
+        splitNames(r["Drivers"]).forEach((t) => {
+          const n = normalizeName(t);
+          if (n && !driverList.some((d) => d.n === n)) driverList.push({ name: t, n });
+        });
+      });
+      const drivers = driverList.map((d) => {
+        const c = counts[d.n];
+        return { name: d.name, rescue: c ? c.rescue : 0, pcr: c ? c.pcr : 0 };
+      });
+
+      return json({
+        ok: true,
+        team,
+        total: rows.length,
+        va,
+        me,
+        responders: Object.values(counts),
+        drivers,
+      });
+    }
+
+    // "data" action: return the caller's own responder-log rows and the sitreps
+    // they participated in, filtered server-side.
     const logData = await fetchAppsScript(apiUrl);
     const allLog: any[] = (logData && logData.rows) || [];
     const log = variants.size === 0
@@ -138,8 +272,7 @@ Deno.serve(async (req) => {
         .filter(Boolean)
     );
 
-    const sitData = await fetchAppsScript(apiUrl + "?action=sitreps");
-    const allSitreps: any[] = (sitData && sitData.rows) || [];
+    const allSitreps = await getAllSitreps(apiUrl);
     const sitreps = allSitreps.filter((r: any) =>
       sitrepNumbers.has(String((r && r["SITREP #"]) || "").trim().toLowerCase())
     );

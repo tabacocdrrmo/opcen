@@ -11,23 +11,79 @@
     color: #fff;
 }
 
-/* Response Activity Report (export modal) */
-.crew-report-meta {
+/* Team Summary form (export modal) */
+.team-form {
+    font-family: inherit;
+}
+.team-form-title {
+    text-align: center;
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    padding: 10px;
+    margin-bottom: 16px;
+}
+.team-form-header {
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+.team-form-counts {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin: 12px 0 14px;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+.team-form-note {
+    text-align: center;
+    color: #6c757d;
+    font-size: 0.9rem;
     margin-bottom: 10px;
+}
+.team-form-table {
+    width: 100%;
+    border-collapse: collapse;
     font-size: 0.9rem;
 }
-.crew-report-meta > div {
-    margin-bottom: 2px;
+.team-form-table th,
+.team-form-table td {
+    border: 1px solid #000;
+    padding: 6px 10px;
 }
-.crew-report-table {
+.team-form-table thead th {
+    text-align: center;
     font-size: 0.85rem;
+    padding: 8px 6px;
 }
-.crew-report-table th {
-    white-space: nowrap;
+.team-form-table thead th:first-child {
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
+.team-form-table th:first-child {
+    width: 50%;
+}
+.team-form-table th:not(:first-child) {
+    width: 25%;
+}
+.team-form-table td:first-child {
+    font-weight: 600;
+}
+.team-form-table td:not(:first-child) {
+    text-align: center;
+}
+.team-form-table tr.team-form-section td {
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-align: center;
+    padding-top: 8px;
 }
 
 @media print {
     @page {
+        size: A4 portrait;
         margin: 10mm;
     }
 
@@ -83,19 +139,49 @@
         display: none !important;
     }
 
-    .crew-report-meta {
+    .team-form,
+    .team-form-title,
+    .team-form-header,
+    .team-form-counts {
         color: #000 !important;
     }
 
-    .crew-report-table {
-        width: 100% !important;
-        font-size: 12px !important;
+    .team-form-title {
+        font-size: 28px !important;
+        padding: 12px;
+        margin-bottom: 20px;
     }
 
-    .crew-report-table th,
-    .crew-report-table td {
+    .team-form-header {
+        font-size: 17px !important;
+        margin-bottom: 6px;
+    }
+
+    .team-form-counts {
+        font-size: 16px !important;
+        margin: 14px 0 16px;
+        gap: 60px;
+    }
+
+    .team-form-table {
+        width: 100% !important;
+        font-size: 15px !important;
+    }
+
+    .team-form-table thead th {
+        font-size: 13px !important;
+        padding: 10px 8px;
+    }
+
+    .team-form-table th,
+    .team-form-table td {
         border: 1px solid #000;
-        padding: 4px 6px;
+        padding: 8px 10px;
+    }
+
+    .team-form-table tr.team-form-section td {
+        letter-spacing: 1px;
+        padding: 10px;
     }
 }
 
