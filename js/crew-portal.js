@@ -850,6 +850,113 @@ function splitJoined(s) {
     return String(s ?? "").split(/;\s*|,\s*|\n/).map(x => x.trim()).filter(Boolean);
 }
 
+// A sitrep involves the logged-in employee when any of its personnel fields
+// (Responders / Drivers / PCR By / Shift-In-Charge / Dispatch Operator) matches
+// their name. With no profile or no usable name variants, everything is kept.
+function sitrepInvolvesEmployee(r) {
+    const variants = getEmployeeNameVariants(profileData);
+    if (variants.size === 0) return true;
+    const fields = ["Responders", "Drivers", "PCR By", "Shift-In-Charge (SIC)", "Operator in Charge"];
+    return fields.some(f =>
+        String(r[f] || "").split(/[;,]/).some(s => {
+            const name = (s || "").trim();
+            return name && (variants.has(normalizeName(name)) || nameMatchesEmployee(name, profileData));
+        })
+    );
+}
+
+function sitrepPlace(r) {
+    return [String(r["Barangay"] || "").trim(), String(r["Place / Landmark"] || "").trim()].filter(Boolean).join(", ");
+}
+
+// The sitreps that show in the employee's report: only their own records,
+// constrained by the Activity Log filters (search, incident type, date range)
+// and any active PCR / shift card.
+function getFilteredSitrepRecords() {
+    const query = document.getElementById("responderSearch").value.trim().toLowerCase();
+    const nature = document.getElementById("responderNatureFilter").value;
+    const dateFrom = document.getElementById("responderDateFrom").value;
+    const dateTo = document.getElementById("responderDateTo").value;
+    return (sitrepRows || []).filter(r => {
+        if (!sitrepInvolvesEmployee(r)) return false;
+        if (pcrFilterActive && pcrSitreps && !pcrSitreps.has(normId(r["SITREP #"]))) return false;
+        if (shiftFilterActive && callTimeShift(String(r["Call Time"] || "").slice(0, 5)) !== shiftFilterActive) return false;
+        if (nature && (r["Nature of Incident"] || "").trim() !== nature) return false;
+        const day = callDateKey(r["Call Date"]);
+        if (dateFrom && (!day || day < dateFrom)) return false;
+        if (dateTo && (!day || day > dateTo)) return false;
+        if (query) {
+            const hay = [r["SITREP #"], r["Nature of Incident"], r["Assigned Team"], sitrepPlace(r),
+                r["Cause of Incident"], r["Patient"], r["Responders"], r["Drivers"]]
+                .join(" ").toLowerCase();
+            if (!hay.includes(query)) return false;
+        }
+        return true;
+    });
+}
+
+// Builds the tabulated Response Activity Report (only the employee's filtered
+// records) into the report modal, which is then printable / saveable as PDF.
+async function openCrewReport() {
+    try {
+        await loadSitrepRows();
+        const filtered = getFilteredSitrepRecords().sort((a, b) => logSortValue(b["SITREP #"]) - logSortValue(a["SITREP #"]));
+
+        const from = document.getElementById("responderDateFrom").value;
+        const to = document.getElementById("responderDateTo").value;
+        const period = (from || to) ? ((from || "…") + " to " + (to || "…")) : "All periods";
+
+        const notes = [];
+        const query = document.getElementById("responderSearch").value.trim();
+        if (query) notes.push('Search: "' + query + '"');
+        if (pcrFilterActive) notes.push("PCR Made");
+        if (shiftFilterActive) notes.push(["1st Shift", "2nd Shift", "3rd Shift"][shiftFilterActive - 1]);
+
+        const name = profileData
+            ? [profileData.first_name, profileData.middle_name, profileData.last_name].filter(Boolean).join(" ")
+            : (currentActiveUser || "Employee");
+
+        const rowsHtml = filtered.length
+            ? filtered.map(r => {
+                const patients = splitSlots(r["Patient"]).filter(Boolean).length;
+                const causes = splitJoined(r["Cause of Incident"]).join(", ");
+                return `<tr>
+                    <td>${escapeHtml(r["SITREP #"])}</td>
+                    <td>${escapeHtml(formatResponderDate(r["Call Date"]))}</td>
+                    <td>${escapeHtml(formatRecordedAt(r["Recorded At"]))}</td>
+                    <td>${escapeHtml(r["Nature of Incident"])}</td>
+                    <td>${escapeHtml(r["Assigned Team"])}</td>
+                    <td>${escapeHtml(sitrepPlace(r))}</td>
+                    <td class="text-center">${patients}</td>
+                    <td>${escapeHtml(String(r["Victim Status"] || "").slice(0, 60))}</td>
+                    <td>${escapeHtml(causes) || "&mdash;"}</td>
+                </tr>`;
+            }).join("")
+            : '<tr><td colspan="9" class="text-center text-muted">No records match the current filters.</td></tr>';
+
+        document.getElementById("crewReportContent").innerHTML = `
+            <div class="crew-report-meta">
+                <div>Prepared for: <strong>${escapeHtml(name)}</strong></div>
+                <div>Period: <strong>${escapeHtml(period)}</strong> &middot; Records: <strong>${filtered.length}</strong></div>
+                ${notes.length ? `<div class="small text-muted">Filtered by: ${escapeHtml(notes.join(" · "))}</div>` : ""}
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered align-middle crew-report-table">
+                    <thead><tr>
+                        <th>SITREP #</th><th>Call Date</th><th>Recorded At</th><th>Nature</th><th>Team</th><th>Place</th><th>Patients</th><th>Victim Status</th><th>Causes</th>
+                    </tr></thead>
+                    <tbody>${rowsHtml}</tbody>
+                </table>
+            </div>`;
+
+        const modalEl = document.getElementById("crewReportModal");
+        if (modalEl) bootstrap.Modal.getOrCreateInstance(modalEl).show();
+    } catch (err) {
+        console.error("Failed to build report:", err);
+        alert("Failed to build report: " + (err.message || err));
+    }
+}
+
 function photoFallback(img) {
     const wrap = img && img.parentElement;
     const link = img && img.getAttribute("data-link");

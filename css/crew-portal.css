@@ -11,6 +11,94 @@
     color: #fff;
 }
 
+/* Response Activity Report (export modal) */
+.crew-report-meta {
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+}
+.crew-report-meta > div {
+    margin-bottom: 2px;
+}
+.crew-report-table {
+    font-size: 0.85rem;
+}
+.crew-report-table th {
+    white-space: nowrap;
+}
+
+@media print {
+    @page {
+        margin: 10mm;
+    }
+
+    body {
+        background: #fff;
+        padding: 0;
+    }
+
+    body > *:not(#crewReportModal) {
+        display: none !important;
+    }
+
+    #crewReportModal {
+        position: absolute !important;
+        inset: 0 !important;
+        background: #fff !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        z-index: auto !important;
+    }
+
+    #crewReportModal .modal-dialog,
+    #crewReportModal .modal-content {
+        margin: 0 !important;
+        max-width: none !important;
+        width: auto !important;
+        box-shadow: none !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+    }
+
+    #crewReportModal .modal-dialog-scrollable {
+        height: auto !important;
+    }
+
+    #crewReportModal .modal-dialog-scrollable .modal-content {
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    #crewReportModal .modal-body {
+        overflow: visible !important;
+        padding: 0 !important;
+    }
+
+    body.modal-open {
+        overflow: visible !important;
+        padding: 0 !important;
+    }
+
+    #crewReportModal .modal-header,
+    #crewReportModal .modal-footer {
+        display: none !important;
+    }
+
+    .crew-report-meta {
+        color: #000 !important;
+    }
+
+    .crew-report-table {
+        width: 100% !important;
+        font-size: 12px !important;
+    }
+
+    .crew-report-table th,
+    .crew-report-table td {
+        border: 1px solid #000;
+        padding: 4px 6px;
+    }
+}
+
 @media (max-width: 576px) {
     .navbar-brand { font-size: 14px; }
     .navbar-brand img { width: 24px; height: 24px; }
