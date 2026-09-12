@@ -104,6 +104,14 @@ const CAUSE_KEYWORDS = {
         "Overdose": ["overdose", "took pills", "took medication", "took too many pills", "medication overdose", "drug overdose"],
         "Self-poisoning": ["drank poison", "ingested poison", "took poison", "poison ingestion", "self poisoning", "self-poisoning"],
         "Jumping from height": ["jumped from building", "jumped from bridge", "jumped from height", "jumped off building", "jumped off bridge", "jumped from roof"]
+    },
+    "Sports-Related Injury": {
+        "Sports Injury": ["sports injury", "sports-related", "sports related", "sports accident", "sports-based", "during practice", "during training", "training injury", "gym injury", "workout injury", "exercise injury"],
+        "Sport event accident": ["during a game", "during game", "during the game", "during a match", "during the match", "basketball game", "volleyball game", "soccer game", "football game", "badminton game", "basketball", "volleyball", "soccer", "football", "badminton", "court", "court sports"],
+        "Sprain/strain": ["sprain", "sprained", "strain", "strained", "twisted ankle", "twisted knee", "rolled ankle", "rolled ankle", "muscle strain", "muscle pull", "pulled muscle"],
+        "Fracture": ["fracture", "fractured", "broken bone", "broke his arm", "broke her arm", "broke his leg", "broke her leg", "broken ankle", "broken wrist", "broken hand", "broken leg"],
+        "Muscle cramp": ["muscle cramp", "muscle cramps", "leg cramp", "leg cramps", "calf cramp", "charley horse"],
+        "Sports fall": ["fell while playing", "fell during the game", "fell during practice", "slipped while playing", "tripped while playing", "collapsed on the court", "collapsed on the field"]
     }
 };
 
@@ -213,6 +221,11 @@ const CATEGORY_PRECAUTIONS = {
         "Coordinate crisis-response referrals with mental health and barangay support.",
         "Train responders on compassionate de-escalation and scene safety.",
         "Establish rapid referral links for psychological first aid."
+    ],
+    "Sports-Related Injury": [
+        "Advise venues and barangay on sports-ground first-aid readiness.",
+        "Ensure responders are trained on sprain, fracture, and cramp management.",
+        "Remind units to document what sport/activity was underway for cause tracking."
     ]
 };
 
@@ -363,6 +376,7 @@ function tagSitrep(row) {
         if (nature === "Fire Alarm") return ["Fire-related"];
         if (nature === "Medical Emergency") return ["Medical Condition"];
         if (nature === "Self Accident") return ["Accidental Injury"];
+        if (nature === "Sports-Related Injury") return ["Sports Injury"];
     }
     return unique;
 }

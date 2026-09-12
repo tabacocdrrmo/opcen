@@ -31,10 +31,11 @@
 }
 .team-form-counts {
     display: flex;
-    justify-content: center;
-    gap: 40px;
-    margin: 12px 0 14px;
-    font-size: 0.95rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    margin: 40px 0 14px;
+    font-size: 1.15rem;
     font-weight: 600;
 }
 .team-form-note {
@@ -158,9 +159,9 @@
     }
 
     .team-form-counts {
-        font-size: 16px !important;
-        margin: 14px 0 16px;
-        gap: 60px;
+        font-size: 18px !important;
+        margin: 40px 0 16px;
+        gap: 8px;
     }
 
     .team-form-table {
@@ -239,4 +240,21 @@
     #tab-profile .card { font-size: 0.78rem; }
     #tab-profile .card .text-muted { font-size: 0.62rem; }
     #tab-profile .card .fw-medium { font-size: 0.8rem; }
+}
+
+@media (max-width: 576px) {
+    #crewReportModal .modal-dialog {
+        max-width: 340px;
+        margin: 1rem auto;
+    }
+    #crewReportModal .modal-title { font-size: 1rem; }
+    #crewReportModal .modal-body { padding: 10px; }
+
+    .team-form-title { font-size: 1.1rem; padding: 6px; margin-bottom: 10px; }
+    .team-form-header { font-size: 0.78rem; }
+    .team-form-counts { font-size: 0.9rem; margin: 24px 0 10px; }
+
+    .team-form-table { font-size: 0.72rem; }
+    .team-form-table th, .team-form-table td { padding: 4px 6px; }
+    .team-form-table thead th { font-size: 0.68rem; padding: 6px 4px; }
 }
