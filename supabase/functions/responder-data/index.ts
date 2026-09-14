@@ -211,7 +211,6 @@ Deno.serve(async (req) => {
       const counts: Record<string, { name: string; rescue: number; pcr: number }> = {};
       rows.forEach((r) => {
         const rescueNames = new Set<string>();
-        const pcrNames = new Set<string>();
         PERSONNEL_FIELDS.forEach((f) => {
           splitNames(r[f]).forEach((t) => {
             const n = normalizeName(t);
@@ -225,11 +224,10 @@ Deno.serve(async (req) => {
           const n = normalizeName(t);
           if (n) {
             if (!counts[n]) counts[n] = { name: t, rescue: 0, pcr: 0 };
-            pcrNames.add(n);
+            counts[n].pcr++;
           }
         });
         rescueNames.forEach((n) => counts[n].rescue++);
-        pcrNames.forEach((n) => counts[n].pcr++);
       });
 
       const driverList: { name: string; n: string }[] = [];

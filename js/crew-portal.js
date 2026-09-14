@@ -701,6 +701,17 @@ function logSortValue(r) {
 
 function renderResponderLog() {
     const tbody = document.getElementById("responderLogBody");
+
+    // While the log is still loading, filter events must not paint a misleading
+    // "0 / No entries" state (responderLogRows is still empty). Keep the
+    // Loading row until loadResponderLog() renders the real rows.
+    if (logLoading && responderLogRows.length === 0) {
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">Loading responder log...</td></tr>';
+        }
+        return;
+    }
+
     const filtered = getFilteredResponderLog().sort((a, b) => logSortValue(b) - logSortValue(a));
     updateResponderStats(filtered);
 
@@ -938,7 +949,6 @@ function clientSideSummary(rows) {
     const drivers = [];
     rows.forEach(r => {
         const rescueNames = new Set();
-        const pcrNames = new Set();
         ["Responders", "Drivers", "Shift-In-Charge (SIC)", "Operator in Charge"].forEach(f =>
             splitNames(r[f]).forEach(s => {
                 const n = normalizeName(s);
@@ -947,15 +957,14 @@ function clientSideSummary(rows) {
         );
         splitNames(r["PCR By"]).forEach(s => {
             const n = normalizeName(s);
-            if (n) pcrNames.add(n);
+            if (n) {
+                if (!responderCounts[n]) responderCounts[n] = { rescue: 0, pcr: 0 };
+                responderCounts[n].pcr++;
+            }
         });
         rescueNames.forEach(n => {
             if (!responderCounts[n]) responderCounts[n] = { rescue: 0, pcr: 0 };
             responderCounts[n].rescue++;
-        });
-        pcrNames.forEach(n => {
-            if (!responderCounts[n]) responderCounts[n] = { rescue: 0, pcr: 0 };
-            responderCounts[n].pcr++;
         });
         splitNames(r["Drivers"]).forEach(d => {
             const n = normalizeName(d);
