@@ -297,8 +297,12 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="card-title mb-0">Activity Log</h5>
-                    <button type="button" class="btn btn-outline-success btn-sm" onclick="openCrewReport()" title="Export the filtered records as a printable report">
-                        <i class="fa-solid fa-file-pdf me-1"></i>Report</button>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="refreshResponderLog()" title="Reload the activity log from the server">
+                            <i class="fa-solid fa-rotate me-1"></i>Reload</button>
+                        <button type="button" class="btn btn-outline-success btn-sm" onclick="openCrewReport()" title="Export the filtered records as a printable report">
+                            <i class="fa-solid fa-file-pdf me-1"></i>Report</button>
+                    </div>
                 </div>
                 <div id="activityFilterNote" class="alert alert-warning py-1 px-3 small d-none mb-3"></div>
                 <div class="row g-2 mb-3">

@@ -615,8 +615,18 @@ async function countPcrMade(nameVariants, sitrepNumbers) {
     }
 }
 
-async function loadResponderLog() {
+async function loadResponderLog(force = false) {
     const tbody = document.getElementById("responderLogBody");
+
+    // Force reload: bypass the session cache and drop stale data so the next
+    // fetch (and the report) reflect the latest server state.
+    if (force) {
+        logCache = null;
+        sitrepRows = null;
+        pcrSitreps = null;
+        logPage = 1;
+        Object.keys(crewReportCache).forEach(k => delete crewReportCache[k]);
+    }
 
     // Session cache: render instantly (counts are refreshed by renderResponderLog).
     if (logCache) {
@@ -638,11 +648,13 @@ async function loadResponderLog() {
         logCache = responderLogRows;
 
         const natureFilter = document.getElementById("responderNatureFilter");
+        const prevNature = natureFilter.value;
         natureFilter.innerHTML = '<option value="">All Incident Types</option>';
         const natures = new Set(responderLogRows.map(r => (r.nature || "").trim()).filter(Boolean));
         [...natures].sort().forEach(n => {
             natureFilter.insertAdjacentHTML("beforeend", `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`);
         });
+        if (prevNature && natures.has(prevNature)) natureFilter.value = prevNature;
 
         if (!data.ok || responderLogRows.length === 0) {
             tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">No responder log entries found for your account.</td></tr>';
@@ -697,6 +709,11 @@ function getFilteredResponderLog() {
 function logSortValue(r) {
     const m = /^(\d{4})-(\d+)$/.exec(String(r.sitrepNo || "").trim());
     return m ? Number(m[1]) * 100000 + Number(m[2]) : 0;
+}
+
+// Reloads the activity log straight from the server, keeping current filters.
+function refreshResponderLog() {
+    loadResponderLog(true);
 }
 
 function renderResponderLog() {
