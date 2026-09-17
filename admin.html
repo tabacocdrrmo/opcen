@@ -573,50 +573,56 @@
                 </div>
 
                 <div class="row g-2 mb-3">
-                    <div class="col-md-12 col-xl-4">
+                    <div class="col-md-6 col-xl-4">
                         <div class="card shadow-sm h-100">
-                            <div class="card-body py-2">
+                            <div class="card-body py-2 d-flex flex-column">
                                 <div class="d-flex justify-content-between align-items-start">
                                     <h6 class="card-title text-uppercase text-muted small mb-1">Top Responders</h6>
                                     <span class="small text-muted" id="teamResponderMonth"></span>
                                 </div>
-                                <div style="position:relative;height:396px;"><canvas id="teamResponderChart"></canvas></div>
+                                <div class="sitrep-scroll-y" style="position:relative;flex:1 1 auto;min-height:240px;max-height:300px;overflow-y:auto;">
+                                    <div id="teamResponderChartWrap" style="position:relative;height:240px;"><canvas id="teamResponderChart"></canvas></div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-12 col-xl-8">
-                        <div class="row g-2">
-                            <div class="col-md-6 col-xl-6">
-                                <div class="card shadow-sm h-100">
-                                    <div class="card-body py-2">
-                                        <h6 class="card-title text-uppercase text-muted small mb-1">Monthly Trend</h6>
-                                        <div style="position:relative;height:180px;"><canvas id="teamMonthlyChart"></canvas></div>
-                                    </div>
+                    <div class="col-md-6 col-xl-4">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body py-2 d-flex flex-column">
+                                <h6 class="card-title text-uppercase text-muted small mb-1">SIC Shifts</h6>
+                                <div class="sitrep-scroll-y" style="position:relative;flex:1 1 auto;min-height:240px;max-height:300px;overflow-y:auto;">
+                                    <div id="teamSicChartWrap" style="position:relative;height:240px;"><canvas id="teamSicChart"></canvas></div>
                                 </div>
                             </div>
-                            <div class="col-md-6 col-xl-6">
-                                <div class="card shadow-sm h-100">
-                                    <div class="card-body py-2">
-                                        <h6 class="card-title text-uppercase text-muted small mb-1">SIC Shifts</h6>
-                                        <div style="position:relative;height:180px;"><canvas id="teamSicChart"></canvas></div>
-                                    </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-xl-4">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body py-2 d-flex flex-column">
+                                <h6 class="card-title text-uppercase text-muted small mb-1">Top Drivers</h6>
+                                <div class="sitrep-scroll-y" style="position:relative;flex:1 1 auto;min-height:240px;max-height:300px;overflow-y:auto;">
+                                    <div id="teamDriverChartWrap" style="position:relative;height:240px;"><canvas id="teamDriverChart"></canvas></div>
                                 </div>
                             </div>
-                            <div class="col-md-6 col-xl-6">
-                                <div class="card shadow-sm h-100">
-                                    <div class="card-body py-2">
-                                        <h6 class="card-title text-uppercase text-muted small mb-1">Dispatch Operator</h6>
-                                        <div style="position:relative;height:180px;"><canvas id="teamOperatorChart"></canvas></div>
-                                    </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row g-2 mb-3">
+                    <div class="col-md-6 col-xl-4">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body py-2 d-flex flex-column">
+                                <h6 class="card-title text-uppercase text-muted small mb-1">Dispatch Operator</h6>
+                                <div class="sitrep-scroll-y" style="position:relative;flex:1 1 auto;min-height:240px;max-height:300px;overflow-y:auto;">
+                                    <div id="teamOperatorChartWrap" style="position:relative;height:240px;"><canvas id="teamOperatorChart"></canvas></div>
                                 </div>
                             </div>
-                            <div class="col-md-6 col-xl-6">
-                                <div class="card shadow-sm h-100">
-                                    <div class="card-body py-2">
-                                        <h6 class="card-title text-uppercase text-muted small mb-1">Top Drivers</h6>
-                                        <div style="position:relative;height:180px;"><canvas id="teamDriverChart"></canvas></div>
-                                    </div>
-                                </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-xl-8">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body py-2 d-flex flex-column">
+                                <h6 class="card-title text-uppercase text-muted small mb-1">Monthly Trend</h6>
+                                <div style="position:relative;flex:1 1 auto;min-height:240px;max-height:300px;"><canvas id="teamMonthlyChart"></canvas></div>
                             </div>
                         </div>
                     </div>

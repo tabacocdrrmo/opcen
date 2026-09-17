@@ -521,12 +521,44 @@ function getSitrepCallTimeMap() {
     return sitrepCallTimeMap;
 }
 
+// The main SITREP sheet (Sheet 1) has the authoritative "Recorded At" (the
+// Responder Log column can store zeroed times for historical rows). A helper
+// that prefers Sheet 1's value per SITREP #, falling back to the row's own
+// value and finally the incident's Call Date/Time, so no row renders 00:00.
+let sitrepRecordedAtMap = null;
+function getSitrepRecordedAtMap() {
+    if (!sitrepRecordedAtMap) {
+        sitrepRecordedAtMap = new Map();
+        (sitrepRows || []).forEach(r => {
+            sitrepRecordedAtMap.set(normId(r["SITREP #"]), {
+                recorded: String(r["Recorded At"] || "").trim(),
+                callDate: String(r["Call Date"] || "").trim(),
+                callTime: String(r["Call Time"] || "").trim()
+            });
+        });
+    }
+    return sitrepRecordedAtMap;
+}
+
+function logRowRecordedAt(r) {
+    const info = getSitrepRecordedAtMap().get(normId(r.sitrepNo));
+    if (info && info.recorded && !/ 00:00(?::00)?$/.test(info.recorded)) {
+        return info.recorded;
+    }
+    const own = String(r.recordedAt || "").trim();
+    if (own && !/ 00:00(?::00)?$/.test(own)) return own;
+    if (info && (info.callDate || info.callTime)) {
+        return (info.callDate || "") + " " + info.callTime;
+    }
+    return own || (info && info.recorded) || "";
+}
+
 // The time used to bucket a responder-log row into a shift: the incident's Call
 // Time when available, falling back to the row's Recorded At time.
 function logRowTime(r) {
     const ct = getSitrepCallTimeMap().get(normId(r.sitrepNo));
     if (ct && /^\d{1,2}:\d{2}/.test(ct)) return ct;
-    const rt = /(\d{2}):(\d{2})/.exec(String(r.recordedAt || ""));
+    const rt = /(\d{2}):(\d{2})/.exec(logRowRecordedAt(r));
     return rt ? rt[1] + ":" + rt[2] : "";
 }
 
@@ -624,6 +656,8 @@ async function loadResponderLog(force = false) {
         logCache = null;
         sitrepRows = null;
         pcrSitreps = null;
+        sitrepCallTimeMap = null;
+        sitrepRecordedAtMap = null;
         logPage = 1;
         Object.keys(crewReportCache).forEach(k => delete crewReportCache[k]);
     }
@@ -695,7 +729,7 @@ function getFilteredResponderLog() {
         }
         if (query) {
             const hay = [
-                r.sitrepNo, r.recordedAt, formatResponderDate(r.callDate),
+                r.sitrepNo, logRowRecordedAt(r), formatResponderDate(r.callDate),
                 r.nature, r.name, r.role
             ].join(" ").toLowerCase();
             if (!hay.includes(query)) return false;
@@ -755,7 +789,7 @@ function renderResponderLog() {
     const start = (logPage - 1) * LOG_PAGE_SIZE;
     tbody.innerHTML = filtered.slice(start, start + LOG_PAGE_SIZE).map(r => `<tr class="clickable-row" onclick="showSitrepDetail('${escapeHtml(r.sitrepNo)}')" title="View full SITREP detail">
         <td data-label="SITREP #">${escapeHtml(r.sitrepNo)}</td>
-        <td data-label="Recorded At">${escapeHtml(formatRecordedAt(r.recordedAt))}</td>
+        <td data-label="Recorded At">${escapeHtml(formatRecordedAt(logRowRecordedAt(r)))}</td>
         <td data-label="Call Date">${escapeHtml(formatResponderDate(r.callDate))}</td>
         <td data-label="Nature of Incident">${escapeHtml(r.nature)}</td>
         <td data-label="Name">${escapeHtml(r.name)}</td>

@@ -142,10 +142,24 @@ function flattenFieldCount(rows, field) {
 }
 
 function renderTeamCoverage(rows) {
-    const sic = topWithOthers(countBy(rows, "Shift-In-Charge (SIC)"), 8);
-    const op = topWithOthers(countBy(rows, "Operator in Charge"), 8);
-    const resp = topWithOthers(flattenFieldCount(rows, "Responders"), 8);
-    const drv = topWithOthers(flattenFieldCount(rows, "Drivers"), 8);
+    const sic = countBy(rows, "Shift-In-Charge (SIC)");
+    const op = countBy(rows, "Operator in Charge");
+    const resp = flattenFieldCount(rows, "Responders");
+    const drv = flattenFieldCount(rows, "Drivers");
+
+    // Like the incident hotspot chart: list every entry (no "Others" bucket).
+    // The inner wrapper grows so the bar list fits, and the outer scroll
+    // container (max-height + overflow-y:auto) makes the chart scrollable.
+    const chartWraps = [
+        ["teamSicChart", "teamSicChartWrap", sic, 240],
+        ["teamOperatorChart", "teamOperatorChartWrap", op, 240],
+        ["teamResponderChart", "teamResponderChartWrap", resp, 240],
+        ["teamDriverChart", "teamDriverChartWrap", drv, 240]
+    ];
+    chartWraps.forEach(([canvasId, wrapId, entries, minH]) => {
+        const wrap = document.getElementById(wrapId);
+        if (wrap) wrap.style.height = Math.max(minH, entries.length * 30) + "px";
+    });
 
     buildChart("teamSicChart", {
         type: "bar",

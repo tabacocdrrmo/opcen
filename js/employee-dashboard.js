@@ -113,6 +113,15 @@ function employeeLogSitreps(emp) {
     return set;
 }
 
+// Number of PCRs the employee prepared (counts each entry in "PCR By", even
+// multiple within the same sitrep).
+function empPcrCount(r, emp) {
+    const variants = employeeNameVariants(emp);
+    return splitJoined(r["PCR By"]).filter(x =>
+        variants.has(normalizeName(x)) || nameTokensMatch(x, emp)
+    ).length;
+}
+
 function renderEmployeeDashboard() {
     const sel = document.getElementById("empDashboardSelect");
     const content = document.getElementById("empDashboardContent");
@@ -205,7 +214,7 @@ function renderEmpStats(matched, emp, n) {
         const m = empRoleMatched(r, n, emp);
         if (m.sic) sic++;
         if (m.operator) operator++;
-        if (m.pcr) pcr++;
+        pcr += empPcrCount(r, emp);
         if (String(r["Call Date"] || "").startsWith(thisMonth)) month++;
         if (String(r["Victim Status"] || "").toLowerCase().includes("demised")) fatal++;
     });
@@ -251,7 +260,7 @@ function renderEmpCharts(rows, n, emp) {
         if (m.operator) opCount++;
         if (m.responder) respCount++;
         if (m.driver) drvCount++;
-        if (m.pcr) pcrCount++;
+        pcrCount += empPcrCount(r, emp);
     });
     const roles = [
         ["SIC", sicCount, "#0d6efd"],
