@@ -825,9 +825,16 @@ function renderNatureTiles(rows) {
         const tile = document.getElementById(id);
         if (!tile) return;
         const [nature, count] = counts[i] || [null, 0];
+        let cls = colors[i];
+        const n = String(nature || "");
+        let bg = "";
+        if (/self/i.test(n)) { cls = "text-success"; bg = "#d4edda"; }
+        else if (/fire/i.test(n)) { cls = "text-danger"; bg = "#f8d7da"; }
+        if (bg) tile.style.backgroundColor = bg;
+        else tile.style.removeProperty("background-color");
         tile.innerHTML = nature
-            ? `<div class="text-muted small text-uppercase">${esc(nature)}</div><div class="fw-bold fs-4 ${colors[i]}">${count}</div>`
-            : `<div class="text-muted small text-uppercase">No nature data</div><div class="fw-bold fs-4 ${colors[i]}">0</div>`;
+            ? `<div class="text-muted small text-uppercase">${esc(nature)}</div><div class="fw-bold fs-4 ${cls}">${count}</div>`
+            : `<div class="text-muted small text-uppercase">No nature data</div><div class="fw-bold fs-4 ${cls}">0</div>`;
     });
 }
 

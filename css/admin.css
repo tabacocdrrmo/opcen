@@ -313,6 +313,8 @@ body.sitrep-display-mode .card.stat-card .text-primary { color: #7fb0ff !importa
 body.sitrep-display-mode .card.stat-card .text-info { color: #22d3ee !important; }
 body.sitrep-display-mode .card.stat-card .text-warning { color: #f5b300 !important; }
 body.sitrep-display-mode .card.stat-card .text-success { color: #4ade80 !important; }
+body.sitrep-display-mode .sitrep-tile .text-uppercase { color: #94a3b8 !important; }
+body.sitrep-display-mode #sitrepStatTotal { color: #f5b300 !important; }
 body.sitrep-display-mode .list-group {
     background: transparent;
 }
