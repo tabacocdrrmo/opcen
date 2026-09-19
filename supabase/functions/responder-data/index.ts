@@ -204,7 +204,9 @@ Deno.serve(async (req) => {
       const va = rows.filter((r) => /vehicular accident/i.test(combined(r))).length;
       const me = rows.filter((r) => /medical emergency/i.test(combined(r))).length;
 
-      const PERSONNEL_FIELDS = ["Responders", "Drivers", "Shift-In-Charge (SIC)", "Operator in Charge"];
+      // The crew report lists responders + drivers only; SIC / dispatch
+      // operator are excluded so they don't inflate the rescue counts.
+      const PERSONNEL_FIELDS = ["Responders", "Drivers"];
       const splitNames = (v: any) =>
         String(v || "").split(/[;,]/).map((s) => String(s).trim()).filter(Boolean);
 

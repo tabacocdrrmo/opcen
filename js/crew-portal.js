@@ -1000,7 +1000,7 @@ function clientSideSummary(rows) {
     const drivers = [];
     rows.forEach(r => {
         const rescueNames = new Set();
-        ["Responders", "Drivers", "Shift-In-Charge (SIC)", "Operator in Charge"].forEach(f =>
+        ["Responders", "Drivers"].forEach(f =>
             splitNames(r[f]).forEach(s => {
                 const n = normalizeName(s);
                 if (n) rescueNames.add(n);
@@ -1009,12 +1009,12 @@ function clientSideSummary(rows) {
         splitNames(r["PCR By"]).forEach(s => {
             const n = normalizeName(s);
             if (n) {
-                if (!responderCounts[n]) responderCounts[n] = { rescue: 0, pcr: 0 };
+                if (!responderCounts[n]) responderCounts[n] = { name: s, rescue: 0, pcr: 0 };
                 responderCounts[n].pcr++;
             }
         });
         rescueNames.forEach(n => {
-            if (!responderCounts[n]) responderCounts[n] = { rescue: 0, pcr: 0 };
+            if (!responderCounts[n]) responderCounts[n] = { name: n, rescue: 0, pcr: 0 };
             responderCounts[n].rescue++;
         });
         splitNames(r["Drivers"]).forEach(d => {
@@ -1036,16 +1036,36 @@ function renderTeamForm(team, va, me, responderCounts, drivers, totalRows) {
     const to = formatReportPeriod(document.getElementById("responderDateTo").value);
     const period = "FROM " + (from || "________") + " TO " + (to || "________") + " 2026";
 
-    const responders = (SITREP_TEAMS[team] && SITREP_TEAMS[team].responders) || [];
-    const responderRows = responders.map(name => {
-        const c = responderCounts[normalizeName(name)] || { rescue: 0, pcr: 0 };
-        return { name, rescue: c.rescue, pcr: c.pcr };
-    }).filter(x => x.rescue > 0 || x.pcr > 0).map(x => `
+    // Roster members first (in roster order), then any other responder who
+    // actually has counts on this team's sitreps (e.g. someone currently on
+    // another team who responded to this team's incidents). Mirrors how drivers
+    // are already listed straight from the server details.
+    const rosterNames = (SITREP_TEAMS[team] && SITREP_TEAMS[team].responders) || [];
+    const rosterSet = new Set(rosterNames.map(normalizeName));
+    const rowHtml = x => `
         <tr>
             <td>${escapeHtml(x.name)}</td>
             <td class="text-center">${x.rescue}</td>
             <td class="text-center">${x.pcr}</td>
-        </tr>`).join("");
+        </tr>`;
+    const nonZero = x => (x.rescue || 0) > 0 || (x.pcr || 0) > 0;
+    const rosterRows = rosterNames
+        .map(name => {
+            const c = (responderCounts || {})[normalizeName(name)] || { rescue: 0, pcr: 0 };
+            return { name, rescue: c.rescue || 0, pcr: c.pcr || 0 };
+        })
+        .filter(nonZero)
+        .map(rowHtml);
+    // Non-roster responders with counts (e.g. someone from another team who
+    // responded). Drivers are excluded here -- they have their own section.
+    const driverSet = new Set((drivers || []).map(d => normalizeName(d.name)));
+    const extraRows = Object.values(responderCounts || {})
+        .filter(e => e && e.name && nonZero(e) &&
+            !rosterSet.has(normalizeName(e.name)) &&
+            !driverSet.has(normalizeName(e.name)))
+        .map(e => ({ name: e.name, rescue: e.rescue || 0, pcr: e.pcr || 0 }))
+        .map(rowHtml);
+    const responderRows = rosterRows.concat(extraRows).join("");
 
     const driverRows = (drivers || []).filter(d => (d.rescue || 0) > 0 || (d.pcr || 0) > 0).map(d => `
         <tr>
@@ -1110,7 +1130,7 @@ async function buildCrewReport() {
                 totalRows = sum.total || 0;
                 const rc = {};
                 (sum.responders || []).forEach(e => {
-                    if (e && e.name) rc[normalizeName(e.name)] = { rescue: e.rescue || 0, pcr: e.pcr || 0 };
+                    if (e && e.name) rc[normalizeName(e.name)] = { name: e.name, rescue: e.rescue || 0, pcr: e.pcr || 0 };
                 });
                 const dr = (sum.drivers || []).map(d => ({ name: d.name, rescue: d.rescue || 0, pcr: d.pcr || 0 }));
                 crewReportCache[cacheKey] = { va, me, total: totalRows, responderCounts: rc, drivers: dr };
