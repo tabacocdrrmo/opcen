@@ -41,6 +41,7 @@ drop policy if exists accounts_update on accounts;
 drop policy if exists accounts_select on accounts;
 
 -- 4. Reads: own row, or every row for admins (admin roster + exports).
+drop policy if exists accounts_select_own_or_admin on accounts;
 create policy accounts_select_own_or_admin
   on accounts
   for select

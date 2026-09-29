@@ -343,11 +343,21 @@ async function saveAndCompileProfile() {
             // The accounts table is read-only from the browser (see migration
             // 20260926_lock_down_accounts.sql), so the self-link goes through
             // the account-admin function, which only ever touches this row.
-            const { data: linkData, error: linkErr } = await supabaseClient.functions.invoke("account-admin", {
+            // Unwrap the real error body - the Supabase client otherwise only
+            // says "Edge Function returned a non-2xx status code".
+            const { error: linkErr } = await supabaseClient.functions.invoke("account-admin", {
                 body: { action: "set-employee", employeeId: empId }
             });
-            if (linkErr) throw linkErr;
-            if (!linkData?.ok) throw new Error(linkData?.error || "Failed to link your account.");
+            if (linkErr) {
+                let detail = linkErr.message || String(linkErr);
+                try {
+                    if (linkErr.context && typeof linkErr.context.json === "function") {
+                        const body = await linkErr.context.json();
+                        if (body && body.error) detail = body.error;
+                    }
+                } catch (_) { /* keep the generic message */ }
+                throw new Error(detail);
+            }
 
             setSession(currentActiveUser, empId);
 

@@ -6,6 +6,27 @@ let currentViewEmergency = {};
 let currentPage = 1;
 const pageSize = 15;
 
+// Every browser -> accounts call goes through this. Supabase's client throws a
+// bare "non-2xx status code" for edge-function errors, so pull the real message
+// out of the response body or the real cause is invisible to the user.
+async function accountAdmin(action, payload = {}) {
+    const { data, error } = await supabaseClient.functions.invoke("account-admin", {
+        body: { action, ...payload }
+    });
+    if (error) {
+        let detail = error.message || String(error);
+        try {
+            if (error.context && typeof error.context.json === "function") {
+                const body = await error.context.json();
+                if (body && body.error) detail = body.error;
+            }
+        } catch (_) { /* keep the generic message */ }
+        throw new Error(detail);
+    }
+    if (!data || data.ok !== true) throw new Error((data && data.error) || "Account request failed.");
+    return data;
+}
+
 function getSession() {
     const raw = sessionStorage.getItem("crewSession");
     if (!raw) return null;
@@ -424,11 +445,8 @@ async function saveEmployee() {
                 .maybeSingle();
             if (existingEmp) return alert(`An employee with Employee ID "${empData.employee_id}" already exists.`);
 
-            const { data: takenData, error: takenErr } = await supabaseClient.functions.invoke("account-admin", {
-                body: { action: "username-taken", username }
-            });
-            if (takenErr) throw takenErr;
-            if (takenData?.taken) return alert(`The username "${username}" is already taken.`);
+            const takenData = await accountAdmin("username-taken", { username });
+            if (takenData.taken) return alert(`The username "${username}" is already taken.`);
         }
 
         if (pendingEmpImage) {
@@ -448,11 +466,7 @@ async function saveEmployee() {
             if (empRecord && empRecord.accountId) {
                 // accounts is read-only from the browser; role and username
                 // changes go through the service-role function.
-                const { data: acctData, error: acctErr } = await supabaseClient.functions.invoke("account-admin", {
-                    body: { action: "update-account", accountId: empRecord.accountId, username, role }
-                });
-                if (acctErr) throw acctErr;
-                if (!acctData?.ok) throw new Error(acctData?.error || "Failed to update the account.");
+                await accountAdmin("update-account", { accountId: empRecord.accountId, username, role });
             }
 
             if (empRecord && empRecord.authUserId) {
@@ -480,23 +494,17 @@ async function saveEmployee() {
             // Creates the login through the service-role function instead of a
             // browser sign-up, so public sign-ups can stay disabled in Supabase
             // Auth and the admin's own session is never disturbed.
-            const { data: createdData, error: createErr } = await supabaseClient.functions.invoke("account-admin", {
-                body: {
-                    action: "create-user",
+            try {
+                await accountAdmin("create-user", {
                     email: usernameToEmail(username),
                     password,
                     username,
                     role,
                     employeeId: empId
-                }
-            });
-            if (createErr) {
+                });
+            } catch (createErr) {
                 await rollbackEmployee(empId);
                 throw createErr;
-            }
-            if (!createdData?.ok) {
-                await rollbackEmployee(empId);
-                throw new Error(createdData?.error || "Failed to create the account.");
             }
         }
 
@@ -553,11 +561,7 @@ async function deleteEmployee(empId) {
 async function reloadEmployees() {
     // The admin roster needs every account, which the RLS policy only allows
     // for admins - and only through the service-role function.
-    const { data: listData, error: acctErr } = await supabaseClient.functions.invoke("account-admin", {
-        body: { action: "list" }
-    });
-    if (acctErr) throw acctErr;
-    if (!listData?.ok) throw new Error(listData?.error || "Failed to load accounts.");
+    const listData = await accountAdmin("list");
     const accounts = listData.accounts || [];
 
     employees = (accounts || [])
@@ -599,11 +603,7 @@ async function reloadEmployees() {
 
 async function exportEmployees() {
     try {
-        const { data: listData, error: listErr } = await supabaseClient.functions.invoke("account-admin", {
-            body: { action: "list" }
-        });
-        if (listErr) throw listErr;
-        if (!listData?.ok) throw new Error(listData?.error || "Failed to load accounts.");
+        const listData = await accountAdmin("list");
 
         const [allLeaveRes, allEmergencyRes] = await Promise.all([
             supabaseClient.from("leave_requests").select("employee_id,status").eq("status", "Approved"),

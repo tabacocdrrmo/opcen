@@ -89,6 +89,21 @@ Deno.serve(async (req) => {
       return json({ ok: true, taken: !!data });
     }
 
+    // Finds an existing auth user by email, including unconfirmed leftovers from
+    // an earlier sign-up attempt.
+    const findUserByEmail = async (email: string) => {
+      const target = email.toLowerCase();
+      for (let page = 1; page <= 20; page += 1) {
+        const { data, error } = await adminClient.auth.admin.listUsers({ page, perPage: 100 });
+        if (error) throw error;
+        const users = data?.users || [];
+        const found = users.find((u) => (u.email || "").toLowerCase() === target);
+        if (found) return found;
+        if (users.length < 100) return null;
+      }
+      return null;
+    };
+
     // Creates the login and its accounts row in one step. Uses the admin API so
     // public sign-ups can stay disabled in Supabase Auth.
     if (action === "create-user") {
@@ -102,6 +117,7 @@ Deno.serve(async (req) => {
       const employeeId = body.employeeId ?? null;
 
       if (!email || !username) return json({ error: "email and username are required" }, 400);
+      if (!password) return json({ error: "A password is required." }, 400);
       if (!role || !["admin", "operator", "staff"].includes(role)) {
         return json({ error: "Invalid role" }, 400);
       }
@@ -113,23 +129,52 @@ Deno.serve(async (req) => {
         .maybeSingle();
       if (existing) return json({ error: `The username "${username}" is already taken.` }, 409);
 
-      const { data: created, error: createErr } = await adminClient.auth.admin.createUser({
-        email,
-        password,
-        email_confirm: true,
-      });
-      if (createErr || !created?.user) {
-        return json({ error: (createErr && createErr.message) || "Failed to create login" }, 400);
+      // A login may already exist for this email without an accounts row, e.g. an
+      // unconfirmed user left behind by an earlier failed sign-up. Reuse it
+      // instead of failing, but never take over a login that is already linked
+      // to another account.
+      let authUser = await findUserByEmail(email);
+      if (authUser) {
+        const { data: linked } = await adminClient
+          .from("accounts")
+          .select("id,username")
+          .eq("auth_user_id", authUser.id)
+          .maybeSingle();
+        if (linked) {
+          return json(
+            { error: `That email already belongs to the account "${linked.username}".` },
+            409,
+          );
+        }
+
+        const { data: updated, error: updateErr } = await adminClient.auth.admin
+          .updateUserById(authUser.id, { password, email_confirm: true });
+        if (updateErr || !updated?.user) {
+          return json({ error: (updateErr && updateErr.message) || "Failed to set the password" }, 400);
+        }
+        authUser = updated.user;
+      } else {
+        const { data: created, error: createErr } = await adminClient.auth.admin.createUser({
+          email,
+          password,
+          email_confirm: true,
+        });
+        if (createErr || !created?.user) {
+          return json({ error: (createErr && createErr.message) || "Failed to create login" }, 400);
+        }
+        authUser = created.user;
       }
 
       const { data: account, error: insertErr } = await adminClient
         .from("accounts")
-        .insert({ auth_user_id: created.user.id, username, employee_id: employeeId, role })
+        .insert({ auth_user_id: authUser.id, username, employee_id: employeeId, role })
         .select()
         .single();
       if (insertErr) {
-        // Do not leave an orphaned login behind if the row insert fails.
-        await adminClient.auth.admin.deleteUser(created.user.id);
+        // Only remove the login when this call created it, so a reused orphan
+        // login is never destroyed.
+        if (!await findUserByEmail(email)) throw insertErr;
+        await adminClient.auth.admin.deleteUser(authUser.id);
         throw insertErr;
       }
 
