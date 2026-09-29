@@ -277,40 +277,59 @@ async function saveAndCompileProfile() {
         const lastName = document.getElementById("lastName").value.trim();
         if (!firstName || !middleName || !lastName) return alert("Please enter your first, middle, and last name.");
 
-        const empData = {
-            employee_id: document.getElementById("employeeId").value,
-            position: document.getElementById("position").value,
-            first_name: firstName,
-            middle_name: middleName,
-            last_name: lastName,
-            gender: document.getElementById("gender").value,
-            date_of_birth: document.getElementById("dob").value || null,
-            address: document.getElementById("address").value,
-            contact_number: document.getElementById("contactNo").value,
-            email: document.getElementById("email").value,
-            blood_type: document.getElementById("bloodtype").value || null,
-            employment_type: document.getElementById("empType").value,
-            eligibility: document.getElementById("eligibility").value,
-            date_of_joining: document.getElementById("dateOfJoining").value || null,
-            marital_status: document.getElementById("maritalStatus").value,
-            status: document.getElementById("empStatus").value,
-            educational_attainment: document.getElementById("educAttain").value,
-            educational_institution: document.getElementById("educInstitution").value,
-            educational_course: document.getElementById("educCourse").value,
-        };
+    const empData = {
+        employee_id: document.getElementById("employeeId").value,
+        position: document.getElementById("position").value,
+        first_name: firstName,
+        middle_name: middleName,
+        last_name: lastName,
+        gender: document.getElementById("gender").value,
+        date_of_birth: document.getElementById("dob").value || null,
+        address: document.getElementById("address").value,
+        contact_number: document.getElementById("contactNo").value,
+        email: document.getElementById("email").value,
+        blood_type: document.getElementById("bloodtype").value || null,
+        employment_type: document.getElementById("empType").value,
+        eligibility: document.getElementById("eligibility").value,
+        date_of_joining: document.getElementById("dateOfJoining").value || null,
+        marital_status: document.getElementById("maritalStatus").value,
+        status: document.getElementById("empStatus").value,
+        educational_attainment: document.getElementById("educAttain").value,
+        educational_institution: document.getElementById("educInstitution").value,
+        educational_course: document.getElementById("educCourse").value,
+    };
 
-        const contactData = {
-            contact_person: document.getElementById("contactPerson").value,
-            relationship: document.getElementById("emergencyRel").value,
-            contact_number: document.getElementById("emergencyNo").value
-        };
+    // Rank, status, hire date and the employee id are admin-owned. The
+    // employees_update policy plus the guard_employee_privileged_columns
+    // trigger reject changes to them, so a profile save must not send them.
+    const selfEditable = {
+        first_name: empData.first_name,
+        middle_name: empData.middle_name,
+        last_name: empData.last_name,
+        gender: empData.gender,
+        date_of_birth: empData.date_of_birth,
+        address: empData.address,
+        contact_number: empData.contact_number,
+        email: empData.email,
+        blood_type: empData.blood_type,
+        marital_status: empData.marital_status,
+        educational_attainment: empData.educational_attainment,
+        educational_institution: empData.educational_institution,
+        educational_course: empData.educational_course
+    };
 
-        let empId = currentEmployeeDbId;
+    const contactData = {
+        contact_person: document.getElementById("contactPerson").value,
+        relationship: document.getElementById("emergencyRel").value,
+        contact_number: document.getElementById("emergencyNo").value
+    };
+
+    let empId = currentEmployeeDbId;
 
         if (empId) {
             const { error: empErr } = await supabaseClient
                 .from("employees")
-                .update(empData)
+                .update(selfEditable)
                 .eq("id", empId);
             if (empErr) throw empErr;
 
@@ -332,33 +351,27 @@ async function saveAndCompileProfile() {
                 if (contactErr) throw contactErr;
             }
         } else {
-            const { data: inserted, error: empErr } = await supabaseClient
-                .from("employees")
-                .insert(empData)
-                .select();
-            if (empErr || !inserted || inserted.length === 0) throw new Error(empErr?.message || "Failed to create employee record.");
-            empId = inserted[0].id;
-            currentEmployeeDbId = empId;
-
-            // The accounts table is read-only from the browser (see migration
-            // 20260926_lock_down_accounts.sql), so the self-link goes through
-            // the account-admin function, which only ever touches this row.
-            // Unwrap the real error body - the Supabase client otherwise only
-            // says "Edge Function returned a non-2xx status code".
-            const { error: linkErr } = await supabaseClient.functions.invoke("account-admin", {
-                body: { action: "set-employee", employeeId: empId }
+            // The browser cannot insert into employees directly (see migration
+            // 20260929_lock_down_public_schema.sql), so onboarding goes through
+            // the service-role function, which creates the row and links it to
+            // this caller's own account.
+            const { data: regData, error: regErr } = await supabaseClient.functions.invoke("account-admin", {
+                body: { action: "self-register", employee: empData }
             });
-            if (linkErr) {
-                let detail = linkErr.message || String(linkErr);
+            if (regErr) {
+                let detail = regErr.message || String(regErr);
                 try {
-                    if (linkErr.context && typeof linkErr.context.json === "function") {
-                        const body = await linkErr.context.json();
+                    if (regErr.context && typeof regErr.context.json === "function") {
+                        const body = await regErr.context.json();
                         if (body && body.error) detail = body.error;
                     }
                 } catch (_) { /* keep the generic message */ }
                 throw new Error(detail);
             }
 
+            empId = regData?.employee?.id ?? null;
+            if (!empId) throw new Error("Failed to create employee record.");
+            currentEmployeeDbId = empId;
             setSession(currentActiveUser, empId);
 
             if (contactData.contact_person) {

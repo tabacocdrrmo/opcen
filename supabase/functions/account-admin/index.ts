@@ -208,6 +208,76 @@ Deno.serve(async (req) => {
       return json({ ok: true, account: data });
     }
 
+    // Self-service onboarding: a signed-in user without an employee record
+    // creates their own row and links it to their account in one step. The
+    // browser is not allowed to insert into employees directly, because that
+    // would let anyone write a row for an employee id they do not own.
+    //
+    // Employment fields that only an admin should set (rank, status, dates) are
+    // dropped here on purpose: the admin panel assigns those after onboarding.
+    if (action === "self-register") {
+      const { data: callerAccount, error: callerAcctErr } = await adminClient
+        .from("accounts")
+        .select("id,employee_id")
+        .eq("auth_user_id", callerUser.id)
+        .maybeSingle();
+      if (callerAcctErr) throw callerAcctErr;
+      if (!callerAccount) return json({ error: "Account not found" }, 404);
+      if (callerAccount.employee_id) {
+        return json({ error: "Your account is already linked to an employee record." }, 409);
+      }
+
+      const emp = (body.employee || {}) as Record<string, unknown>;
+      const employeeNumber = String(emp.employee_id || "").trim();
+      if (!employeeNumber) return json({ error: "Employee ID is required." }, 400);
+
+      const { data: dupe } = await adminClient
+        .from("employees")
+        .select("id")
+        .eq("employee_id", employeeNumber)
+        .maybeSingle();
+      if (dupe) {
+        return json({ error: `An employee with Employee ID "${employeeNumber}" already exists.` }, 409);
+      }
+
+      const row: Record<string, unknown> = {
+        employee_id: employeeNumber,
+        first_name: emp.first_name ?? null,
+        middle_name: emp.middle_name ?? null,
+        last_name: emp.last_name ?? null,
+        gender: emp.gender ?? null,
+        date_of_birth: emp.date_of_birth ?? null,
+        marital_status: emp.marital_status ?? null,
+        blood_type: emp.blood_type ?? null,
+        address: emp.address ?? null,
+        contact_number: emp.contact_number ?? null,
+        email: emp.email ?? null,
+        educational_attainment: emp.educational_attainment ?? null,
+        educational_institution: emp.educational_institution ?? null,
+        educational_course: emp.educational_course ?? null,
+      };
+
+      const { data: inserted, error: insertErr } = await adminClient
+        .from("employees")
+        .insert(row)
+        .select()
+        .single();
+      if (insertErr) return json({ error: insertErr.message }, 400);
+
+      const { data: linked, error: linkErr } = await adminClient
+        .from("accounts")
+        .update({ employee_id: inserted.id })
+        .eq("auth_user_id", callerUser.id)
+        .select()
+        .single();
+      if (linkErr) {
+        await adminClient.from("employees").delete().eq("id", inserted.id);
+        return json({ error: linkErr.message }, 500);
+      }
+
+      return json({ ok: true, employee: inserted, account: linked });
+    }
+
     // Links the caller's own account to their employee record. Self-service, so
     // it is allowed for any signed-in user but only ever touches their own row.
     if (action === "set-employee") {
