@@ -1,5 +1,6 @@
-# Supabase CLI cache
-supabase/.temp/
+# Supabase CLI cache. Matches at any depth: the CLI writes this into a
+# supabase/supabase/ directory if `supabase link` is run from inside supabase/.
+.temp/
 
 # Environment / secrets
 .env
