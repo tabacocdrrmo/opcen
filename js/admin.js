@@ -424,12 +424,11 @@ async function saveEmployee() {
                 .maybeSingle();
             if (existingEmp) return alert(`An employee with Employee ID "${empData.employee_id}" already exists.`);
 
-            const { data: existingAcct } = await supabaseClient
-                .from("accounts")
-                .select("id")
-                .eq("username", username)
-                .maybeSingle();
-            if (existingAcct) return alert(`The username "${username}" is already taken.`);
+            const { data: takenData, error: takenErr } = await supabaseClient.functions.invoke("account-admin", {
+                body: { action: "username-taken", username }
+            });
+            if (takenErr) throw takenErr;
+            if (takenData?.taken) return alert(`The username "${username}" is already taken.`);
         }
 
         if (pendingEmpImage) {
@@ -447,11 +446,13 @@ async function saveEmployee() {
 
             const empRecord = employees.find(e => e.employeeId === empId);
             if (empRecord && empRecord.accountId) {
-                const { error: acctErr } = await supabaseClient
-                    .from("accounts")
-                    .update({ username, role })
-                    .eq("id", empRecord.accountId);
+                // accounts is read-only from the browser; role and username
+                // changes go through the service-role function.
+                const { data: acctData, error: acctErr } = await supabaseClient.functions.invoke("account-admin", {
+                    body: { action: "update-account", accountId: empRecord.accountId, username, role }
+                });
                 if (acctErr) throw acctErr;
+                if (!acctData?.ok) throw new Error(acctData?.error || "Failed to update the account.");
             }
 
             if (empRecord && empRecord.authUserId) {
@@ -476,28 +477,26 @@ async function saveEmployee() {
             const password = document.getElementById("empPassword").value;
             if (!password) throw new Error("Please set a password for the new account.");
 
-            const { data: adminSessionData } = await supabaseClient.auth.getSession();
-            const adminSession = adminSessionData?.session;
-
-            const { data: authData, error: signUpErr } = await supabaseClient.auth.signUp({
-                email: usernameToEmail(username),
-                password
+            // Creates the login through the service-role function instead of a
+            // browser sign-up, so public sign-ups can stay disabled in Supabase
+            // Auth and the admin's own session is never disturbed.
+            const { data: createdData, error: createErr } = await supabaseClient.functions.invoke("account-admin", {
+                body: {
+                    action: "create-user",
+                    email: usernameToEmail(username),
+                    password,
+                    username,
+                    role,
+                    employeeId: empId
+                }
             });
-            if (signUpErr) {
+            if (createErr) {
                 await rollbackEmployee(empId);
-                throw signUpErr;
+                throw createErr;
             }
-
-            const { error: acctErr } = await supabaseClient
-                .from("accounts")
-                .insert({ auth_user_id: authData.user?.id, username, employee_id: empId, role });
-            if (acctErr) {
+            if (!createdData?.ok) {
                 await rollbackEmployee(empId);
-                throw acctErr;
-            }
-
-            if (adminSession) {
-                await supabaseClient.auth.setSession(adminSession);
+                throw new Error(createdData?.error || "Failed to create the account.");
             }
         }
 
@@ -552,11 +551,14 @@ async function deleteEmployee(empId) {
 }
 
 async function reloadEmployees() {
-    const { data: accounts, error: acctErr } = await supabaseClient
-        .from("accounts")
-        .select("*,employees(*)")
-        .order("id", { ascending: true });
+    // The admin roster needs every account, which the RLS policy only allows
+    // for admins - and only through the service-role function.
+    const { data: listData, error: acctErr } = await supabaseClient.functions.invoke("account-admin", {
+        body: { action: "list" }
+    });
     if (acctErr) throw acctErr;
+    if (!listData?.ok) throw new Error(listData?.error || "Failed to load accounts.");
+    const accounts = listData.accounts || [];
 
     employees = (accounts || [])
         .filter(a => a.employees)
@@ -597,16 +599,20 @@ async function reloadEmployees() {
 
 async function exportEmployees() {
     try {
-        const [allLeaveRes, allAccountsRes, allEmergencyRes] = await Promise.all([
+        const { data: listData, error: listErr } = await supabaseClient.functions.invoke("account-admin", {
+            body: { action: "list" }
+        });
+        if (listErr) throw listErr;
+        if (!listData?.ok) throw new Error(listData?.error || "Failed to load accounts.");
+
+        const [allLeaveRes, allEmergencyRes] = await Promise.all([
             supabaseClient.from("leave_requests").select("employee_id,status").eq("status", "Approved"),
-            supabaseClient.from("accounts").select("*,employees(*)").order("id", { ascending: true }),
             supabaseClient.from("emergency_contacts").select("employee_id,contact_person,relationship,contact_number")
         ]);
         if (allLeaveRes.error) throw allLeaveRes.error;
-        if (allAccountsRes.error) throw allAccountsRes.error;
         if (allEmergencyRes.error) throw allEmergencyRes.error;
         const allLeave = allLeaveRes.data || [];
-        const allAccounts = allAccountsRes.data || [];
+        const allAccounts = listData.accounts || [];
         const allEmergency = allEmergencyRes.data || [];
 
         const approvedCounts = {};

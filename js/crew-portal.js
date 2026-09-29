@@ -340,12 +340,14 @@ async function saveAndCompileProfile() {
             empId = inserted[0].id;
             currentEmployeeDbId = empId;
 
-            const { data: authData } = await supabaseClient.auth.getSession();
-            const { error: acctErr } = await supabaseClient
-                .from("accounts")
-                .update({ employee_id: empId })
-                .eq("auth_user_id", authData.session?.user?.id);
-            if (acctErr) throw acctErr;
+            // The accounts table is read-only from the browser (see migration
+            // 20260926_lock_down_accounts.sql), so the self-link goes through
+            // the account-admin function, which only ever touches this row.
+            const { data: linkData, error: linkErr } = await supabaseClient.functions.invoke("account-admin", {
+                body: { action: "set-employee", employeeId: empId }
+            });
+            if (linkErr) throw linkErr;
+            if (!linkData?.ok) throw new Error(linkData?.error || "Failed to link your account.");
 
             setSession(currentActiveUser, empId);
 
