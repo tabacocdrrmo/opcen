@@ -12,7 +12,7 @@ async function loadTeamDashboard(force) {
         renderTeamDashboard();
     } catch (err) {
         console.error("Failed to load team dashboard:", err);
-        setText("teamCompareBody", '<tr><td colspan="7" class="text-center text-danger py-4">Failed to load: ' + esc(err.message || err) + '</td></tr>');
+        setText("teamCompareBody", '<tr><td colspan="6" class="text-center text-danger py-4">Failed to load: ' + esc(err.message || err) + '</td></tr>');
     }
 }
 
@@ -76,7 +76,6 @@ function teamStatsOf(team) {
         team,
         total: rows.length,
         month: rows.filter(r => String(r["Call Date"] || "").startsWith(sitrepMonthKey())).length,
-        fatal: rows.filter(r => String(r["Victim Status"] || "").toLowerCase().includes("demised")).length,
         patients: rows.reduce((s, r) => s + countPatients(r), 0),
         da: avgMinutes(rows.map(r => minutesBetween(r["Dispatched Time"], r["Arrival at Scene"]))),
         sh: avgMinutes(rows.map(r => minutesBetween(r["Take Off from Scene"], r["Arrival at Hospital"])))
@@ -93,7 +92,6 @@ function renderTeamCompare() {
             <td><strong>${esc(t.team)}</strong></td>
             <td>${t.total}${total ? " (" + Math.round((t.total / total) * 100) + "%)" : ""}</td>
             <td>${t.month}</td>
-            <td>${t.fatal}</td>
             <td>${t.patients}</td>
             <td>${fmtMinutes(t.da)}</td>
             <td>${fmtMinutes(t.sh)}</td>
@@ -104,7 +102,7 @@ function renderTeamStats(rows) {
     setText("teamStatTotal", rows.length);
     setText("teamStatMonth", rows.filter(r => String(r["Call Date"] || "").startsWith(sitrepMonthKey())).length);
     setText("teamStatPatients", rows.reduce((s, r) => s + countPatients(r), 0));
-    setText("teamStatFatal", rows.filter(r => String(r["Victim Status"] || "").toLowerCase().includes("demised")).length);
+    setText("teamStatAvgResponse", fmtMinutes(avgMinutes(rows.map(r => minutesBetween(r["Dispatched Time"], r["Arrival at Scene"])))));
 }
 
 function renderTeamMonthly(rows) {
