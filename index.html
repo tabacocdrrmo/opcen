@@ -3,445 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tabaco City Disaster Risk Reduction & Management Office</title>
+    <title>Sign in &middot; CDRRMO Operations Center</title>
+    <meta name="description" content="Authorized personnel sign-in for the Tabaco City Disaster Risk Reduction and Management Office operations center.">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" href="assets/images/logo.png" type="image/png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/login.css">
 </head>
 <body>
+    <main class="shell">
 
-    <div class="alert-banner">
-        ⚠️ CURRENT STATUS: NORMAL OPERATIONS | MONITORING LOCAL WEATHER DISTURBANCES | FIRST RESPONDERS READINESS
-    </div>
+        <aside class="brand" aria-label="Tabaco City Disaster Risk Reduction and Management Office">
+            <img
+                class="brand-bg"
+                src="assets/images/login-bg.jpg"
+                width="1240"
+                height="960"
+                alt=""
+                aria-hidden="true"
+                fetchpriority="high"
+            />
+            <div class="brand-in">
 
-    <header>
-        <div class="menu-container">
-            <button class="menu-toggle" onclick="toggleMenu(event)" aria-label="Toggle Navigation">
-                <i class="fa-solid fa-bars"></i>
-            </button>
-            <nav id="navMenu" class="nav-links">
-				<a href="#hazardScrollContainer" onclick="closeMenu()">Home</a>
-                <a href="#numbers" onclick="closeMenu()">By the Numbers</a>
-                <a href="#about" onclick="closeMenu()">About</a>
-                <a href="#pillars" onclick="closeMenu()">Our Mandate</a>
-				<a href="#action" onclick="closeMenu()">In Action</a>
-                <a href="#org-chart" onclick="closeMenu()">Leadership</a>
-				<a href="#hotlines" onclick="closeMenu()">Hotlines</a>
-                <a href="javascript:void(0)" onclick="openCrewPortal(); closeMenu();">Our Crew Portal</a>
-            </nav>
-        </div>
-
-        <div class="logo-area">
-            <div class="logo-container-custom">
-                <img class="logo-img-frame" 
-                     src="assets/images/logo.png" 
-                     alt="Tabaco City CDRRMO Shield Logo"
-                     style="width: 124px !important; height: auto !important;">
-                <div class="logo-subtitle-custom">PROTECT AND SAVE</div>
-            </div>
-			
-            <div class="brand-name">
-                <h1>CDRRMO</h1>
-                <p><strong>Tabaco City Disaster Risk Reduction & Management Office</strong></p>
-            </div>
-        </div>
-    </header>
-
-    <div class="bulletin-section">
-        <div class="hazard-scroll-container" id="hazardScrollContainer">
-            <div class="hazard-scroll-wrapper" id="prepSliderFrame">
-				<div class="prepSlides"><img src="assets/images/Elnin1.JPG" alt="Map 1" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
-				<div class="prepSlides"><img src="assets/images/Elnin2.JPG" alt="Map 1" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
-				<div class="prepSlides"><img src="assets/images/Elnin3.JPG" alt="Map 1" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
-				<div class="prepSlides"><img src="assets/images/Elnin4.JPG" alt="Map 1" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
-				<div class="prepSlides"><img src="assets/images/Elnin5.JPG" alt="Map 1" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
-				<div class="prepSlides"><img src="assets/images/Elnin6.JPG" alt="Map 1" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
-				<div class="prepSlides"><img src="assets/images/Linog1.JPG" alt="Map 1" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
-                <div class="prepSlides"><img src="assets/images/Linog2.JPG" alt="Map 2" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>	
-                <div class="prepSlides"><img src="assets/images/Linog3.JPG" alt="Map 3" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>   
-                <div class="prepSlides"><img src="assets/images/Linog4.JPG" alt="Map 4" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
-                <div class="prepSlides"><img src="assets/images/Linog5.JPG" alt="Map 5" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
-                <div class="prepSlides"><img src="assets/images/Linog6.JPG" alt="Map 6" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
-                <div class="prepSlides"><img src="assets/images/Bagyo1.JPG" alt="Map 7" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
-                <div class="prepSlides"><img src="assets/images/Bagyo2.JPG" alt="Map 8" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
-                <div class="prepSlides"><img src="assets/images/Bagyo3.JPG" alt="Map 9" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
-                <div class="prepSlides"><img src="assets/images/Bagyo4.JPG" alt="Map 10" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
-                <div class="prepSlides"><img src="assets/images/Bagyo5.JPG" alt="Map 11" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
-                <div class="prepSlides"><img src="assets/images/Bagyo6.JPG" alt="Map 12" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
-                <div class="prepSlides"><img src="assets/images/Bulkan1.JPG" alt="Map 13" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
-                <div class="prepSlides"><img src="assets/images/Bulkan2.JPG" alt="Map 14" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
-                <div class="prepSlides"><img src="assets/images/Bulkan3.JPG" alt="Map 15" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
-                <div class="prepSlides"><img src="assets/images/Bulkan4.JPG" alt="Map 16" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
-                <div class="prepSlides"><img src="assets/images/Bulkan5.JPG" alt="Map 17" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
-                <div class="prepSlides"><img src="assets/images/Bulkan6.JPG" alt="Map 18" style="cursor: zoom-in;" onclick="zoomSlide(this.src)"></div>
-            </div>
-            <button class="prev-slide" onclick="scrollPrepSlides(-1)">❮</button>
-            <button class="next-slide" onclick="scrollPrepSlides(1)">❯</button>
-        </div>
-        
-        <!-- Live Tactical Situation Dashboard Video Frame Implementation -->
-        <div class="dashboard-frame" style="background-color: #fafafa; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; justify-content: flex-start; text-align: center; box-sizing: border-box;">
-            <h4 style="margin: 0 0 10px 0; color: var(--primary-color); font-size: 20px;">CrisisOp Typhoon Simulation</h4>
-            <div style="flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; background: #000; border-radius: 6px; overflow: hidden; margin-bottom: 10px;">
-                <video controls autoplay loop muted style="width: 100%; height: 100%; object-fit: contain;">
-                    <source src="assets/video/crisisop.mp4" type="video/mp4">
-                    <source src="assets/video/crisisop.webm" type="video/webm">
-                    Your browser does not support the video tag.
-                </video>
-            </div>
-            <p style="margin: 0; font-size: 13px; color: #555; line-height: 1.4;">This operational bulletin panel houses live monitoring metrics, satellite updates, and active public announcements tracked by our Tabaco City command deck. Review environmental data maps and alerts concurrently on the feeds provided below.</p>
-        </div>
-    </div>
-
-    <div class="monitoring-section">
-        <div class="windy-container">
-            <iframe src="https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=default&metricWind=default&zoom=8&overlay=wind&product=ecmwf&level=surface&lat=13.361&lon=123.731&detailLat=13.361&detailLon=123.731&marker=true" title="Live Windy Meteorological Tracking Map"></iframe>
-        </div>
-
-        <div class="slideshow-container">
-			<div class="mySlides">
-                <img src="assets/images/NDRM.jpg" alt="NDRM 2026">
-                <div class="slide-caption"><h4>2026 National Disaster Resilience Month</h4></div>
-            </div>
-			<div class="mySlides">
-                <img src="assets/images/NDRM1.jpg" alt="NDRM 2026">
-                <div class="slide-caption"><h4>2026 National Disaster Resilience Month</h4></div>
-            </div>
-			<div class="mySlides">
-                <img src="assets/images/befirst1.JPG" alt="Drill">
-                <div class="slide-caption">
-                    <h4>BEFIRST Training</h4>
-                    <p>A capacity-building program designed to equip community volunteers, Brgy. workers, and students with immediate life-saving skills before professional medics arrive.</p>
-                </div>
-            </div>
-			<div class="mySlides">
-                <img src="assets/images/befirst2.JPG" alt="Drill">
-                <div class="slide-caption"><h4>BEFIRST Training</h4><p>A capacity-building program designed to equip community volunteers.</p></div>
-            </div>
-			<div class="mySlides">
-                <img src="assets/images/befirst3.JPG" alt="Drill">
-                <div class="slide-caption"><h4>BEFIRST Training</h4><p>Immediate life-saving skills application.</p></div>
-            </div>
-			<div class="mySlides">
-                <img src="assets/images/befirst4.JPG" alt="Drill">
-                <div class="slide-caption"><h4>BEFIRST Training</h4><p>First aid and auxiliary preparation methods.</p></div>
-            </div>
-			 <div class="mySlides">
-                <img src="assets/images/Emergency_Resp01.jpg" alt="Checks">
-                <div class="slide-caption">
-                    <h4>Emergency Response</h4>
-                    <p>Organized and rapid deployment of resources and personnel to protect lives, property, and environmental safety vectors.</p>
-                </div>
-            </div>
-			<div class="mySlides">
-               <img src="assets/images/Emergency_Resp02.jpg" alt="Checks">
-                <div class="slide-caption">
-                    <h4>Emergency Response</h4>
-                    <p>Organized and rapid deployment of resources and personnel to protect lives, property, and environmental safety vectors.</p>
-                </div>
-            </div>           
-            <button class="prev-slide" onclick="plusSlides(-1)">❮</button>
-            <button class="next-slide" onclick="plusSlides(1)">❯</button>
-        </div>
-
-        <div class="board-container">
-            <div class="board-tabs">
-                <button class="tab-btn active" onclick="switchTab(event, 'announcements')">📢 Announcements</button>
-                <button class="tab-btn" onclick="switchTab(event, 'news')">📰 Latest News</button>
-                <button class="tab-btn" onclick="switchTab(event, 'events')">📅 Upcoming Events</button>
-            </div>
-
-            <div id="announcements" class="board-content active">
-                 <div class="news-item">
-                    <span class="news-date">Q4 of 2026</span>
-                    <h5 class="news-title">Go Bags Distribution</h5>
-                    <p class="news-desc">The Tabaco City Disaster Risk Reduction and Management Office (CDRRMO) spearheaded the distribution of emergency GO Bags to vulnerable households residing in coastal and seaside communities during the fourth quarter of 2026.</p>
-                </div>
-				<div class="news-item">
-                    <span class="news-date">July 01, 2026</span>
-                    <h5 class="news-title">2026 NATIONAL DISASTER RESILIENCE MONTH (NDRM)</h5>
-                    <p class="news-desc">National Disaster Resilience Month (NDRM) is an annual observance held in July in the Philippines, mandated by Executive Order No. 29, s. 2017. It shifts focus to active disaster resilience.</p>
-                </div>
-				<div class="news-item">
-                    <span class="news-date">June 18, 2026</span>
-                    <h5 class="news-title">Nationwide Earthquake Drill</h5>
-                    <p class="news-desc">The Office of Civil Defense (OCD) announced the 2nd Quarter National Simultaneous Earthquake Drill (NSED).</p>
-                </div>
-                <div class="news-item">
-                    <span class="news-date">May 28, 2026</span>
-                    <h5 class="news-title">Emergency Hotline Maintenance Completed</h5>
-                    <p class="news-desc">Our primary operation lines are fully responsive. Backup lines remain accessible during peak monitoring shifts.</p>
-                </div>
-            </div>
-
-            <div id="news" class="board-content">
-                <div class="news-item">
-                    <span class="news-date">Q4 of 2026</span>
-                    <h5 class="news-title">Tabaco CDRRMO GO Bags Distribution</h5>
-                    <p class="news-desc">This proactive disaster preparedness initiative equips at-risk families with essential survival supplies tailored to mitigate risks during severe weather events and storm surges. By prioritizing these highly exposed maritime zones, the local government aims to strengthen community resilience and ensure rapid household response capabilities ahead of seasonal typhoons.
-</p>
-                </div>
-				<div class="news-item">
-                    <span class="news-date">May 19, 2026</span>
-                    <h5 class="news-title">Lahar Defense Structures Inspected</h5>
-                    <p class="news-desc">Engineering teams cleared sand trap channels near base slopes to manage volcanic runoffs efficiently.</p>
-                </div>
-            </div>
-
-            <div id="events" class="board-content">
-				<div class="news-item">
-                    <span class="news-date">July 01, 2026</span>
-                    <h5 class="news-title">2026 NDRM Kick-Off Ceremony</h5>
-                    <p class="news-desc">Naghahanda at Kumikilos tungo sa Panatag na Bagong Pilipinas.</p>
-                </div>
-				<div class="news-item">
-                    <span class="news-date">July 10, 2026</span>
-                    <h5 class="news-title">PROJECT: Oplan Alerto</h5>
-                    <p class="news-desc">Tsunami Early Warning System Activation Drill.</p>
-                </div>
-                <div class="news-item">
-                    <span class="news-date">July 13, 2026</span>
-                    <h5 class="news-title">Household Risk Assessment</h5>
-                    <p class="news-desc">Household risk assessment in high-risk zones involves evaluating specific hazards to determine the severity of threats to health, safety, and property, often utilizing standardized frameworks to guide mitigation or intervention.</p>
-                </div>
-				<div class="news-item">
-                    <span class="news-date">July 25-26, 2026</span>
-                    <h5 class="news-title">Force Multipliers in Action</h5>
-                    <p class="news-desc">CDRRMO Auxiliary Training Program.</p>
-                </div>
-				<div class="news-item">
-                    <span class="news-date">July 28, 2026</span>
-                    <h5 class="news-title">Tabaco City Hall Earthquake Drill</h5>
-                    <p class="news-desc">Building a Disaster-Resilient Tabaco.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <section id="numbers" style="background-color: #f1f5f9; padding-left: 20px; padding-right: 20px; padding-top: 30px;">
-        <h2 class="section-title">By the Numbers</h2>
-        <div style="max-width: 1800px; margin: 0 auto; text-align: center;">
-            <p style="font-size: 16px; color: #444; margin-bottom: 30px; max-width: 900px; margin-left: auto; margin-right: auto;">The Tabaco City CDRRMO provides round-the-clock emergency services to 47 barangays. Their operational data highlights critical life-saving support.</p>
-            <!--
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; margin-top: 20px;">
-                <div style="background: white; padding: 20px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-bottom: 4px solid var(--primary-color);">
-                    <div style="font-size: 36px; font-weight: bold; color: var(--primary-color);">24/7</div>
-                    <div style="font-size: 13px; text-transform: uppercase; color: #666; font-weight: 600; margin-top: 5px;">Emergency Operations</div>
-                </div>
-                <div style="background: white; padding: 20px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-bottom: 4px solid var(--primary-color);">
-                    <div style="font-size: 36px; font-weight: bold; color: var(--primary-color);">47</div>
-                    <div style="font-size: 13px; text-transform: uppercase; color: #666; font-weight: 600; margin-top: 5px;">Barangays Covered</div>
-                </div>
-            </div>
-            -->
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 30px; max-width: 960px; margin-left: auto; margin-right: auto;">
-                <div style="text-align: center;">
-                    <div style="background: #fff; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); border-bottom: 4px solid var(--primary-color); overflow: hidden; aspect-ratio: 1 / 1;">
-                        <img src="assets/images/matrix1.jpg" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+                <div class="brand-top">
+                    <img class="seal" src="assets/images/logo.png" width="68" height="68" alt="CDRRMO seal">
+                    <div>
+                        <p class="city">Tabaco City</p>
+                        <p class="org">Disaster Risk Reduction<br>&amp; Management Office</p>
                     </div>
                 </div>
-                <div style="text-align: center;">
-                    <div style="background: #fff; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); border-bottom: 4px solid var(--primary-color); overflow: hidden; aspect-ratio: 1 / 1;">
-                        <img src="assets/images/matrix2.jpg" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+
+                <div class="brand-copy">
+                    <p class="eyebrow">Operations Center</p>
+                    <p class="display">Protect<br>and <em>save.</em></p>
+                    <p class="lede">Round-the-clock monitoring, dispatch, and field response for the 47 barangays of Tabaco City.</p>
+                </div>
+
+                <div class="brand-foot">
+                    <p class="status"><span class="dot" aria-hidden="true"></span>Dispatch desk &middot; 24/7</p>
+                </div>
+
+            </div>
+        </aside>
+
+        <section class="panel" aria-labelledby="signin-h">
+            <div class="panel-in">
+
+                <p class="eyebrow">Personnel access</p>
+                <h1 id="signin-h">Sign in</h1>
+                <p class="sub">Use the username and password issued by your administrator.</p>
+
+                <form id="loginForm" novalidate>
+                    <div class="field">
+                        <label for="username">Username</label>
+                        <div class="control">
+                            <i class="fa-regular fa-user" aria-hidden="true"></i>
+                            <input
+                                type="text"
+                                id="username"
+                                name="username"
+                                autocomplete="username"
+                                autocapitalize="none"
+                                spellcheck="false"
+                                placeholder="juan.delacruz"
+                                required
+                            >
+                        </div>
                     </div>
-                </div>
-                <div style="text-align: center;">
-                    <div style="background: #fff; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); border-bottom: 4px solid var(--primary-color); overflow: hidden; aspect-ratio: 1 / 1;">
-                        <img src="assets/images/matrix3.jpg" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+
+                    <div class="field">
+                        <label for="password">Password</label>
+                        <div class="control">
+                            <i class="fa-solid fa-lock" aria-hidden="true"></i>
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                autocomplete="current-password"
+                                placeholder="Enter your password"
+                                required
+                            >
+                            <button
+                                type="button"
+                                class="reveal"
+                                id="reveal"
+                                aria-label="Show password"
+                                aria-pressed="false"
+                            >
+                                <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                            </button>
+                        </div>
                     </div>
-                </div>
-                <div style="text-align: center;">
-                    <div style="background: #fff; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); border-bottom: 4px solid var(--primary-color); overflow: hidden; aspect-ratio: 1 / 1;">
-                        <img src="assets/images/matrix10.jpg" alt="" style="width: 100%; height: 100%; object-fit: cover;">
-                    </div>
-                </div>
-                <div style="text-align: center;">
-                    <div style="background: #fff; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); border-bottom: 4px solid var(--primary-color); overflow: hidden; aspect-ratio: 1 / 1;">
-                        <img src="assets/images/matrix11.jpg" alt="" style="width: 100%; height: 100%; object-fit: cover;">
-                    </div>
-                </div>
-                <div style="text-align: center;">
-                    <div style="background: #fff; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); border-bottom: 4px solid var(--primary-color); overflow: hidden; aspect-ratio: 1 / 1;">
-                        <img src="assets/images/matrix12.jpg" alt="" style="width: 100%; height: 100%; object-fit: cover;">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <section id="about">
-        <h2 class="section-title">Who We Are</h2>
-        <div style="max-width: 800px; margin: 0 auto; text-align: center;">
-            <p><strong>Tabaco City Disaster Risk Reduction and Management Office (CDRRMO)</strong> is the lead city's agency responsible for steering local efforts in disaster response. Our mandate spans mitigating geographic hazards, preparing local communities, ensuring rapid tactical deployment during crises, and executing comprehensive post-crisis rehabilitation frameworks.</p>
-        </div>
-    </section>
+                    <p class="error" id="error" role="alert" hidden>
+                        <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+                        <span id="errorText"></span>
+                    </p>
 
-    <section id="pillars" style="background-color: #fafafa;">
-        <h2 class="section-title">The Four Thematic Areas</h2>
-        <div class="grid-4">
-            <div class="card">
-                <div class="pillar-icon-wrapper"><i class="fa-solid fa-shield-halved"></i></div>
-                <h3>1. Prevention & Mitigation</h3>
-                <p>Conducting engineering controls, hazard mapping, and community risk assessments to eliminate or drastically minimize impact before threats manifest.</p>
-            </div>
-            <div class="card">
-                <div class="pillar-icon-wrapper"><i class="fa-solid fa-bullhorn"></i></div>
-                <h3>2. Disaster Preparedness</h3>
-                <p>Equipping families, local business networks, and responders with actionable safety protocols, regular drill simulations, and early warning sirens.</p>
-            </div>
-            <div class="card">
-                <div class="pillar-icon-wrapper"><i class="fa-solid fa-kit-medical"></i></div>
-                <h3>3. Disaster Response</h3>
-                <p>Deploying search and rescue assets, asset security frameworks, relief supply logistics, and immediate incident command protocols during live events.</p>
-            </div>
-            <div class="card">
-                <div class="pillar-icon-wrapper"><i class="fa-solid fa-trowel-bricks"></i></div>
-                <h3>4. Rehabilitation & Recovery</h3>
-                <p>Structuring post-disaster infrastructure checks, medical recovery phases, psychological support, and rebuilding communities stronger than before.</p>
-            </div>
-        </div>
-    </section>
+                    <button class="submit" id="submit" type="submit">
+                        <span class="spinner" aria-hidden="true"></span>
+                        <span id="submitLabel">Sign in</span>
+                        <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                    </button>
+                </form>
 
-    <section id="action" style="background-color: #ffffff;">
-        <h2 class="section-title">On the Frontline</h2>
-        <p style="text-align:center; max-width:600px; margin:-20px auto 40px auto; color:#666;">
-			Executing real-time field operations and rapid response deployments. Alongside these active measures, our ongoing mitigation efforts work to safeguard the community ensuring a safer, more resilient Tabaco City.
-        </p>
-        <div class="action-grid">
-            <div class="action-card" onclick="openGallery('cud')" style="cursor:pointer;">
-                <img src="assets/images/CUD01.jpg" alt="Clean-Up Drive" class="action-img" onerror="this.src='assets/images/img_placeholder.jpg'">
-                <div class="action-info">
-                    <h4>Clean-Up Drive Operation</h4>
-                    <p>CDRRMO personnel and LGU officials joined forces in Barangay San Roque to conduct a strategic clean-up drive aimed at clearing vital areas and promoting a safer, cleaner community.</p>
-                </div>
-            </div>
-            <div class="action-card" onclick="openGallery('oss')" style="cursor:pointer;">
-                <img src="assets/images/OSS04.jpg" alt="Semana Santa" class="action-img" onerror="this.src='assets/images/img_placeholder.jpg'">
-                <div class="action-info">
-                    <h4>Oplan "Semana Santa"</h4>
-                    <p>To ensure a safe Holy Week, the CDRRMO has launched Oplan Semana Santa to closely monitor city activities and deploy field responders ready to assist Tabaqueños in emergencies.</p>
-                </div>
-            </div>
-            <div class="action-card" onclick="openGallery('iro')" style="cursor:pointer;">
-                <img src="assets/images/IRO03.jpg" alt="Incident Response" class="action-img" onerror="this.src='assets/images/img_placeholder.jpg'">
-                <div class="action-info">
-                    <h4>Active Incident & Rescue Operations</h4>
-                    <p>When emergencies strike, our frontline teams deploy immediately to conduct active incident and rescue operations to ensure the safety of every Tabaqueño.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-	
-    <section id="org-chart" class="org-container">
-        <h2 class="section-title">Organizational Leadership</h2>
-        <div class="org-grid">
-            <div class="org-card">
-                <img src="assets/images/mayor.jpg" alt="City Mayor" class="org-img" onerror="this.src='assets/images/img_placeholder.jpg'">
-                <div class="org-name">Reynaldo B. Bragais</div>
-                <div class="org-role">Tabaco City Mayor</div>
-            </div>
-            <div class="org-card">
-                <img src="assets/images/cdrrmo-head.jpg" alt="CDRRMO Head" class="org-img" onerror="this.src='assets/images/img_placeholder.jpg'">
-                <div class="org-name">Gelacio M. Molato Jr. LLB., MCDRM</div>
-                <div class="org-role">Head, Tabaco CDRRMO<br>LDRRMO IV</div>
-            </div>
-	    <div class="org-card">
-                <img src="assets/images/admin-head.jpg" alt="Administrative Head" class="org-img" onerror="this.src='assets/images/img_placeholder.jpg'">
-                <div class="org-name">Rowena B. Buenconsejo, MPA</div>
-                <div class="org-role">Chief, Admin. & Training Section<br>LDRRMO III</div>
-            </div>
-            <div class="org-card">
-                <img src="assets/images/research-head.jpg" alt="Research & Planning Head" class="org-img" onerror="this.src='assets/images/img_placeholder.jpg'">
-                <div class="org-name">Ronald Andrew B. Gonzales, MPA</div>
-                <div class="org-role">Chief, Operations & Warning Section<br>LDRRMO II</div>
-            </div>
-        </div>
-    </section>
+                <p class="note">Access is restricted to authorized CDRRMO personnel. If you have lost your credentials, contact an administrator.</p>
+                <p class="copyright">&copy; 2026 Tabaco City Disaster Risk Reduction and Management Office</p>
 
-    <div id="crewPortalModal" class="crew-modal-overlay hidden" onclick="closeCrewPortal()">
-        <div class="portal-box" id="portalBox" onclick="event.stopPropagation()">
-            <button class="modal-close-btn" onclick="closeCrewPortal()">✕</button>
-            <h2 style="text-align: center; color: var(--primary-color); margin-top: 0;">Our Crew Portal</h2>
-            
-            <div id="loginView">
-                <p style="text-align: center; margin-bottom: 20px; font-size: 14px; color: #666;">First Responders & Staff: Log in to manage your public employee profile database.</p>
-                <div class="form-group">
-                    <label for="username">Admin-Assigned Username</label>
-                    <input type="text" id="username" placeholder="e.g., juan.delacruz">
-                </div>
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <div class="password-wrapper">
-                        <input type="password" id="password" placeholder="••••••••">
-                        <button type="button" class="password-toggle" onclick="togglePassword('password', this)" aria-label="Show password"><i class="fa-solid fa-eye"></i></button>
-                    </div>
-                </div>
-                <button class="btn-portal" onclick="handleLogin()">Sign In</button>
             </div>
-        </div>
-    </div>
+        </section>
 
-    <section id="hotlines" class="hotline-section">
-        <h2 class="section-title">Emergency Contact Center</h2>
-        <div class="hotline-box">
-            <p>For immediate rescue tracking, fire hazards, medical trauma dispatch, or life-threatening situations, contact our dispatch unit directly:</p>
-            <div class="hotline-number">0909 224 5858<br>0999 475 8582<br>0939 782 9833</div>
-            <p>Email: <a href="mailto:cdrrmotabaco2014@gmail.com" class="hotline-link">cdrrmotabaco2014@gmail.com</a><br>
-	       Facebook: <a href="https://www.facebook.com/profile.php?id=100084520061699" target="_blank" class="hotline-fb-link">Tabaco CDRRMO</a></p>
-        </div>
-    </section>
+    </main>
 
-    <div class="hero">
-        <h2>Building a Resilient, Prepared Community</h2>
-        <p>Proactive crisis response, strategic risk assessment, and immediate emergency management to safeguard lives and assets across Tabaco City.</p>
-    </div>
-	
-    <div class="chat-widget">
-        <div class="chat-button" onclick="toggleChatWindow(event)">💬 <span class="chat-text">Chat with us</span></div>
-        <div class="chat-window hidden" id="chatWindow" onclick="event.stopPropagation();">
-            <div class="chat-header"><span>Tabaco CDRRMO</span><span class="chat-close" onclick="toggleChatWindow(event)">✕</span></div>
-            <div class="chat-body" id="chatBody">
-                <div class="msg bot">Marhay na Aldaw! Paano po kami makakatabang saimo o sa saindong komunidad ngunyan?<br>Kindly select your specific issue to discuss your concern.</div>
-            </div>
-            <div class="chat-chips">
-                <div class="chip" onclick="handleChipClick('Hotlines')">📞 Emergency Hotlines</div>
-                <div class="chip" onclick="handleChipClick('Services')">🛠️ Available Services</div>
-		<div class="chip" onclick="handleChipClick('Mandate')">🏛️ Our Mandate</div>
-                <div class="chip" onclick="handleChipClick('Leadership')">👤 Office Leadership</div>
-            </div>
-            <div class="chat-footer">
-                <input type="text" class="chat-input" id="chatInput" placeholder="Type here..." onkeypress="handleChatKey(event)">
-                <button class="chat-send" onclick="sendUserMessage()">Send</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="imageZoomModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); z-index: 4000; justify-content: center; align-items: center; flex-direction: column;" onclick="closeZoomModal()">
-        <img id="zoomedImage" src="" alt="Zoomed" style="max-width: 90%; max-height: 80%; object-fit: contain;">
-        <div style="margin-top: 20px;"><a id="downloadSlideBtn" href="" download class="btn-portal" style="background-color: var(--success-color); padding: 10px 20px;">Save Slide Image</a></div>
-    </div>
-
-    <div id="galleryGridModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.88); z-index: 5000; flex-direction: column; align-items: center; padding: 50px 20px 20px; box-sizing: border-box; overflow-y: auto;" onclick="closeGalleryGrid(event)">
-        <button onclick="closeGalleryGrid()" style="position: fixed; top: 15px; right: 20px; background: none; border: none; color: #fff; font-size: 30px; cursor: pointer; z-index: 5001;">&#10005;</button>
-        <div id="galleryThumbs" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; max-width: 900px; width: 100%;"></div>
-    </div>
-
-    <div id="galleryModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.92); z-index: 6000; justify-content: center; align-items: center; flex-direction: column;" onclick="closeGallery(event)">
-        <button onclick="closeGallery()" style="position: absolute; top: 20px; right: 25px; background: none; border: none; color: #fff; font-size: 32px; cursor: pointer;">&#10005;</button>
-        <button onclick="galleryPrev()" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.15); border: none; color: #fff; font-size: 36px; padding: 10px 16px; border-radius: 4px; cursor: pointer;">&#8249;</button>
-        <button onclick="galleryNext()" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.15); border: none; color: #fff; font-size: 36px; padding: 10px 16px; border-radius: 4px; cursor: pointer;">&#8250;</button>
-        <img id="galleryImage" src="" alt="" style="max-width: 85%; max-height: 80%; object-fit: contain; border-radius: 4px;">
-        <div id="galleryCounter" style="margin-top: 16px; color: #ccc; font-size: 14px;"></div>
-    </div>
-
-    <footer><p>© 2026 Tabaco City Disaster Risk Reduction and Management Office (CDRRMO). All Rights Reserved.<br>
-            Research and Planning Team</p>
-    </footer>
-    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-client.js"></script>
-    <script src="js/script.js"></script>
+    <script src="js/login.js"></script>
 </body>
 </html>
