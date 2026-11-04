@@ -4,6 +4,15 @@ const supabaseClient = createClient(
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx3bHBmdGZheHR2aGR2bXhjdnRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM0Nzk5NzksImV4cCI6MjA5OTA1NTk3OX0.gAv_Yh3n-y6KlWq1kpa5XFojrQfqRDQnutv1t8IwU1U"
 );
 
+// Employment statuses that must not have a working login. Kept in step with the
+// blocked list in supabase/functions/account-admin (set-status). The real lock
+// is the auth ban; this list is what lets the pages explain the refusal.
+const BLOCKED_STATUSES = ["Resigned", "Terminated"];
+
+function isBlockedStatus(status) {
+    return BLOCKED_STATUSES.indexOf(status) !== -1;
+}
+
 function readFileAsDataUrl(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();

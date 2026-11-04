@@ -49,12 +49,19 @@ Deno.serve(async (req) => {
     const requireAdmin = async () => {
       const { data: account, error } = await callerClient
         .from("accounts")
-        .select("role")
+        .select("role, employees(status)")
         .eq("auth_user_id", callerUser.id)
         .maybeSingle();
       if (error) throw error;
       if (!account || account.role !== "admin") {
         return json({ error: "Admin access required" }, 403);
+      }
+      // A ban blocks the next sign-in but leaves an issued token valid until it
+      // expires, so the role check has to carry the status as well. Otherwise a
+      // terminated admin could still list accounts or create new ones.
+      const status = account.employees?.status;
+      if (status === "Resigned" || status === "Terminated") {
+        return json({ error: "This account is no longer active" }, 403);
       }
       return null;
     };
@@ -206,6 +213,51 @@ Deno.serve(async (req) => {
         .single();
       if (error) throw error;
       return json({ ok: true, account: data });
+    }
+
+    // Blocks or restores a login to match the employee's employment status.
+    //
+    // A Resigned or Terminated employee must not be able to sign in, and the
+    // lock has to sit in Supabase Auth rather than the browser: a client-side
+    // check alone would still leave a valid access token able to call the data
+    // functions. Setting the status back to Active or On Leave lifts the ban in
+    // the same call, so reinstatement needs no manual step.
+    if (action === "set-status") {
+      const denied = await requireAdmin();
+      if (denied) return denied;
+
+      const employeeId = body.employeeId;
+      const status = String(body.status || "").trim();
+      const blockedStatuses = ["Resigned", "Terminated"];
+      const knownStatuses = ["Active", "On Leave", ...blockedStatuses];
+      if (!employeeId) return json({ error: "employeeId is required" }, 400);
+      if (!knownStatuses.includes(status)) return json({ error: "Invalid status" }, 400);
+
+      const { data: account, error: acctLookupErr } = await adminClient
+        .from("accounts")
+        .select("auth_user_id")
+        .eq("employee_id", employeeId)
+        .maybeSingle();
+      if (acctLookupErr) throw acctLookupErr;
+
+      // An employee can exist before any login is created, so there may be
+      // nothing to ban yet.
+      if (!account || !account.auth_user_id) {
+        return json({ ok: true, banned: false, linked: false });
+      }
+
+      const blocked = blockedStatuses.includes(status);
+      const { error: banErr } = await adminClient.auth.admin.updateUserById(
+        account.auth_user_id,
+        // 100 years: long enough to be a lock, and GoTrue only accepts a
+        // duration here, not an "indefinite" flag.
+        { ban_duration: blocked ? "876000h" : "none" },
+      );
+      if (banErr) {
+        return json({ error: banErr.message || "Failed to update the login" }, 400);
+      }
+
+      return json({ ok: true, banned: blocked, linked: true });
     }
 
     // Self-service onboarding: a signed-in user without an employee record

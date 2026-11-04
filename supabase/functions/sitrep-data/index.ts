@@ -39,13 +39,20 @@ Deno.serve(async (req) => {
 
     const { data: account, error: acctErr } = await callerClient
       .from("accounts")
-      .select("role")
+      .select("role, employees(status)")
       .eq("auth_user_id", callerUser.id)
       .maybeSingle();
     if (acctErr) throw acctErr;
     const role = (account && account.role) || "";
     if (role !== "admin" && role !== "operator") {
       return json({ error: "Not authorized" }, 403);
+    }
+
+    // A ban stops the next sign-in, but a token already in a browser stays
+    // valid until it expires, so the role alone is not enough here.
+    const callerStatus = account?.employees?.status;
+    if (callerStatus === "Resigned" || callerStatus === "Terminated") {
+      return json({ error: "This account is no longer active" }, 403);
     }
 
     const body = await req.json().catch(() => ({}));

@@ -23,6 +23,7 @@
         password: "Enter your password.",
         credentials: "That username and password do not match. Check both and try again.",
         account: "This sign-in has no personnel record attached. Contact an administrator.",
+        deactivated: "This account has been deactivated. Contact an administrator.",
         service: "The sign-in service is unavailable. Reload the page and try again.",
         network: "Sign-in could not be completed. Check your connection and try again."
     };
@@ -67,6 +68,13 @@
         });
 
         if (auth.error) {
+            // The ban is checked before the password, so a blocked employee
+            // normally lands here rather than on the status check below. Both
+            // paths say the same thing instead of "wrong password".
+            var banned = auth.error.code === "user_banned" ||
+                /banned/i.test(auth.error.message || "");
+            if (banned) throw new Error("deactivated");
+
             var rejected = auth.error.status === 400 ||
                 /invalid login credentials/i.test(auth.error.message || "");
             throw new Error(rejected ? "credentials" : "network");
@@ -83,6 +91,14 @@
         }
 
         var record = account.data;
+
+        // A Resigned or Terminated employee must not get in even with the right
+        // password. Supabase Auth holds the ban; this check is what says why,
+        // rather than dropping them back on the form as a wrong password.
+        if (isBlockedStatus(record.employees && record.employees.status)) {
+            await supabaseClient.auth.signOut();
+            throw new Error("deactivated");
+        }
 
         sessionStorage.setItem("crewSession", JSON.stringify({
             username: username,
@@ -147,6 +163,13 @@
             if (!errorBox.hidden) clearError();
         });
     });
+
+    // A page that finds a blocked session sends the visitor here with
+    // ?deactivated=1, so the reason is stated instead of looking like an
+    // expired session.
+    if (new URLSearchParams(window.location.search).get("deactivated") === "1") {
+        showError(MESSAGES.deactivated);
+    }
 
     // A keyboard is useful on a desktop and intrusive on a phone, so the field
     // only takes focus when the pointer is a mouse or trackpad.

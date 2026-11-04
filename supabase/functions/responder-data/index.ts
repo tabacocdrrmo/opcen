@@ -107,11 +107,17 @@ Deno.serve(async (req) => {
 
     const { data: account, error: acctErr } = await callerClient
       .from("accounts")
-      .select("employee_id, employees(first_name, last_name, middle_name)")
+      .select("employee_id, employees(first_name, last_name, middle_name, status)")
       .eq("auth_user_id", callerUser.id)
       .maybeSingle();
     if (acctErr) throw acctErr;
     const emp = account && account.employees;
+
+    // Resigned / Terminated employees keep a valid token until it expires, so
+    // the account row alone is not enough to authorize a request.
+    if (emp && (emp.status === "Resigned" || emp.status === "Terminated")) {
+      return json({ error: "This account is no longer active" }, 403);
+    }
 
     // Caller name variants used by both the "data" and "teamSummary" actions.
     const first = (emp && emp.first_name) || "";

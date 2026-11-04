@@ -1,0 +1,5 @@
+{
+  "name": "sitrep-public",
+  "verify_jwt": false,
+  "timeout": 120
+}

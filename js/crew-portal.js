@@ -66,6 +66,16 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         const emp = acct.employees;
 
+        // A session can outlive the employment status: this tab may have been
+        // open when the status changed. Blocked staff are cleared out and sent
+        // to the login page with the reason.
+        if (isBlockedStatus(emp && emp.status)) {
+            clearSession();
+            await supabaseClient.auth.signOut();
+            window.location.href = "index.html?deactivated=1";
+            return;
+        }
+
         let contact = {};
         try {
             const { data: contacts } = await supabaseClient

@@ -47,10 +47,53 @@ function handleLogout() {
     window.location.href = "index.html";
 }
 
+/**
+ * sessionStorage is writable by whoever holds the browser, so the role stored
+ * there proves nothing. Re-read the account and its employee status before
+ * loading any data: a Resigned or Terminated admin must lose the panel even
+ * when their tab still holds an old session.
+ */
+async function checkAdminAccess() {
+    try {
+        const { data: authData } = await supabaseClient.auth.getUser();
+        const uid = authData && authData.user && authData.user.id;
+        if (!uid) return { ok: false, blocked: false };
+
+        const { data: account, error } = await supabaseClient
+            .from("accounts")
+            .select("role, employees(status)")
+            .eq("auth_user_id", uid)
+            .maybeSingle();
+        // A failed lookup (offline, token mid-refresh) is not evidence of a
+        // terminated account. Let the page load and let the server-side checks
+        // on every data call refuse if the account really is blocked.
+        if (error) {
+            console.error("Access check lookup failed:", error);
+            return { ok: true, blocked: false };
+        }
+        if (!account) return { ok: false, blocked: false };
+
+        const status = account.employees && account.employees.status;
+        const blocked = isBlockedStatus(status);
+        return { ok: account.role === "admin" && !blocked, blocked: blocked };
+    } catch (err) {
+        console.error("Access check failed:", err);
+        return { ok: true, blocked: false };
+    }
+}
+
 document.addEventListener("DOMContentLoaded", async function () {
     const session = getSession();
     if (!session || session.role !== "admin") {
         window.location.href = "index.html";
+        return;
+    }
+
+    const access = await checkAdminAccess();
+    if (!access.ok) {
+        clearSession();
+        supabaseClient.auth.signOut();
+        window.location.href = access.blocked ? "index.html?deactivated=1" : "index.html";
         return;
     }
 
@@ -208,11 +251,17 @@ async function confirmStatusChange() {
     if (!targetEmployeeId) return;
 
     try {
-        const { error: statusErr } = await supabaseClient
+        // .select() matters: an update blocked by RLS returns no error and no
+        // rows, so without it a refused write would still look like a success.
+        const { data: updated, error: statusErr } = await supabaseClient
             .from("employees")
             .update({ status: newStatus })
-            .eq("id", targetEmployeeId);
+            .eq("id", targetEmployeeId)
+            .select("id");
         if (statusErr) throw statusErr;
+        if (!updated || updated.length === 0) {
+            throw new Error("The status was not saved — the update was blocked.");
+        }
         const emp = employees.find(e => e.employeeId === targetEmployeeId);
         if (emp) emp.status = newStatus;
         refreshTable();
@@ -220,6 +269,19 @@ async function confirmStatusChange() {
         bootstrap.Modal.getInstance(document.getElementById("statusModal")).hide();
     } catch (err) {
         alert("Error updating status: " + err.message);
+        return;
+    }
+
+    // Resigned and Terminated also lose their login. The status is already
+    // saved, so a failure here is reported rather than rolled back: the roster
+    // has to stay truthful, and the admin needs to know the login is still open.
+    try {
+        await accountAdmin("set-status", { employeeId: targetEmployeeId, status: newStatus });
+    } catch (err) {
+        alert(
+            "The status was saved, but the login could not be updated: " + err.message +
+            "\n\nSet the status again to retry, or disable the login in Supabase."
+        );
     }
 }
 
@@ -544,14 +606,27 @@ async function deleteEmployee(empId) {
     const name = [emp.first_name, emp.middle_name, emp.last_name].filter(Boolean).join(" ") || "This employee";
     if (!confirm(`Delete ${name}? This will set their status to "Terminated".`)) return;
     try {
-        const { error: delErr } = await supabaseClient
+        const { data: updated, error: delErr } = await supabaseClient
             .from("employees")
             .update({ status: "Terminated" })
-            .eq("id", empId);
+            .eq("id", empId)
+            .select("id");
         if (delErr) throw delErr;
+        if (!updated || updated.length === 0) {
+            throw new Error("The status was not saved — the update was blocked.");
+        }
         emp.status = "Terminated";
         refreshTable();
         updateStats(employees);
+
+        // Terminated also means the login is closed, not just the row.
+        try {
+            await accountAdmin("set-status", { employeeId: empId, status: "Terminated" });
+        } catch (banErr) {
+            alert(`${name} marked as Terminated, but their login could not be disabled: ${banErr.message}`);
+            return;
+        }
+
         alert(`${name} marked as Terminated.`);
     } catch (err) {
         alert("Error deleting employee: " + err.message);
@@ -934,10 +1009,13 @@ async function approveLeave(id) {
     try {
         const req = leaveRequests.find(l => l.id === id);
         if (req) {
+            // Approving leave must only move someone who is Active to On
+            // Leave. A Terminated or Resigned employee keeps their status.
             const { error: empErr } = await supabaseClient
                 .from("employees")
                 .update({ status: "On Leave" })
-                .eq("id", req.employee_id);
+                .eq("id", req.employee_id)
+                .eq("status", "Active");
             if (empErr) throw empErr;
         }
         const { error: leaveErr } = await supabaseClient
@@ -960,21 +1038,34 @@ async function restoreExpiredLeaves() {
             .select("employee_id")
             .eq("status", "Approved")
             .lt("end_date", today);
+
         const empIds = [...new Set((expired || []).map(r => r.employee_id))];
-        for (const empId of empIds) {
-            const { error: restoreErr } = await supabaseClient
-                .from("employees")
-                .update({ status: "Active" })
-                .eq("id", empId);
-            if (restoreErr) console.error("Restore error for emp", empId, restoreErr);
+        if (!empIds.length) return;
+
+        // Only an employee the leave actually put on leave goes back to Active.
+        // Without the status filter this ran over every expired leave and
+        // resurrected Terminated and Resigned employees on each page load.
+        const { data: restored, error: restoreErr } = await supabaseClient
+            .from("employees")
+            .update({ status: "Active" })
+            .in("id", empIds)
+            .eq("status", "On Leave")
+            .select("id");
+        if (restoreErr) {
+            console.error("Restore error:", restoreErr);
+            return;
         }
-        if (empIds.length) {
-            employees.forEach(e => {
-                if (empIds.includes(e.employeeId)) e.status = "Active";
-            });
-            refreshTable();
-            updateStats(employees);
-        }
+
+        // .select() reports which rows really changed, so the local copy only
+        // follows the database instead of assuming every id was updated.
+        const restoredIds = new Set((restored || []).map(r => r.id));
+        if (!restoredIds.size) return;
+
+        employees.forEach(e => {
+            if (restoredIds.has(e.employeeId)) e.status = "Active";
+        });
+        refreshTable();
+        updateStats(employees);
     } catch (_) {}
 }
 
